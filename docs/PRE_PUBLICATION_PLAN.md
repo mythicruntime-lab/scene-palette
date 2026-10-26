@@ -1,11 +1,23 @@
 # Pre-publication audit and colour improvement plan
 
 Reviewed 2026-10-26 against `d14165b53af1272690618a19781d4cd5cadd973b`.
-Status: **approved; implementation in progress on a local review branch**. The GitHub repository remains private. Commits and release artifacts stay local until owner review.
+Status: **local implementation and verification complete; owner review required before push**. Work is on `codex/prepublication-review`. Remote publication, tags, releases, and repository settings remain pending.
 
-## Assessment
+## Implementation outcome
 
-The audit is substantially correct. Hold publication for the shelf-import security fix.
+- Shelf imports/restores now share strict validation and independent safe rendering; imported found-ink IDs are transient editor state. Served and standalone hostile-input regressions pass.
+- Added pinned, read-only CI and reproducible development dependencies. The Windows commands pass locally; actual GitHub and Linux jobs await an authorized push.
+- Implemented app 2.1.0/extraction v5 locally with Readable UI final distinction, bounded source-distance refinement, optional Source hues, safe source/current diagnostics, and source-paint restore with lock/Undo.
+- All twenty original public examples pass both policies: 503 and 509 exact comparisons, zero generated readability failures. The three prior default collisions are resolved. See [current results and limitations](QUALITY_REPORT.md).
+- Exact reference cube-root arithmetic closes an Edge/Go parity gap without tolerance or score rounding. Legacy vault documents and frozen math fixtures remain unchanged.
+- Added actual README screenshots and generated before/after examples. Clean review packaging verifies Go 1.27.3 and source provenance; ZIP checksums and packaged-app smoke checks accompany the local handoff.
+- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. No push, remote tag, GitHub Release, branch-rule change, About edit, topic update, or visibility change is authorized before owner review.
+
+The sections below retain the original review and approved acceptance criteria. Their old file line numbers and initial-state observations refer to the reviewed commit. The release patch was refreshed from 1.27.2 to 1.27.3 before building.
+
+## Original assessment
+
+The audit was substantially correct. The shelf-import security fix was a publication blocker.
 The colour findings comprise one missing validation step and two design tradeoffs; treating
 all three as contrast bugs would risk losing source identity or weakening readability.
 
@@ -191,7 +203,7 @@ behavior change. Any adjustment to origins follows existing human-review invalid
 ## 7. Prepare the downloadable release and repository presentation
 
 - Build from a clean, tested release commit/tag using the latest patched supported Go toolchain.
-  As checked on 2026-10-26, Go 1.27.2 is the current patch for the installed release family.
+  For this implementation, the refreshed official release check selected Go 1.27.3.
   Confirm the runtime embedded in the executable and its recorded build information agree.
 - Keep the local packaging script useful for development; require clean source and the intended tag
   in the release path. The current script records a dirty tree but does not reject one.
@@ -222,12 +234,12 @@ behavior change. Any adjustment to origins follows existing human-review invalid
 The minimum source-publication gate is the security fix plus passing full regression and final secret
 scans; CI is strongly recommended before accepting contributions. The colour work is a separate
 quality milestone and is not a reason to weaken that security gate. A downloadable release also
-requires the patched-toolchain build and packaged-artifact checks. No repository setting, tag,
-release, product code, or visibility is changed by this planning review.
+requires the patched-toolchain build and packaged-artifact checks. The implementation changes product code locally. Repository settings, tags, releases,
+and visibility remain unchanged until separately authorized.
 
 ## Reference checks
 
-- [Existing quality report](QUALITY_REPORT.md), [Go architecture](GO_MIGRATION.md), and
+- [Local release notes](RELEASE_NOTES_2.1.0.md), [current quality report](QUALITY_REPORT.md), [Go architecture](GO_MIGRATION.md), and
   [contributor test instructions](../CONTRIBUTING.md).
 - [Go release history and support policy](https://go.dev/doc/devel/release#policy): supported release
   families and the 1.27.2 patch/security fixes.

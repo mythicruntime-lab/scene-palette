@@ -17,29 +17,60 @@ still sits near the threshold, or when you want a dark UI from a daytime referen
 from the cached histogram, so it is instant and never re-reads the image.
 
 **Signal** (observed, attention, rupture, gold) is binned by hue in OKLCh and weighted
-`sqrt(area) · chroma²`. That is what keeps an 8-pixel lime cuff — about 0.2% of the frame — from being
-averaged away by a quarter-frame of dull orange. Candidates are repaired to 3:1 on both surfaces
-before they compete, and real four-colour sets are checked for distinctness. Roles are matched by
-brute-forcing all 24 permutations against each role's ideal hue.
+`sqrt(area) · chroma²`. This helps a small bright detail survive beside a large dull area.
+Candidates are repaired to 3:1 on both surfaces before selection. Role assignment evaluates all
+24 permutations against the role hues; the selected colour policy controls how missing paint is supplied.
 
 **Readability repair checks both surfaces together.** Generated `ink` targets 4.5:1 and `muted` plus
-the four accents target 3:1. Passing repairs are retained exactly. A failing repair searches OKLCh
-lightness, then neutral grays, then feasible 8-bit RGB colours. Generated surfaces adjust only when
-they cannot support any shared body ink. Surface and ink changes are recorded in their origins.
-The repair can still move a pale or muted source colour substantially; inspect the Readability matrix
-and provenance, especially when using locked paint.
+the four accents target 3:1. A failing repair searches OKLCh lightness, neutral grays, then feasible
+8-bit RGB colours. Generated surfaces adjust when they cannot support shared body ink. Locked paint
+stays exact, and incompatible locked surfaces produce a warning. Repairs are recorded in origins.
 
-Real paint always wins. A slot is only **derived** when the still cannot offer a fourth hue you could
-actually tell apart from the other three — two role slots reading as the same red is worse than one
-honest invention. Derived slots are badged on the swatch and called out in the notes.
+### Colour policy
+
+**Readable UI** is the default. It favours distinct semantic accents and can derive missing hues.
+After contrast repairs and locks are applied, it checks the four final accent colours again. It tries
+available observed replacements before bounded generated adjustments, keeping contrast checks and
+locks intact. If the search cannot separate a pair, it reports that limitation; it does not claim
+that every possible palette was searched. The final distinction floor is 0.07 OKLab distance.
+
+**Source hues** keeps all eight roles while favouring the source's observed hue families. When an
+image has too few signal colours, it reuses source hues or neutral structural paint with tonal
+variations instead of completing the palette with arbitrary role hues. Generated tonal reuse is
+still marked **derived**. Similar accents are expected for monochrome and sparse inputs; use labels,
+shapes, and position as well as colour to distinguish meanings.
+
+Both policies preserve readability targets and exact locks. Source hues is a preference, not a
+promise that every final colour matches a source pixel: forced polarity or a narrow contrast range
+between locked surfaces can require a hue shift or added chroma. The notes explicitly identify
+roles whose source hues shifted for readability. Neutral and grayscale inputs otherwise retain
+neutral paint rather than receiving a minimum-chroma accent fill.
+
+For observed accents with a large source adjustment, both engines also try a bounded lightness/chroma
+search to reduce distance from the recorded source. It retains the current readable result as a
+candidate, preserves contrast, and in Readable UI preserves the existing distinction floor. This is
+a local search over a fixed candidate set, not a global nearest-colour guarantee. A later distinction
+repair may still move an accent farther away. Found inks stay raw source paint.
+
+### Inspect and restore source paint
+
+The colour diagnostics list derived accents, adjustments above 0.10 OKLab distance, and final accent
+pairs below 0.07. Open a role's **why** details to see **Before adjustment** and **Current** swatches,
+their distance, and the recorded repairs. These are available when the token has a valid recorded
+source colour; imported files without that provenance cannot provide a source comparison.
+
+**Use source colour** restores that recorded paint to a core role and locks it. This is a deliberate
+human edit: it can fail contrast or reduce accent distinction, changes the human-review state, and
+invalidates a current seal. The toast's **Undo** restores the prior workspace, including its review
+state. Unlock the role to let future extraction adapt it again. Loading an older plate alone does
+not apply these changes or run the new colour policy.
 
 ## Variants and remix
 
-A busy frame supports more than one honest plate. Forge ranks every four-colour set the still can
-carry and shows them as a **Variants** strip — click one to apply it, or press **Remix** to cycle.
-Structure is shared across variants; only the four signal slots swap, and locked slots ignore the
-switch entirely. Each plate is named after its rarest colours so the words tell them apart. A
-two-colour still honestly reports one plate and disables Remix.
+A busy frame can support several four-colour sets. The **Variants** strip applies a ranked set;
+**Remix** cycles through those available. Structure is shared, and locked roles keep their paint.
+Source hues may offer just one set when source colours must be reused. A plate with only one
+available set disables Remix. Each generated plate is named from its colours.
 
 ## Readability
 
@@ -76,11 +107,18 @@ backups and transfers between browsers or machines. Storage behavior varies by b
 for local `file://` pages, and clearing browser data can remove saved plates. If storage refuses a
 save, the app warns you; export a copy of any work you want to retain.
 
-Shelf import is additive and offers Undo. It skips only exact saved revisions, so a human-sealed or
-source-changed revision is not discarded merely because its colours match an unsealed plate. Imported
+Shelf import is additive and offers Undo. Valid exact saved revisions are deduplicated, so a human-sealed
+or source-changed revision is not discarded merely because its colours match an unsealed plate. Imported
 IDs that collide are remapped locally, keeping **Update** and A/B attached to the right card. At the
 40-plate limit, existing local plates are never evicted; extra imported entries are reported as held
 back and remain in the import file.
+
+Shelf import and browser-storage restore share validation: each entry needs all eight unique roles,
+valid colour channels, consistent hex/RGB values, and correctly typed, bounded metadata. Malformed
+entries are skipped with a report, while valid entries remain usable. Shelf file imports are limited
+to 8 MiB and at most 400 incoming entries; the saved shelf still holds at most 40 plates. Deeply nested or
+oversized metadata is rejected. A failed restore does not automatically overwrite the stored data;
+export or preserve a copy before replacing a damaged shelf.
 
 Loading a JSON or shelf plate keeps its recorded source set separate from whatever image canvases are
 currently open. Re-exporting therefore preserves the imported provenance instead of relabelling the
@@ -90,12 +128,15 @@ forging again deliberately resets the record to the stills used for that extract
 A standalone palette round-trip also retains its creation time, original generator/extraction identity,
 tags/family, extraction parameters, median luminance, and notes. Token IDs, jobs, derived flags, locks,
 and origins survive as well, so merely opening and re-saving a plate cannot break its matching human
-seal. An actual **Forge** resets the generator to the current algorithm. Colour-derived facets and
+seal. Missing older colour-policy metadata is not inserted simply by opening or re-saving the file.
+An actual **Forge** resets the generator to the current algorithm. Colour-derived facets and
 signatures are rebuilt from the normalized eight-role plate rather than carrying stale computed values.
 
 **Import** loads a JSON plate back in, and a `.json` dropped on the still zone does the same. Import is
 tolerant on input and strict on output: keyed or positional, `hex` or `rgb`, missing slots filled with
-defaults and counted in the notes. It never guesses positionally when keys are present.
+defaults and counted in the notes. It never guesses positionally when keys are present. This single-plate
+compatibility path is separate from strict shelf validation; size, metadata type, and complexity limits
+still apply. Files without any usable colours are rejected.
 
 **Compare** puts two saved plates side by side as full harness previews with a role-by-role diff and
 ΔE per changed slot. Both previews and the live one come from one template, so they cannot drift.
@@ -159,7 +200,7 @@ night-bay/
 | `generator.version` | The application that wrote it. |
 | `generator.extraction` | The **algorithm** version. Moves only when extraction output changes, so you can tell a plate re-forged by new code from one merely re-saved. |
 | `sources[]` | Per still: original filename, byte count, `hash` (sha256, or a labelled `fnv1a64` fallback where `crypto.subtle` is unavailable), `natural` and `working` dimensions, and the `transforms` chain between them. |
-| `params` | Sample budget, signal floor, found-ink count, polarity mode, variant index. |
+| `params` | Sample budget, signal floor, found-ink count, polarity mode, colour policy (`readable-ui` or `source-hues`), variant index. Older records can omit colour policy. |
 | `facets` | Derived, never typed — polarity, dominant hue, accent hues, hue spread, chroma range, temperature, derived/picked slot counts, min contrast, panel separation. |
 | `signature` | Similarity vector: per-role OKLab, a 12-bin area-weighted hue histogram, per-role lightness. |
 | `review` | Optional versioned human-review state, including the proposal delta, advisory assessment, and up to 20 superseded seals as recorded history. New seals use scope `palette-and-source-identities`; legacy `palette-content` seals remain verifiable but are labeled content-only. Only a complete, matching supported seal authorizes agent use. |
@@ -173,7 +214,8 @@ Every token says where it came from, and no colour is unattributed:
 - **`structure`** — the luminance quantile it came from, whether chroma was capped, and every repair
   applied (`{op, against, target, from, to}`), so a lifted `ink` shows both its original and final hex.
 - **`signal`** — hue bin, band, frame area, salience, and **which stills** contributed to that bin.
-- **`derived`** — the role's ideal hue and the reason the still could not supply a real one.
+- **`derived`** — the generation method and reason. Readable UI can use a role's ideal hue; Source hues
+  uses `source-tonal-reuse` for generated tones from an observed hue or neutral source paint.
 - **`picked`** — the still's filename *and content hash*, the pixel in **both** coordinate spaces
   (`working` as clicked, `natural` mapped back to the original image), the 3×3 sampling method, and a
   timestamp. Its `repairs` array is always empty: a hand-picked colour is law and is never
@@ -187,7 +229,7 @@ Origins survive a JSON round trip, so re-importing a plate does not launder its 
 
 Forge and Remix always create a **proposal** and snapshot its compact decision baseline: plate identity,
 role values and wording, locks, found inks, and source identities. Renaming, repurposing, locking,
-picking, removing an ink, or changing the source set marks it **human-edited**. The review control shows
+picking, using recorded source colour, removing an ink, or changing the source set marks it **human-edited**. The review control shows
 the exact proposal-to-current before/after delta. Either state is useful for exploration and export, but
 neither is agent-eligible. **Seal for agents** records that human decision, its delta, a timestamp, and a
 deterministic fingerprint over the palette's semantic content plus normalized source filename/hash
@@ -237,7 +279,8 @@ diagnostics show which algorithm your sources actually got, under `source hash`.
 | Control | What it does |
 | --- | --- |
 | **Auto / Dark / Light** | Polarity of the plate. Auto reads it from the still; the other two override. Rebuilds instantly. |
-| **Signal floor** | Minimum chroma to count as signal. Drop it to catch fainter neon. |
+| **Colour policy** | Readable UI separates semantic accents; Source hues favours observed hue families and can reuse tonal paint. Both retain eight roles and check readability. |
+| **Signal floor** | Minimum chroma to count as signal in Readable UI. Source hues also considers weaker observed colours. |
 | **Found inks** | How many non-role colours to keep alongside the core eight. |
 | **Quality** | Pixels sampled per still (45k / 140k / 400k). Samples are strided across the working image; the browser caps its long edge at 1400 pixels before extraction. |
 | **Remix** | Cycles to the next plate this still supports. |
@@ -248,6 +291,7 @@ diagnostics show which algorithm your sources actually got, under `source hash`.
 | **A / B** | On a shelf card, pins that plate to one side of Compare — and to one side of a theme pair. |
 | **Pair A + B** | Makes the two compared plates a light/dark theme. |
 | **Derive counterpart** | Builds the opposite polarity of the current plate from the cached histogram. |
+| **why / Use source colour** | Inspect before/current swatches and repairs; restore available recorded source paint to a core role, lock it, and mark a human edit. Undo is offered. |
 | **pick** | Arms that slot. The next click on the still writes that pixel into the role and locks it. |
 | **lock** | Holds a slot through a re-forge, a remix, and a polarity flip. Lock one or two, then Forge again to re-roll only the rest. |
 | **Try the plate on this app** | Repaints this tool in the extracted plate. Reversible — the checkbox puts it back. |
@@ -258,12 +302,10 @@ Click the still with nothing armed to pin a **found ink**. Use its remove button
 A hand-pinned colour is law: it is never auto-corrected for contrast, even below target. The slot
 badge turns red and the notes say so, but the pixel you chose is the pixel you keep.
 
-Extraction version 4 repairs generated inks against ground and panel together: body ink targets
-4.5:1 and the other core inks target 3:1 on both. Passing version-3 repairs are preserved. When
-generated surfaces cannot support any shared body ink, they are adjusted in the selected polarity,
-with the changes recorded in their origins. Unlocked inks also adapt to locked surfaces when a
-shared readable colour exists. Incompatible locked surfaces produce a warning and keep your paint.
-Existing saved palettes and review seals remain compatible; re-forging records version 4.
+Scene Palette 2.1.0 records extraction version 5 for fresh output. It adds the colour policies,
+bounded source-distance refinement, and final accent distinction checks to the joint ground/panel
+readability repair. Schema 1 is unchanged. Valid older palettes retain their recorded extraction
+version, metadata, and matching review seals until deliberately edited or re-forged.
 
 For keyboard picking, focus the still, move the sample with the arrow keys (`Shift` moves ten pixels),
 and press `Enter` to apply it. Clear, still removal, found-ink removal, and shelf removal offer a
@@ -277,15 +319,17 @@ replace `go run .` with `.\scene-palette.exe`.
 ```powershell
 go run . forge -out palette.json -name "Night bay" "C:\path\to\image.png"
 go run . forge -bundle night-bay.zip -polarity dark "C:\path\to\image.png"
+go run . forge -color-policy source-hues -out source-palette.json "C:\path\to\image.png"
 go run . bundle -out approved.zip palette.json "C:\path\to\image.png"
 go run . rebuild-index "C:\path\to\palette-vault"
 ```
 
 `forge` accepts one to eight PNG, JPEG, or GIF files and pools them with equal weight. Browser defaults
 are preserved: a 140,000-pixel budget per still, `.085` signal floor, six found inks, auto polarity,
-and the first variant. Use `-polarity dark|light`, `-variant 2`, `-found`, `-chroma-min`, or `-budget`
-to override them. JSON goes to stdout by default; `-out palette.json` writes a file. Use
-`-bundle plate.zip` instead to include the original source bytes, generated preview, CSS, Godot,
+Readable UI, and the first variant. Use `-color-policy readable-ui` (default) or
+`-color-policy source-hues` to select the policy. Use `-polarity dark|light`, `-variant 2`, `-found`,
+`-chroma-min`, or `-budget` for the other controls. JSON goes to stdout by default;
+`-out palette.json` writes a file. Use `-bundle plate.zip` instead to include the original source bytes, generated preview, CSS, Godot,
 GPL, and notes in a deterministic ZIP. `bundle` also packages an existing palette while preserving
 its human seal and all recorded metadata. Optional source files are matched by their recorded content
 hash, regardless of argument order; unavailable sources are explicitly marked metadata-only. A single
