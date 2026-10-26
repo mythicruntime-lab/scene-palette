@@ -32,9 +32,9 @@ validation errors, asserted separately from unexpected errors.
 The full Go suite and vet, actual-HTML image/histogram goldens, JavaScript colour-math
 and contract checks, and deterministic PNG generation also pass. The CI workflow is
 prepared for Windows/Linux and supported Go families, with a separate minimum-Go
-compatibility job. **GitHub Actions has not run for this branch yet:** all changes
-remain local for owner review. Linux and the minimum-Go job are therefore pending
-remote execution; the local run is not a substitute for those results.
+compatibility job. These are **local verification results**, not evidence of successful
+GitHub Actions, Linux, or minimum-Go jobs. Consult the repository's Actions runs for
+remote CI status after a push.
 
 ## What changed in the colour output
 

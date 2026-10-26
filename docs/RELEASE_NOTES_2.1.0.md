@@ -1,7 +1,9 @@
-# Scene Palette 2.1.0 — local review candidate
+# Scene Palette 2.1.0 — source update
 
 This candidate contains extraction v5, with schema 1 and the same eight palette roles.
-It is prepared locally; no release or tag has been published.
+The source update is approved for the private repository. The Windows review ZIP
+remains a separate local artifact; no GitHub Release or version tag is created by
+pushing these source changes. See the [changelog](../CHANGELOG.md) for version history.
 
 ## Changes
 
@@ -44,6 +46,7 @@ colours between roles; exact locks can fail contrast. Neither a contrast ratio n
 an OKLab distance is a complete accessibility assessment.
 
 The final local handoff includes source/history secret-scan results and an extracted
-ZIP smoke report. Actual GitHub Actions runs, a version tag, the hosted ZIP/checksum,
-repository About/topics, and repository protection/reporting settings remain pending
-owner review and authorization. Repository visibility remains the owner's choice.
+ZIP smoke report. GitHub Actions runs on source pushes; consult its run results for
+remote verification. A version tag, hosted ZIP/checksum, repository About/topics, and
+repository protection/reporting settings remain separate follow-up work. The repository
+must remain private unless the owner explicitly authorizes a visibility change.

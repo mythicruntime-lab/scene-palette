@@ -1,17 +1,17 @@
 # Pre-publication audit and colour improvement plan
 
 Reviewed 2026-10-26 against `d14165b53af1272690618a19781d4cd5cadd973b`.
-Status: **local implementation and verification complete; owner review required before push**. Work is on `codex/prepublication-review`. Remote publication, tags, releases, and repository settings remain pending.
+Status: **implementation and local verification complete; owner authorized the private source push on 2026-10-26**. Version tags, hosted releases, and repository settings remain separate follow-up work. Keep the repository private.
 
 ## Implementation outcome
 
 - Shelf imports/restores now share strict validation and independent safe rendering; imported found-ink IDs are transient editor state. Served and standalone hostile-input regressions pass.
-- Added pinned, read-only CI and reproducible development dependencies. The Windows commands pass locally; actual GitHub and Linux jobs await an authorized push.
+- Added pinned, read-only CI and reproducible development dependencies. The Windows commands pass locally; actual GitHub and Linux results must be checked in Actions after the source push.
 - Implemented app 2.1.0/extraction v5 locally with Readable UI final distinction, bounded source-distance refinement, optional Source hues, safe source/current diagnostics, and source-paint restore with lock/Undo.
 - All twenty original public examples pass both policies: 503 and 509 exact comparisons, zero generated readability failures. The three prior default collisions are resolved. See [current results and limitations](QUALITY_REPORT.md).
 - Exact reference cube-root arithmetic closes an Edge/Go parity gap without tolerance or score rounding. Legacy vault documents and frozen math fixtures remain unchanged.
 - Added actual README screenshots and generated before/after examples. Clean review packaging verifies Go 1.27.3 and source provenance; ZIP checksums and packaged-app smoke checks accompany the local handoff.
-- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. No push, remote tag, GitHub Release, branch-rule change, About edit, topic update, or visibility change is authorized before owner review.
+- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. The owner subsequently authorized pushing the reviewed source and changelog. No version tag, GitHub Release, branch-rule change, About edit, topic update, or visibility change is part of that authorization.
 
 The sections below retain the original review and approved acceptance criteria. Their old file line numbers and initial-state observations refer to the reviewed commit. The release patch was refreshed from 1.27.2 to 1.27.3 before building.
 

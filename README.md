@@ -111,6 +111,7 @@ and palette verification.
 
 | Document | Contents |
 | --- | --- |
+| [Changelog](CHANGELOG.md) | Version history and notable changes. |
 | [User guide](docs/USER_GUIDE.md) | Controls, extraction, themes, shelves, bundles, and the CLI. |
 | [Contributing](CONTRIBUTING.md) | Development setup and Go, JavaScript, parity, and browser tests. |
 | [Quality report](docs/QUALITY_REPORT.md) | Test results, coverage, and known limitations. |
