@@ -1,0 +1,14 @@
+title = "Scene Palette secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Public browser localStorage namespace; not an authentication credential"
+condition = "AND"
+paths = ['''(^|[\\/])index\.html$''']
+regexTarget = "secret"
+regexes = ['''^scene-palette\.shelf\.v1$''']

@@ -1,0 +1,722 @@
+{
+  "schema": 1,
+  "kind": "color-plate",
+  "name": "Winter Cabin",
+  "createdAt": "2026-08-28T00:00:00.000Z",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0",
+    "extraction": 4
+  },
+  "polarity": "dark",
+  "lightScene": false,
+  "medianL": 0.4922,
+  "params": {
+    "budget": 140000,
+    "chromaMin": 0.085,
+    "foundInks": 6,
+    "polarityMode": "auto",
+    "variant": 0,
+    "variantCount": 6
+  },
+  "sources": [
+    {
+      "file": "winter-cabin.png",
+      "mime": "image/png",
+      "bytes": 393570,
+      "hash": {
+        "algo": "sha256",
+        "value": "334d7525baae8d455965c783808d58a9fdffc16a398ad59905335e0a26fd9de5"
+      },
+      "natural": [
+        384,
+        256
+      ],
+      "working": [
+        384,
+        256
+      ],
+      "transforms": [
+        {
+          "op": "decode",
+          "via": "sharp-raw-reference-harness"
+        }
+      ],
+      "path": "sources/01-winter-cabin.png"
+    }
+  ],
+  "stills": 1,
+  "tags": [],
+  "family": null,
+  "core": [
+    {
+      "key": "ground",
+      "id": "ground",
+      "name": "cobalt",
+      "job": "ground",
+      "hex": "#1E2E48",
+      "rgb": [
+        30,
+        46,
+        72
+      ],
+      "r": 30,
+      "g": 46,
+      "b": 72,
+      "oklch": [
+        0.3005,
+        0.0521,
+        259.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1,
+        "onPanel": 1.23
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0,
+          0.1
+        ],
+        "raw": "#1E2E48",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": []
+      }
+    },
+    {
+      "key": "panel",
+      "id": "panel",
+      "name": "sky",
+      "job": "panels",
+      "hex": "#2C3C56",
+      "rgb": [
+        44,
+        60,
+        86
+      ],
+      "r": 44,
+      "g": 60,
+      "b": 86,
+      "oklch": [
+        0.3545,
+        0.0502,
+        259.9
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.23,
+        "onPanel": 1
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.13,
+          0.32
+        ],
+        "raw": "#20304A",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "separate",
+            "against": "ground",
+            "minDeltaL": 0.035,
+            "from": "#20304A",
+            "to": "#2C3C56"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ink",
+      "id": "ink",
+      "name": "linen",
+      "job": "ink · voices",
+      "hex": "#A9BCCB",
+      "rgb": [
+        169,
+        188,
+        203
+      ],
+      "r": 169,
+      "g": 188,
+      "b": 203,
+      "oklch": [
+        0.7855,
+        0.0299,
+        241.7
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 6.98,
+        "onPanel": 5.69
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.93,
+          1
+        ],
+        "raw": "#A9BCCB",
+        "chromaCap": 0.045,
+        "capped": false,
+        "repairs": []
+      }
+    },
+    {
+      "key": "muted",
+      "id": "muted",
+      "name": "umber",
+      "job": "meta · quiet",
+      "hex": "#9B8074",
+      "rgb": [
+        155,
+        128,
+        116
+      ],
+      "r": 155,
+      "g": 128,
+      "b": 116,
+      "oklch": [
+        0.6218,
+        0.0379,
+        45.3
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.72,
+        "onPanel": 3.04
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.44,
+          0.7
+        ],
+        "raw": "#83685D",
+        "chromaCap": 0.07,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#83685D",
+            "to": "#8C7166"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#8C7166",
+            "to": "#9B8074"
+          }
+        ]
+      }
+    },
+    {
+      "key": "observed",
+      "id": "observed",
+      "name": "signal",
+      "job": "observed fact",
+      "hex": "#3285EB",
+      "rgb": [
+        50,
+        133,
+        235
+      ],
+      "r": 50,
+      "g": 133,
+      "b": 235,
+      "oklch": [
+        0.6195,
+        0.173,
+        255.7
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.7,
+        "onPanel": 3.01
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#126CCF",
+        "hueBin": 25,
+        "band": 1,
+        "area": 0.038575,
+        "salience": 0.580989,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#126CCF",
+            "to": "#2478DD"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#2478DD",
+            "to": "#3285EB"
+          }
+        ]
+      }
+    },
+    {
+      "key": "attention",
+      "id": "attention",
+      "name": "violet",
+      "job": "attention",
+      "hex": "#AA63F3",
+      "rgb": [
+        170,
+        99,
+        243
+      ],
+      "r": 170,
+      "g": 99,
+      "b": 243,
+      "oklch": [
+        0.6446,
+        0.2101,
+        303.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.76,
+        "onPanel": 3.07
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#7A2DBD",
+        "hueBin": 30,
+        "band": 1,
+        "area": 0.038575,
+        "salience": 0.868317,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#7A2DBD",
+            "to": "#9B53E2"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#9B53E2",
+            "to": "#AA63F3"
+          }
+        ]
+      }
+    },
+    {
+      "key": "rupture",
+      "id": "rupture",
+      "name": "crimson",
+      "job": "rupture only",
+      "hex": "#F4425A",
+      "rgb": [
+        244,
+        66,
+        90
+      ],
+      "r": 244,
+      "g": 66,
+      "b": 90,
+      "oklch": [
+        0.6468,
+        0.2128,
+        18.3
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.75,
+        "onPanel": 3.06
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#D71E43",
+        "hueBin": 1,
+        "band": 1,
+        "area": 0.025474,
+        "salience": 0.725205,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#D71E43",
+            "to": "#E22D4C"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#E22D4C",
+            "to": "#F4425A"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gold",
+      "id": "gold",
+      "name": "magenta",
+      "job": "human acts only",
+      "hex": "#E247B9",
+      "rgb": [
+        226,
+        71,
+        185
+      ],
+      "r": 226,
+      "g": 71,
+      "b": 185,
+      "oklch": [
+        0.6524,
+        0.223,
+        340.3
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.79,
+        "onPanel": 3.09
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#CC30A6",
+        "hueBin": 33,
+        "band": 1,
+        "area": 0.036392,
+        "salience": 0.945932,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#CC30A6",
+            "to": "#D034A9"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#D034A9",
+            "to": "#E247B9"
+          }
+        ]
+      }
+    }
+  ],
+  "found": [
+    {
+      "key": "found_1",
+      "name": "orchid",
+      "job": "found ink",
+      "hex": "#7A2DBD",
+      "rgb": [
+        122,
+        45,
+        189
+      ],
+      "r": 122,
+      "g": 45,
+      "b": 189,
+      "oklch": [
+        0.4856,
+        0.2103,
+        303.6
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.91,
+        "onPanel": 1.56
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#7A2DBD",
+        "hueBin": 30,
+        "band": 1,
+        "area": 0.038575,
+        "salience": 0.868317,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "found_2",
+      "name": "lime",
+      "job": "found ink",
+      "hex": "#9BB618",
+      "rgb": [
+        155,
+        182,
+        24
+      ],
+      "r": 155,
+      "g": 182,
+      "b": 24,
+      "oklch": [
+        0.7303,
+        0.1679,
+        120
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5.91,
+        "onPanel": 4.82
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#9BB618",
+        "hueBin": 12,
+        "band": 2,
+        "area": 0.038575,
+        "salience": 0.553397,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "found_3",
+      "name": "amber",
+      "job": "found ink",
+      "hex": "#D98C07",
+      "rgb": [
+        217,
+        140,
+        7
+      ],
+      "r": 217,
+      "g": 140,
+      "b": 7,
+      "oklch": [
+        0.7024,
+        0.1504,
+        70.5
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5,
+        "onPanel": 4.08
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#D98C07",
+        "hueBin": 7,
+        "band": 2,
+        "area": 0.038575,
+        "salience": 0.444065,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "found_4",
+      "name": "teal",
+      "job": "found ink",
+      "hex": "#00A393",
+      "rgb": [
+        0,
+        163,
+        147
+      ],
+      "r": 0,
+      "g": 163,
+      "b": 147,
+      "oklch": [
+        0.6423,
+        0.1146,
+        182.7
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 4.33,
+        "onPanel": 3.53
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#00A393",
+        "hueBin": 18,
+        "band": 1,
+        "area": 0.038575,
+        "salience": 0.257729,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    }
+  ],
+  "notes": [
+    "dark still (median L 0.49) — built a dark plate",
+    "panel stepped off ground — the still had no separate surface tone",
+    "plate 1 of 6 — remix for the others"
+  ],
+  "facets": {
+    "polarity": "dark",
+    "groundL": 0.3005,
+    "medianL": 0.4922,
+    "dominantHue": 256,
+    "accentHues": [
+      256,
+      304,
+      18,
+      340
+    ],
+    "hueSpread": 122,
+    "chroma": {
+      "min": 0.0299,
+      "max": 0.223,
+      "mean": 0.136
+    },
+    "temperature": "mixed",
+    "warmAccents": 2,
+    "coolAccents": 2,
+    "derivedSlots": 0,
+    "pickedSlots": 0,
+    "foundInks": 4,
+    "minContrastOnGround": 3.7,
+    "panelSeparationL": 0.0539
+  },
+  "signature": {
+    "version": 1,
+    "roles": [
+      {
+        "id": "ground",
+        "lab": [
+          0.3005,
+          -0.0093,
+          -0.0513
+        ]
+      },
+      {
+        "id": "panel",
+        "lab": [
+          0.3545,
+          -0.0088,
+          -0.0494
+        ]
+      },
+      {
+        "id": "ink",
+        "lab": [
+          0.7855,
+          -0.0142,
+          -0.0263
+        ]
+      },
+      {
+        "id": "muted",
+        "lab": [
+          0.6218,
+          0.0267,
+          0.0269
+        ]
+      },
+      {
+        "id": "observed",
+        "lab": [
+          0.6195,
+          -0.0426,
+          -0.1677
+        ]
+      },
+      {
+        "id": "attention",
+        "lab": [
+          0.6446,
+          0.1168,
+          -0.1746
+        ]
+      },
+      {
+        "id": "rupture",
+        "lab": [
+          0.6468,
+          0.202,
+          0.0668
+        ]
+      },
+      {
+        "id": "gold",
+        "lab": [
+          0.6524,
+          0.2099,
+          -0.0753
+        ]
+      }
+    ],
+    "hue12": [
+      0.1269,
+      0,
+      0.1006,
+      0,
+      0.11,
+      0,
+      0.0816,
+      0,
+      0.1778,
+      0,
+      0.265,
+      0.1382
+    ],
+    "lightness": [
+      0.3005,
+      0.3545,
+      0.7855,
+      0.6218,
+      0.6195,
+      0.6446,
+      0.6468,
+      0.6524
+    ]
+  }
+}

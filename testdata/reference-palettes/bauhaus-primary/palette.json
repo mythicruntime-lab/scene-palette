@@ -1,0 +1,609 @@
+{
+  "schema": 1,
+  "kind": "color-plate",
+  "name": "Bauhaus Primary",
+  "createdAt": "2026-08-28T00:00:00.000Z",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0",
+    "extraction": 4
+  },
+  "polarity": "light",
+  "lightScene": true,
+  "medianL": 0.9453,
+  "params": {
+    "budget": 140000,
+    "chromaMin": 0.085,
+    "foundInks": 6,
+    "polarityMode": "auto",
+    "variant": 0,
+    "variantCount": 5
+  },
+  "sources": [
+    {
+      "file": "bauhaus-primary.png",
+      "mime": "image/png",
+      "bytes": 393570,
+      "hash": {
+        "algo": "sha256",
+        "value": "30039bf141dd71376ecd0f931aebf386f155479062f8cd104f025ee78ef2d245"
+      },
+      "natural": [
+        384,
+        256
+      ],
+      "working": [
+        384,
+        256
+      ],
+      "transforms": [
+        {
+          "op": "decode",
+          "via": "sharp-raw-reference-harness"
+        }
+      ],
+      "path": "sources/01-bauhaus-primary.png"
+    }
+  ],
+  "stills": 1,
+  "tags": [],
+  "family": null,
+  "core": [
+    {
+      "key": "ground",
+      "id": "ground",
+      "name": "bone",
+      "job": "ground",
+      "hex": "#F1EAD8",
+      "rgb": [
+        241,
+        234,
+        216
+      ],
+      "r": 241,
+      "g": 234,
+      "b": 216,
+      "oklch": [
+        0.9377,
+        0.025,
+        89.2
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1,
+        "onPanel": 1.18
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.9,
+          1
+        ],
+        "raw": "#F1EAD8",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": []
+      }
+    },
+    {
+      "key": "panel",
+      "id": "panel",
+      "name": "linen",
+      "job": "panels",
+      "hex": "#DFD8C6",
+      "rgb": [
+        223,
+        216,
+        198
+      ],
+      "r": 223,
+      "g": 216,
+      "b": 198,
+      "oklch": [
+        0.8829,
+        0.0254,
+        89.2
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.18,
+        "onPanel": 1
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.7,
+          0.88
+        ],
+        "raw": "#F1EAD8",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "separate",
+            "against": "ground",
+            "minDeltaL": 0.035,
+            "from": "#F1EAD8",
+            "to": "#DFD8C6"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ink",
+      "id": "ink",
+      "name": "violet",
+      "job": "ink · voices",
+      "hex": "#635975",
+      "rgb": [
+        99,
+        89,
+        117
+      ],
+      "r": 99,
+      "g": 89,
+      "b": 117,
+      "oklch": [
+        0.4842,
+        0.0458,
+        301
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5.44,
+        "onPanel": 4.59
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0,
+          0.06
+        ],
+        "raw": "#7350A1",
+        "chromaCap": 0.045,
+        "capped": true,
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 4.5,
+            "from": "#695F7B",
+            "to": "#635975"
+          }
+        ]
+      }
+    },
+    {
+      "key": "muted",
+      "id": "muted",
+      "name": "ash",
+      "job": "meta · quiet",
+      "hex": "#7F7969",
+      "rgb": [
+        127,
+        121,
+        105
+      ],
+      "r": 127,
+      "g": 121,
+      "b": 105,
+      "oklch": [
+        0.5768,
+        0.0248,
+        89.9
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.61,
+        "onPanel": 3.05
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.34,
+          0.6
+        ],
+        "raw": "#F1EAD8",
+        "chromaCap": 0.07,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#F1EAD8",
+            "to": "#8B8575"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#8B8575",
+            "to": "#7F7969"
+          }
+        ]
+      }
+    },
+    {
+      "key": "observed",
+      "id": "observed",
+      "name": "night",
+      "job": "observed fact",
+      "hex": "#1E50C3",
+      "rgb": [
+        30,
+        80,
+        195
+      ],
+      "r": 30,
+      "g": 80,
+      "b": 195,
+      "oklch": [
+        0.4734,
+        0.1878,
+        263.3
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5.85,
+        "onPanel": 4.94
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#1E50C3",
+        "hueBin": 26,
+        "band": 1,
+        "area": 0.13792,
+        "salience": 1.31045,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "attention",
+      "id": "attention",
+      "name": "gold",
+      "job": "attention",
+      "hex": "#987400",
+      "rgb": [
+        152,
+        116,
+        0
+      ],
+      "r": 152,
+      "g": 116,
+      "b": 0,
+      "oklch": [
+        0.5785,
+        0.1183,
+        86.9
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.62,
+        "onPanel": 3.06
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#F6BD19",
+        "hueBin": 8,
+        "band": 2,
+        "area": 0.135792,
+        "salience": 1.00701,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#F6BD19",
+            "to": "#A77F00"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#A77F00",
+            "to": "#987400"
+          }
+        ]
+      }
+    },
+    {
+      "key": "rupture",
+      "id": "rupture",
+      "name": "orchid",
+      "job": "rupture only",
+      "hex": "#853BA9",
+      "rgb": [
+        133,
+        59,
+        169
+      ],
+      "r": 133,
+      "g": 59,
+      "b": 169,
+      "oklch": [
+        0.5004,
+        0.1759,
+        312.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5.48,
+        "onPanel": 4.62
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#853BA9",
+        "hueBin": 31,
+        "band": 1,
+        "area": 0.100713,
+        "salience": 0.982217,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "gold",
+      "id": "gold",
+      "name": "ember",
+      "job": "human acts only",
+      "hex": "#DD2C27",
+      "rgb": [
+        221,
+        44,
+        39
+      ],
+      "r": 221,
+      "g": 44,
+      "b": 39,
+      "oklch": [
+        0.5829,
+        0.2123,
+        28
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.92,
+        "onPanel": 3.31
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#DD2C27",
+        "hueBin": 2,
+        "band": 1,
+        "area": 0.13617,
+        "salience": 1.663709,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    }
+  ],
+  "found": [
+    {
+      "key": "found_1",
+      "name": "straw",
+      "job": "found ink",
+      "hex": "#F6BD19",
+      "rgb": [
+        246,
+        189,
+        25
+      ],
+      "r": 246,
+      "g": 189,
+      "b": 25,
+      "oklch": [
+        0.8275,
+        0.1653,
+        85.9
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.43,
+        "onPanel": 1.21
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#F6BD19",
+        "hueBin": 8,
+        "band": 2,
+        "area": 0.135792,
+        "salience": 1.00701,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    },
+    {
+      "key": "found_2",
+      "name": "emerald",
+      "job": "found ink",
+      "hex": "#14997E",
+      "rgb": [
+        20,
+        153,
+        126
+      ],
+      "r": 20,
+      "g": 153,
+      "b": 126,
+      "oklch": [
+        0.611,
+        0.1127,
+        173.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 2.97,
+        "onPanel": 2.51
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#14997E",
+        "hueBin": 17,
+        "band": 1,
+        "area": 0.096564,
+        "salience": 0.394585,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    }
+  ],
+  "notes": [
+    "bright still (median L 0.95) — built a light plate",
+    "panel stepped off ground — the still had no separate surface tone",
+    "plate 1 of 5 — remix for the others"
+  ],
+  "facets": {
+    "polarity": "light",
+    "groundL": 0.9377,
+    "medianL": 0.9453,
+    "dominantHue": 263,
+    "accentHues": [
+      263,
+      87,
+      313,
+      28
+    ],
+    "hueSpread": 176,
+    "chroma": {
+      "min": 0.0248,
+      "max": 0.2123,
+      "mean": 0.1093
+    },
+    "temperature": "cool",
+    "warmAccents": 1,
+    "coolAccents": 3,
+    "derivedSlots": 0,
+    "pickedSlots": 0,
+    "foundInks": 2,
+    "minContrastOnGround": 3.61,
+    "panelSeparationL": 0.0548
+  },
+  "signature": {
+    "version": 1,
+    "roles": [
+      {
+        "id": "ground",
+        "lab": [
+          0.9377,
+          0.0003,
+          0.025
+        ]
+      },
+      {
+        "id": "panel",
+        "lab": [
+          0.8829,
+          0.0003,
+          0.0254
+        ]
+      },
+      {
+        "id": "ink",
+        "lab": [
+          0.4842,
+          0.0236,
+          -0.0392
+        ]
+      },
+      {
+        "id": "muted",
+        "lab": [
+          0.5768,
+          0.0001,
+          0.0248
+        ]
+      },
+      {
+        "id": "observed",
+        "lab": [
+          0.4734,
+          -0.022,
+          -0.1865
+        ]
+      },
+      {
+        "id": "attention",
+        "lab": [
+          0.5785,
+          0.0064,
+          0.1181
+        ]
+      },
+      {
+        "id": "rupture",
+        "lab": [
+          0.5004,
+          0.1195,
+          -0.1291
+        ]
+      },
+      {
+        "id": "gold",
+        "lab": [
+          0.5829,
+          0.1875,
+          0.0996
+        ]
+      }
+    ],
+    "hue12": [
+      0.1968,
+      0,
+      0.3135,
+      0,
+      0,
+      0.1181,
+      0,
+      0,
+      0.1839,
+      0,
+      0.1877,
+      0
+    ],
+    "lightness": [
+      0.9377,
+      0.8829,
+      0.4842,
+      0.5768,
+      0.4734,
+      0.5785,
+      0.5004,
+      0.5829
+    ]
+  }
+}

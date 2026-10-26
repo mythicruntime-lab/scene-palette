@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "kind": "color-plate",
+  "name": "Night bay",
+  "createdAt": "2026-08-28T21:00:00.000Z",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0",
+    "extraction": 3
+  },
+  "polarity": "dark",
+  "lightScene": false,
+  "medianL": 0.18,
+  "params": {
+    "sampleBudget": 140000,
+    "signalFloor": 0.085,
+    "foundInks": 6,
+    "polarityMode": "auto",
+    "variant": 0,
+    "variantCount": 2
+  },
+  "sources": [
+    {
+      "file": "night-bay.png",
+      "mime": "image/png",
+      "bytes": 2048,
+      "hash": {
+        "algo": "sha256",
+        "value": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "natural": [1920, 1080],
+      "working": [1400, 788],
+      "transforms": [
+        {
+          "op": "resize",
+          "from": [1920, 1080],
+          "to": [1400, 788]
+        }
+      ],
+      "path": "sources/01-night-bay.png"
+    }
+  ],
+  "stills": 1,
+  "tags": ["night", "reference"],
+  "family": null,
+  "core": [
+    {
+      "key": "ground",
+      "id": "ground",
+      "name": "pitch",
+      "job": "page ground",
+      "hex": "#0B0D17",
+      "rgb": [11, 13, 23],
+      "r": 11,
+      "g": 13,
+      "b": 23,
+      "origin": {"kind": "structure", "quantile": 0.08}
+    },
+    {
+      "key": "panel",
+      "id": "panel",
+      "name": "bitumen",
+      "job": "raised surface",
+      "hex": "#151A28",
+      "rgb": [21, 26, 40],
+      "r": 21,
+      "g": 26,
+      "b": 40,
+      "origin": {"kind": "structure", "quantile": 0.2}
+    },
+    {
+      "key": "ink",
+      "id": "ink",
+      "name": "bone",
+      "job": "primary text",
+      "hex": "#F1EEE5",
+      "rgb": [241, 238, 229],
+      "r": 241,
+      "g": 238,
+      "b": 229,
+      "origin": {"kind": "structure", "quantile": 0.94}
+    },
+    {
+      "key": "muted",
+      "id": "muted",
+      "name": "ash",
+      "job": "secondary text",
+      "hex": "#A6A4B0",
+      "rgb": [166, 164, 176],
+      "r": 166,
+      "g": 164,
+      "b": 176,
+      "origin": {"kind": "structure", "quantile": 0.7}
+    },
+    {
+      "key": "observed",
+      "id": "observed",
+      "name": "cyan",
+      "job": "observed state",
+      "hex": "#38C4D8",
+      "rgb": [56, 196, 216],
+      "r": 56,
+      "g": 196,
+      "b": 216,
+      "origin": {"kind": "signal", "area": 0.07, "hueBin": 7}
+    },
+    {
+      "key": "attention",
+      "id": "attention",
+      "name": "coral",
+      "job": "attention state",
+      "hex": "#FF5A36",
+      "rgb": [255, 90, 54],
+      "r": 255,
+      "g": 90,
+      "b": 54,
+      "origin": {"kind": "signal", "area": 0.025, "hueBin": 1}
+    },
+    {
+      "key": "rupture",
+      "id": "rupture",
+      "name": "magenta",
+      "job": "error state",
+      "hex": "#EA2D66",
+      "rgb": [234, 45, 102],
+      "r": 234,
+      "g": 45,
+      "b": 102,
+      "origin": {"kind": "signal", "area": 0.012, "hueBin": 11}
+    },
+    {
+      "key": "gold",
+      "id": "gold",
+      "name": "amber",
+      "job": "human approval",
+      "hex": "#E3BC45",
+      "rgb": [227, 188, 69],
+      "r": 227,
+      "g": 188,
+      "b": 69,
+      "origin": {"kind": "picked", "still": {"file": "night-bay.png"}}
+    }
+  ],
+  "found": [
+    {
+      "key": "found_1",
+      "id": "found_1",
+      "name": "lime",
+      "job": "found ink",
+      "hex": "#68F07B",
+      "rgb": [104, 240, 123],
+      "r": 104,
+      "g": 240,
+      "b": 123,
+      "origin": {"kind": "signal", "area": 0.002}
+    }
+  ],
+  "notes": ["contract fixture"],
+  "facets": {
+    "polarity": "dark",
+    "groundL": 0.158,
+    "medianL": 0.18,
+    "dominantHue": 205,
+    "accentHues": [205, 31, 354, 86],
+    "hueSpread": 177,
+    "chroma": {"min": 0.018, "max": 0.228, "mean": 0.116},
+    "temperature": "mixed",
+    "warmAccents": 2,
+    "coolAccents": 2,
+    "derivedSlots": 0,
+    "pickedSlots": 1,
+    "foundInks": 1,
+    "minContrastOnGround": 7.12,
+    "panelSeparationL": 0.057
+  },
+  "signature": {
+    "version": 1,
+    "roles": [
+      {"id": "ground", "lab": [0.158, 0.003, -0.018]},
+      {"id": "panel", "lab": [0.215, 0.001, -0.025]},
+      {"id": "ink", "lab": [0.948, 0.001, 0.012]},
+      {"id": "muted", "lab": [0.73, 0.01, -0.018]},
+      {"id": "observed", "lab": [0.75, -0.11, -0.08]},
+      {"id": "attention", "lab": [0.7, 0.17, 0.12]},
+      {"id": "rupture", "lab": [0.62, 0.21, 0.04]},
+      {"id": "gold", "lab": [0.8, 0.01, 0.15]}
+    ],
+    "hue12": [0.16, 0.09, 0.12, 0.13, 0.08, 0.08, 0.1, 0.12, 0.02, 0.02, 0.03, 0.05],
+    "lightness": [0.158, 0.215, 0.948, 0.73, 0.75, 0.7, 0.62, 0.8]
+  }
+}

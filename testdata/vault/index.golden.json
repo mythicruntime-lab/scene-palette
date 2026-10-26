@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "kind": "palette-index",
+  "note": "Derived from each folder's palette.json. Safe to delete; rebuild from the folders.",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0"
+  },
+  "count": 2,
+  "entries": [
+    {
+      "name": "Day facade",
+      "path": "day-facade/palette.json",
+      "family": null,
+      "tags": [
+        "day",
+        "reference"
+      ],
+      "polarity": "light",
+      "createdAt": "2026-08-28T21:05:00.000Z",
+      "extraction": 3,
+      "sources": [
+        {
+          "file": "day-facade.jpg",
+          "hash": {
+            "algo": "sha256",
+            "value": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        }
+      ],
+      "roles": {
+        "attention": "#A34212",
+        "gold": "#806000",
+        "ground": "#F2EBD8",
+        "ink": "#24202B",
+        "muted": "#5F5966",
+        "observed": "#166B79",
+        "panel": "#E5DCC5",
+        "rupture": "#B51F35"
+      },
+      "facets": {
+        "polarity": "light",
+        "groundL": 0.942,
+        "medianL": 0.79,
+        "dominantHue": 194,
+        "accentHues": [
+          194,
+          39,
+          16,
+          82
+        ],
+        "hueSpread": 178,
+        "chroma": {
+          "min": 0.021,
+          "max": 0.174,
+          "mean": 0.091
+        },
+        "temperature": "mixed",
+        "warmAccents": 3,
+        "coolAccents": 1,
+        "derivedSlots": 0,
+        "pickedSlots": 0,
+        "foundInks": 0,
+        "minContrastOnGround": 4.72,
+        "panelSeparationL": 0.051
+      },
+      "signature": {
+        "version": 1,
+        "roles": [
+          {
+            "id": "ground",
+            "lab": [
+              0.942,
+              -0.002,
+              0.025
+            ]
+          },
+          {
+            "id": "panel",
+            "lab": [
+              0.891,
+              -0.001,
+              0.03
+            ]
+          },
+          {
+            "id": "ink",
+            "lab": [
+              0.245,
+              0.012,
+              -0.015
+            ]
+          },
+          {
+            "id": "muted",
+            "lab": [
+              0.475,
+              0.015,
+              -0.018
+            ]
+          },
+          {
+            "id": "observed",
+            "lab": [
+              0.5,
+              -0.075,
+              -0.055
+            ]
+          },
+          {
+            "id": "attention",
+            "lab": [
+              0.51,
+              0.12,
+              0.1
+            ]
+          },
+          {
+            "id": "rupture",
+            "lab": [
+              0.5,
+              0.17,
+              0.07
+            ]
+          },
+          {
+            "id": "gold",
+            "lab": [
+              0.54,
+              0.02,
+              0.12
+            ]
+          }
+        ],
+        "hue12": [
+          0.2,
+          0.1,
+          0.18,
+          0.08,
+          0.04,
+          0.04,
+          0.12,
+          0.12,
+          0.02,
+          0.02,
+          0.03,
+          0.05
+        ],
+        "lightness": [
+          0.942,
+          0.891,
+          0.245,
+          0.475,
+          0.5,
+          0.51,
+          0.5,
+          0.54
+        ]
+      }
+    },
+    {
+      "name": "Night bay",
+      "path": "night-bay/palette.json",
+      "family": null,
+      "tags": [
+        "night",
+        "reference"
+      ],
+      "polarity": "dark",
+      "createdAt": "2026-08-28T21:00:00.000Z",
+      "extraction": 3,
+      "sources": [
+        {
+          "file": "night-bay.png",
+          "hash": {
+            "algo": "sha256",
+            "value": "1111111111111111111111111111111111111111111111111111111111111111"
+          }
+        }
+      ],
+      "roles": {
+        "attention": "#FF5A36",
+        "gold": "#E3BC45",
+        "ground": "#0B0D17",
+        "ink": "#F1EEE5",
+        "muted": "#A6A4B0",
+        "observed": "#38C4D8",
+        "panel": "#151A28",
+        "rupture": "#EA2D66"
+      },
+      "facets": {
+        "polarity": "dark",
+        "groundL": 0.158,
+        "medianL": 0.18,
+        "dominantHue": 205,
+        "accentHues": [
+          205,
+          31,
+          354,
+          86
+        ],
+        "hueSpread": 177,
+        "chroma": {
+          "min": 0.018,
+          "max": 0.228,
+          "mean": 0.116
+        },
+        "temperature": "mixed",
+        "warmAccents": 2,
+        "coolAccents": 2,
+        "derivedSlots": 0,
+        "pickedSlots": 1,
+        "foundInks": 1,
+        "minContrastOnGround": 7.12,
+        "panelSeparationL": 0.057
+      },
+      "signature": {
+        "version": 1,
+        "roles": [
+          {
+            "id": "ground",
+            "lab": [
+              0.158,
+              0.003,
+              -0.018
+            ]
+          },
+          {
+            "id": "panel",
+            "lab": [
+              0.215,
+              0.001,
+              -0.025
+            ]
+          },
+          {
+            "id": "ink",
+            "lab": [
+              0.948,
+              0.001,
+              0.012
+            ]
+          },
+          {
+            "id": "muted",
+            "lab": [
+              0.73,
+              0.01,
+              -0.018
+            ]
+          },
+          {
+            "id": "observed",
+            "lab": [
+              0.75,
+              -0.11,
+              -0.08
+            ]
+          },
+          {
+            "id": "attention",
+            "lab": [
+              0.7,
+              0.17,
+              0.12
+            ]
+          },
+          {
+            "id": "rupture",
+            "lab": [
+              0.62,
+              0.21,
+              0.04
+            ]
+          },
+          {
+            "id": "gold",
+            "lab": [
+              0.8,
+              0.01,
+              0.15
+            ]
+          }
+        ],
+        "hue12": [
+          0.16,
+          0.09,
+          0.12,
+          0.13,
+          0.08,
+          0.08,
+          0.1,
+          0.12,
+          0.02,
+          0.02,
+          0.03,
+          0.05
+        ],
+        "lightness": [
+          0.158,
+          0.215,
+          0.948,
+          0.73,
+          0.75,
+          0.7,
+          0.62,
+          0.8
+        ]
+      }
+    }
+  ]
+}

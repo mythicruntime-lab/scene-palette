@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scene Palette — directory backend probe</title>
+<style>
+  :root { --bg:#100f0c; --panel:#191712; --ink:#e8e1d2; --dim:#8d8474; --line:#2c271f;
+          --ok:#5ea88f; --bad:#c25a4a; --warn:#d2ab4c;
+          --mono:ui-monospace,Consolas,monospace; --sans:"Segoe UI",system-ui,sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.6 var(--sans); padding:26px; }
+  h1 { font:600 22px Georgia,serif; margin:0 0 4px; }
+  p.sub { color:var(--dim); margin:0 0 20px; max-width:70ch; }
+  table { border-collapse:collapse; width:100%; max-width:820px; margin-bottom:18px; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+  th { font:600 10px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--dim); }
+  td.k { font-family:var(--mono); color:var(--dim); white-space:nowrap; }
+  .yes { color:var(--ok); font-weight:600; }
+  .no  { color:var(--bad); font-weight:600; }
+  .maybe { color:var(--warn); font-weight:600; }
+  button { background:var(--ink); color:#12100b; border:0; border-radius:3px;
+           padding:9px 15px; font:600 13px var(--sans); cursor:pointer; margin-right:8px; }
+  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
+  #verdict { border:1px solid var(--line); border-radius:4px; padding:14px 16px; background:var(--panel);
+             max-width:820px; margin-bottom:18px; }
+  #verdict b { font-size:15px; }
+  textarea { width:100%; max-width:820px; height:190px; background:#0b0a08; color:var(--ink);
+             border:1px solid var(--line); border-radius:4px; padding:11px; font:12px/1.5 var(--mono); }
+</style>
+</head>
+<body>
+  <h1>Directory backend probe</h1>
+  <p class="sub">
+    Decides how the palette vault writes to disk. Open this the same way you open the tool —
+    double-click it, so it runs from <code>file://</code>. Static checks run on load; the two buttons
+    need a real click because the browser will not open a picker without one.
+  </p>
+
+  <div id="verdict"><b>Running static checks…</b></div>
+
+  <table id="tbl"><thead><tr><th>Capability</th><th>Result</th><th>Why it matters</th></tr></thead>
+    <tbody id="rows"></tbody></table>
+
+  <p>
+    <button id="pick">Try to pick a vault folder</button>
+    <button id="persist" class="ghost">Test handle persistence</button>
+    <button id="copy" class="ghost">Copy report</button>
+  </p>
+
+  <textarea id="out" readonly spellcheck="false"></textarea>
+
+<script>
+"use strict";
+const R = {}, rows = document.getElementById("rows");
+const cell = (v) => v === true ? '<span class="yes">yes</span>'
+                  : v === false ? '<span class="no">no</span>'
+                  : '<span class="maybe">' + String(v) + "</span>";
+function add(key, value, why) {
+  R[key] = value;
+  rows.insertAdjacentHTML("beforeend",
+    `<tr><td class="k">${key}</td><td>${cell(value)}</td><td style="color:var(--dim)">${why}</td></tr>`);
+  dump();
+}
+function dump() {
+  document.getElementById("out").value = JSON.stringify(R, null, 2);
+}
+
+add("protocol", location.protocol, "must be file: for this test to mean anything");
+add("isSecureContext", window.isSecureContext,
+    "gates showDirectoryPicker, crypto.subtle and more");
+add("showDirectoryPicker", typeof window.showDirectoryPicker === "function",
+    "the whole directory backend depends on this");
+add("showSaveFilePicker", typeof window.showSaveFilePicker === "function",
+    "fallback: save one bundle without a folder grant");
+add("indexedDB", (() => { try { return !!window.indexedDB; } catch (e) { return false; } })(),
+    "the only place a directory handle can be kept between sessions");
+add("crypto.subtle", !!(window.crypto && window.crypto.subtle && window.crypto.subtle.digest),
+    "sha256 source hashing — otherwise the bundle falls back to fnv1a64");
+add("localStorage", (() => {
+      try { localStorage.setItem("__p", "1"); localStorage.removeItem("__p"); return true; }
+      catch (e) { return "blocked: " + e.name; }
+    })(), "the shelf cache (not the vault)");
+add("Blob+URL download", typeof URL.createObjectURL === "function",
+    "the ZIP fallback path");
+
+(async () => {
+  try {
+    const d = await crypto.subtle.digest("SHA-256", new Uint8Array([1,2,3]));
+    add("sha256 actually runs", Array.from(new Uint8Array(d)).slice(0,4)
+        .map(b => b.toString(16).padStart(2,"0")).join(""), "not just present — actually computes");
+  } catch (e) { add("sha256 actually runs", "threw: " + e.name, "falls back to fnv1a64"); }
+  verdict();
+})();
+
+function verdict() {
+  const dir = R["showDirectoryPicker"] === true;
+  const idb = R["indexedDB"] === true;
+  const el = document.getElementById("verdict");
+  if (dir && idb) {
+    el.innerHTML = "<b style='color:var(--ok)'>Directory backend looks available.</b><br>" +
+      "Click <b>Try to pick a vault folder</b> to confirm the picker actually opens from file:// — " +
+      "presence is not the same as permitted.";
+  } else if (!dir) {
+    el.innerHTML = "<b style='color:var(--warn)'>No directory backend here.</b><br>" +
+      "<code>showDirectoryPicker</code> is missing, so the vault ships as ZIP bundles. " +
+      "The bundle format is identical either way — only the write path differs.";
+  } else {
+    el.innerHTML = "<b style='color:var(--warn)'>Picker present, but no IndexedDB.</b><br>" +
+      "You would have to re-grant the folder every session, which is exactly the friction that kills it. " +
+      "ZIP is the better path here.";
+  }
+}
+
+document.getElementById("pick").onclick = async () => {
+  if (typeof window.showDirectoryPicker !== "function") {
+    add("picker opened", "unavailable", "nothing to click"); return;
+  }
+  try {
+    const h = await window.showDirectoryPicker({ mode: "readwrite", id: "scene-palette-vault" });
+    add("picker opened", true, "the native folder dialog appeared and returned a handle");
+    add("granted folder", h.name, "the directory the vault would live in");
+    let perm = "unknown";
+    try { perm = await h.queryPermission({ mode: "readwrite" }); } catch (e) { perm = "query failed"; }
+    add("readwrite permission", perm, "must be 'granted' to write bundles");
+    try {
+      const sub = await h.getDirectoryHandle("__scene_palette_probe", { create: true });
+      const f = await sub.getFileHandle("probe.txt", { create: true });
+      const w = await f.createWritable();
+      await w.write("scene palette probe " + new Date().toISOString());
+      await w.close();
+      add("wrote a real file", true, "__scene_palette_probe/probe.txt — delete it when you like");
+      window.__probeHandle = h;
+    } catch (e) { add("wrote a real file", "threw: " + e.name + " — " + e.message, "write path blocked"); }
+  } catch (e) {
+    add("picker opened", e.name === "AbortError" ? "cancelled by you" : "threw: " + e.name + " — " + e.message,
+        e.name === "SecurityError" ? "file:// is not allowed to open the picker" : "");
+  }
+};
+
+document.getElementById("persist").onclick = async () => {
+  if (!window.indexedDB) { add("handle persisted", false, "no IndexedDB"); return; }
+  const h = window.__probeHandle;
+  if (!h) { add("handle persisted", "pick a folder first", "nothing to store"); return; }
+  try {
+    const db = await new Promise((res, rej) => {
+      const rq = indexedDB.open("scene-palette-probe", 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore("h");
+      rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error);
+    });
+    await new Promise((res, rej) => {
+      const tx = db.transaction("h", "readwrite");
+      tx.objectStore("h").put(h, "vault");
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+    const back = await new Promise((res, rej) => {
+      const tx = db.transaction("h", "readonly");
+      const rq = tx.objectStore("h").get("vault");
+      rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error);
+    });
+    add("handle persisted", !!back && typeof back.getDirectoryHandle === "function",
+        "a stored handle survives a reload — this is what makes Save one click");
+    if (back) {
+      let p = "unknown";
+      try { p = await back.queryPermission({ mode: "readwrite" }); } catch (e) { p = "query failed"; }
+      add("permission after restore", p, "'prompt' means one click per session; 'granted' means none");
+    }
+  } catch (e) { add("handle persisted", "threw: " + e.name + " — " + e.message, ""); }
+};
+
+document.getElementById("copy").onclick = () => {
+  const ta = document.getElementById("out");
+  ta.select();
+  try { document.execCommand("copy"); document.getElementById("copy").textContent = "Copied"; }
+  catch (e) { /* select is enough */ }
+};
+</script>
+</body>
+</html>

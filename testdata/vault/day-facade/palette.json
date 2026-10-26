@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "kind": "color-plate",
+  "name": "Day facade",
+  "createdAt": "2026-08-28T21:05:00.000Z",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0",
+    "extraction": 3
+  },
+  "polarity": "light",
+  "lightScene": true,
+  "medianL": 0.79,
+  "params": {
+    "sampleBudget": 140000,
+    "signalFloor": 0.085,
+    "foundInks": 6,
+    "polarityMode": "auto",
+    "variant": 0,
+    "variantCount": 1
+  },
+  "sources": [
+    {
+      "file": "day-facade.jpg",
+      "mime": "image/jpeg",
+      "bytes": 3072,
+      "hash": {
+        "algo": "sha256",
+        "value": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "natural": [1600, 900],
+      "working": [1400, 788],
+      "transforms": [
+        {
+          "op": "resize",
+          "from": [1600, 900],
+          "to": [1400, 788]
+        }
+      ],
+      "path": "sources/01-day-facade.jpg"
+    }
+  ],
+  "stills": 1,
+  "tags": ["day", "reference"],
+  "family": null,
+  "core": [
+    {
+      "key": "ground",
+      "id": "ground",
+      "name": "linen",
+      "job": "page ground",
+      "hex": "#F2EBD8",
+      "rgb": [242, 235, 216],
+      "r": 242,
+      "g": 235,
+      "b": 216,
+      "origin": {"kind": "structure", "quantile": 0.92}
+    },
+    {
+      "key": "panel",
+      "id": "panel",
+      "name": "wheat",
+      "job": "raised surface",
+      "hex": "#E5DCC5",
+      "rgb": [229, 220, 197],
+      "r": 229,
+      "g": 220,
+      "b": 197,
+      "origin": {"kind": "structure", "quantile": 0.78}
+    },
+    {
+      "key": "ink",
+      "id": "ink",
+      "name": "bitumen",
+      "job": "primary text",
+      "hex": "#24202B",
+      "rgb": [36, 32, 43],
+      "r": 36,
+      "g": 32,
+      "b": 43,
+      "origin": {"kind": "structure", "quantile": 0.08}
+    },
+    {
+      "key": "muted",
+      "id": "muted",
+      "name": "graphite",
+      "job": "secondary text",
+      "hex": "#5F5966",
+      "rgb": [95, 89, 102],
+      "r": 95,
+      "g": 89,
+      "b": 102,
+      "origin": {"kind": "structure", "quantile": 0.28}
+    },
+    {
+      "key": "observed",
+      "id": "observed",
+      "name": "petrol",
+      "job": "observed state",
+      "hex": "#166B79",
+      "rgb": [22, 107, 121],
+      "r": 22,
+      "g": 107,
+      "b": 121,
+      "origin": {"kind": "signal", "area": 0.09, "hueBin": 7}
+    },
+    {
+      "key": "attention",
+      "id": "attention",
+      "name": "rust",
+      "job": "attention state",
+      "hex": "#A34212",
+      "rgb": [163, 66, 18],
+      "r": 163,
+      "g": 66,
+      "b": 18,
+      "origin": {"kind": "signal", "area": 0.035, "hueBin": 1}
+    },
+    {
+      "key": "rupture",
+      "id": "rupture",
+      "name": "crimson",
+      "job": "error state",
+      "hex": "#B51F35",
+      "rgb": [181, 31, 53],
+      "r": 181,
+      "g": 31,
+      "b": 53,
+      "origin": {"kind": "signal", "area": 0.018, "hueBin": 0}
+    },
+    {
+      "key": "gold",
+      "id": "gold",
+      "name": "bronze",
+      "job": "human approval",
+      "hex": "#806000",
+      "rgb": [128, 96, 0],
+      "r": 128,
+      "g": 96,
+      "b": 0,
+      "origin": {"kind": "signal", "area": 0.05, "hueBin": 2}
+    }
+  ],
+  "found": [],
+  "notes": ["contract fixture"],
+  "facets": {
+    "polarity": "light",
+    "groundL": 0.942,
+    "medianL": 0.79,
+    "dominantHue": 194,
+    "accentHues": [194, 39, 16, 82],
+    "hueSpread": 178,
+    "chroma": {"min": 0.021, "max": 0.174, "mean": 0.091},
+    "temperature": "mixed",
+    "warmAccents": 3,
+    "coolAccents": 1,
+    "derivedSlots": 0,
+    "pickedSlots": 0,
+    "foundInks": 0,
+    "minContrastOnGround": 4.72,
+    "panelSeparationL": 0.051
+  },
+  "signature": {
+    "version": 1,
+    "roles": [
+      {"id": "ground", "lab": [0.942, -0.002, 0.025]},
+      {"id": "panel", "lab": [0.891, -0.001, 0.03]},
+      {"id": "ink", "lab": [0.245, 0.012, -0.015]},
+      {"id": "muted", "lab": [0.475, 0.015, -0.018]},
+      {"id": "observed", "lab": [0.5, -0.075, -0.055]},
+      {"id": "attention", "lab": [0.51, 0.12, 0.1]},
+      {"id": "rupture", "lab": [0.5, 0.17, 0.07]},
+      {"id": "gold", "lab": [0.54, 0.02, 0.12]}
+    ],
+    "hue12": [0.2, 0.1, 0.18, 0.08, 0.04, 0.04, 0.12, 0.12, 0.02, 0.02, 0.03, 0.05],
+    "lightness": [0.942, 0.891, 0.245, 0.475, 0.5, 0.51, 0.5, 0.54]
+  }
+}

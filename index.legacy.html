@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scene Palette — still → reserved plate</title>
+  <script src="vendor/color-thief.umd.js"></script>
+  <style>
+    :root {
+      --bg: #100f0c;
+      --panel: #1b1914;
+      --ink: #e8e1d2;
+      --muted: #6e6656;
+      --line: #2c271f;
+      --accent: #5ea88f;
+      --gold: #d2ab4c;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: "Segoe UI", system-ui, sans-serif;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+    header {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+      padding: 18px 22px 14px; border-bottom: 1px solid var(--line);
+    }
+    .eyebrow { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+    h1 { font-family: var(--serif); font-size: 26px; font-weight: 600; margin: 0; }
+    .sub { color: var(--muted); font-size: 13px; margin: 6px 0 0; max-width: 58ch; line-height: 1.45; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+    button, select, input[type="text"] {
+      background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+      border-radius: 4px; padding: 8px 12px; font: 600 12px var(--sans); cursor: pointer;
+    }
+    input[type="text"] { cursor: text; }
+    button.primary { background: var(--ink); color: var(--bg); border-color: transparent; }
+    button.ghost { background: transparent; }
+    .wrap { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 102px); }
+    @media (max-width: 980px) { .wrap { grid-template-columns: 1fr; } }
+    aside { border-right: 1px solid var(--line); padding: 16px 18px 36px; }
+    .drop {
+      border: 1px dashed var(--muted); padding: 18px 10px; text-align: center;
+      color: var(--muted); cursor: pointer; font-size: 13px;
+    }
+    .drop.hot { border-color: var(--gold); color: var(--ink); }
+    .thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .thumb { position: relative; border: 1px solid var(--line); aspect-ratio: 16/10; overflow: hidden; background: #000; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: crosshair; }
+    .thumb button.x { position: absolute; top: 4px; right: 4px; padding: 2px 7px; font-size: 11px; background: #000c; }
+    label.row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 14px 0 6px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    }
+    input[type="range"] { width: 100%; }
+    .hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 12px; }
+    main { padding: 18px 22px 56px; }
+    .empty { color: var(--muted); padding: 40px 6px; max-width: 58ch; line-height: 1.55; }
+    .plate { border: 1px solid var(--line); background: var(--panel); }
+    .plate-head {
+      display: flex; justify-content: space-between; gap: 12px; align-items: baseline;
+      padding: 11px 14px; border-bottom: 1px solid var(--line);
+      font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+    }
+    .chips { display: grid; grid-template-columns: repeat(8, 1fr); }
+    @media (max-width: 1100px) { .chips { grid-template-columns: repeat(4, 1fr); } }
+    .cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+    .sw { height: 68px; cursor: pointer; }
+    .info { padding: 8px 9px 10px; }
+    .info input.name, .info input.job {
+      width: 100%; background: transparent; border: 0; padding: 0; color: var(--ink);
+    }
+    .info input.name { font: 650 12px var(--sans); text-transform: lowercase; }
+    .info input.job { font: italic 12px var(--serif); color: var(--muted); }
+    .hex { font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 2px 0 3px; cursor: pointer; }
+    .found-wrap { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
+    .found-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .found { display: flex; flex-wrap: wrap; gap: 8px; }
+    .found .pill {
+      display: flex; align-items: center; gap: 8px; border: 1px solid var(--line);
+      padding: 4px 8px 4px 4px; font-size: 11px; font-family: var(--mono);
+    }
+    .found i { width: 22px; height: 22px; display: block; }
+    .voices { }
+    .voice {
+      display: grid; grid-template-columns: 130px 1fr; gap: 14px;
+      padding: 12px 14px; border-top: 1px solid var(--line);
+    }
+    .voice .k { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .voice .k small { display: block; margin-top: 3px; letter-spacing: .06em; }
+    .human { font-family: var(--serif); font-size: 15px; line-height: 1.4; }
+    .machine { font-size: 13px; }
+    .record { font-family: var(--mono); font-size: 12px; line-height: 1.5; }
+    .law { padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); line-height: 1.55; }
+    h2 { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
+    .harness {
+      display: grid; grid-template-columns: 200px 1fr; border: 1px solid var(--line);
+      background: var(--p-ground, #100f0c); color: var(--p-ink, #e8e1d2); min-height: 280px;
+    }
+    @media (max-width: 800px) { .harness { grid-template-columns: 1fr; } }
+    .h-side { border-right: 1px solid color-mix(in srgb, var(--p-muted) 55%, transparent); background: var(--p-panel); }
+    .h-brand {
+      padding: 10px 12px; border-bottom: 1px solid color-mix(in srgb, var(--p-muted) 55%, transparent);
+      font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--p-muted);
+    }
+    .h-brand strong { display: block; color: var(--p-ink); letter-spacing: .08em; margin-top: 2px; font-size: 12px; }
+    .agent {
+      display: grid; grid-template-columns: 8px 1fr auto; gap: 8px; align-items: center;
+      padding: 8px 12px; border-bottom: 1px solid color-mix(in srgb, var(--p-muted) 35%, transparent);
+      font-size: 12px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--p-muted); }
+    .dot.live { background: var(--p-observed); box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-observed) 25%, transparent); }
+    .dot.wait { background: var(--p-attention); }
+    .dot.err { background: var(--p-rupture); }
+    .agent .role { color: var(--p-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .h-main { display: flex; flex-direction: column; min-width: 0; }
+    .h-top {
+      display: flex; justify-content: space-between; gap: 10px; align-items: center;
+      padding: 9px 12px; border-bottom: 1px solid color-mix(in srgb, var(--p-muted) 55%, transparent);
+      font-family: var(--mono); font-size: 11px; color: var(--p-muted);
+    }
+    .pill {
+      display: inline-block; padding: 2px 7px; border: 1px solid var(--p-observed);
+      color: var(--p-observed); letter-spacing: .08em; text-transform: uppercase; font-size: 10px;
+    }
+    .trace { padding: 12px; font-family: var(--mono); font-size: 12px; line-height: 1.55; flex: 1; }
+    .trace .dim { color: var(--p-muted); }
+    .trace .ok { color: var(--p-observed); }
+    .trace .warn { color: var(--p-attention); }
+    .trace .bad { color: var(--p-rupture); }
+    .trace .gold { color: var(--p-gold); }
+    .h-foot {
+      display: flex; justify-content: space-between; gap: 10px; align-items: center;
+      padding: 10px 12px; border-top: 1px solid color-mix(in srgb, var(--p-muted) 55%, transparent);
+    }
+    .pbtn { border: 0; padding: 6px 10px; font: 700 11px var(--sans); cursor: default; }
+    .pbtn.pri { background: var(--p-attention); color: #140f08; }
+    .pbtn.acc { background: var(--p-observed); color: #07140f; }
+    .pbtn.ghost { background: transparent; color: var(--p-ink); border: 1px solid color-mix(in srgb, var(--p-muted) 70%, transparent); }
+    .bar { flex: 1; height: 6px; background: color-mix(in srgb, var(--p-panel) 80%, #000); margin: 0 10px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 58%; background: var(--p-gold); }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    textarea {
+      width: 100%; min-height: 160px; background: #0b0a08; color: var(--ink);
+      border: 1px solid var(--line); padding: 12px; font: 12px/1.45 var(--mono);
+    }
+    .toast {
+      position: fixed; bottom: 16px; right: 16px; background: #0b0a08;
+      border: 1px solid var(--gold); color: var(--gold); padding: 8px 12px; font-size: 12px; display: none;
+    }
+    .eyedrop-note { font-size: 11px; color: var(--gold); margin-top: 8px; display: none; }
+    .contrast { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Plate extractor</p>
+      <h1>Scene Palette</h1>
+      <p class="sub">Eight reserved words for the theme. Extra found inks for the neons k-means always averages away. Click a still to lock a pixel.</p>
+    </div>
+    <div class="toolbar">
+      <button class="ghost" id="clearAll">Clear</button>
+      <button class="primary" id="extractBtn">Forge plate</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <aside>
+      <div class="drop" id="drop">
+        Drop stills — day facade and night bay can be two plates, or one merged set
+        <input type="file" id="file" accept="image/*" multiple hidden />
+      </div>
+      <div class="eyedrop-note" id="eyeNote">Eyedrop armed. Click a pixel to pin it as a found ink.</div>
+      <div class="thumbs" id="thumbs"></div>
+      <label class="row"><span>Plate name</span></label>
+      <input type="text" id="plateName" value="Night bay" style="width:100%" />
+      <label class="row"><span>Found inks</span><span id="extraLabel">6</span></label>
+      <input type="range" id="extra" min="0" max="8" value="6" />
+      <label class="row"><span>Quality</span>
+        <select id="quality">
+          <option value="8">Fast</option>
+          <option value="4" selected>Balanced</option>
+          <option value="2">Accurate</option>
+        </select>
+      </label>
+      <p class="hint">
+        Core eight stay in role slots (ground → gold). Found inks are the rare high-chroma hits — lime cuff, cyan sign, magenta テル — kept even when they own almost no pixels.
+      </p>
+      <div class="contrast" id="contrast"></div>
+    </aside>
+    <main>
+      <div id="empty" class="empty">
+        Drop the Edgerunners stills. Forge. If “observed” is just another orange, click the lime stripe or the hotel neon. That pixel becomes law.
+      </div>
+      <div id="results" hidden>
+        <div class="plate" id="plate">
+          <div class="plate-head">
+            <span id="plateId">Plate</span>
+            <span>core eight · every hue a reserved word</span>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="found-wrap" id="foundWrap" hidden>
+            <div class="found-label">Found inks — not roles, just paint the still refused to hide</div>
+            <div class="found" id="found"></div>
+          </div>
+          <div class="voice">
+            <div class="k">Human voice<small>source serif</small></div>
+            <div class="human" id="vHuman">Your words, your charters. The human register is a serif.</div>
+          </div>
+          <div class="voice">
+            <div class="k">Machine voice<small>harness chrome</small></div>
+            <div class="machine" id="vMachine">Agent speech. Capable, plain, never confused with the record.</div>
+          </div>
+          <div class="voice">
+            <div class="k">The record<small>mono</small></div>
+            <div class="record" id="vRecord">run · extract · seal · signed entries only</div>
+          </div>
+          <div class="law" id="law"></div>
+        </div>
+
+        <h2>Harness preview</h2>
+        <div class="harness" id="harness">
+          <div class="h-side">
+            <div class="h-brand">Agent harness<strong id="hName">Night bay</strong></div>
+            <div class="agent"><span class="dot live"></span><span>forge<small class="role" style="display:block">color compiler</small></span><span class="role">live</span></div>
+            <div class="agent"><span class="dot wait"></span><span>scout<small class="role" style="display:block">still watch</small></span><span class="role">idle</span></div>
+            <div class="agent"><span class="dot"></span><span>scribe<small class="role" style="display:block">theme export</small></span><span class="role">hold</span></div>
+            <div class="agent"><span class="dot err"></span><span>warden<small class="role" style="display:block">rupture watch</small></span><span class="role">arm</span></div>
+          </div>
+          <div class="h-main">
+            <div class="h-top">
+              <span>run #4821 · plate extract</span>
+              <span class="pill">sealed once</span>
+            </div>
+            <div class="trace" id="trace"></div>
+            <div class="h-foot">
+              <div>
+                <button class="pbtn pri">Seal plate</button>
+                <button class="pbtn acc">Export pack</button>
+                <button class="pbtn ghost">Trace</button>
+              </div>
+              <div class="bar" title="token budget"><span></span></div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Export</h2>
+        <div class="tabs">
+          <button data-fmt="css" class="primary">CSS tokens</button>
+          <button data-fmt="godot">Godot 4 pack</button>
+          <button data-fmt="json">JSON plate</button>
+          <button data-fmt="gpl">GPL</button>
+          <button data-fmt="hex">HEX</button>
+        </div>
+        <textarea id="export" readonly></textarea>
+        <div class="toolbar" style="margin-top:8px">
+          <button class="primary" id="copyBtn">Copy</button>
+          <button id="downloadBtn">Download</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast">Copied</div>
+<script>
+const thief = new ColorThief();
+const JOBS = [
+  { id: "ground",    fallback: "bitumen",   job: "ground" },
+  { id: "panel",     fallback: "lacquer",   job: "panels" },
+  { id: "ink",       fallback: "bone",      job: "ink · voices" },
+  { id: "muted",     fallback: "umber",     job: "meta · quiet" },
+  { id: "observed",  fallback: "verdigris", job: "observed fact" },
+  { id: "attention", fallback: "ochre",     job: "attention" },
+  { id: "rupture",   fallback: "rust",      job: "rupture only" },
+  { id: "gold",      fallback: "gold",      job: "human acts only" }
+];
+
+const state = { files: [], core: [], found: [], fmt: "css" };
+const $ = (id) => document.getElementById(id);
+
+$("drop").onclick = () => $("file").click();
+["dragenter","dragover"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.add("hot"); }));
+["dragleave","drop"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.remove("hot"); }));
+$("drop").addEventListener("drop", e => addFiles(e.dataTransfer.files));
+$("file").addEventListener("change", e => addFiles(e.target.files));
+$("extra").oninput = () => $("extraLabel").textContent = $("extra").value;
+$("extractBtn").onclick = extract;
+$("clearAll").onclick = clearAll;
+$("plateName").oninput = () => { if (state.core.length) render(); };
+$("copyBtn").onclick = () => { navigator.clipboard.writeText($("export").value); toast("Copied"); };
+$("downloadBtn").onclick = downloadExport;
+document.querySelectorAll("[data-fmt]").forEach(btn => {
+  btn.onclick = () => {
+    state.fmt = btn.dataset.fmt;
+    document.querySelectorAll("[data-fmt]").forEach(b => b.classList.toggle("primary", b === btn));
+    writeExport();
+  };
+});
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 1400);
+}
+function rgbToHex(r,g,b) {
+  return "#" + [r,g,b].map(v => Math.max(0,Math.min(255,v|0)).toString(16).padStart(2,"0")).join("").toUpperCase();
+}
+function luma(c) { return 0.2126*c.r + 0.7152*c.g + 0.0722*c.b; }
+function sat(c) {
+  const max = Math.max(c.r,c.g,c.b)/255, min = Math.min(c.r,c.g,c.b)/255;
+  const l = (max+min)/2, d = max-min;
+  return d === 0 ? 0 : d / (1 - Math.abs(2*l - 1));
+}
+function hue(c) {
+  const r=c.r/255,g=c.g/255,b=c.b/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  if (!d) return 0;
+  let h = max===r ? ((g-b)/d)%6 : max===g ? (b-r)/d+2 : (r-g)/d+4;
+  return (h*60+360)%360;
+}
+function dist(a,b) {
+  const dr=a.r-b.r,dg=a.g-b.g,db=a.b-b.b;
+  return Math.sqrt(dr*dr+dg*dg+db*db);
+}
+function hueDist(a,b) {
+  let d = Math.abs(hue(a)-hue(b));
+  return Math.min(d, 360-d);
+}
+function waitImg(img) {
+  if (img.complete && img.naturalWidth) return Promise.resolve();
+  return new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+}
+function nameFromHue(c) {
+  if (sat(c) < 0.14) {
+    if (luma(c) < 40) return "bitumen";
+    if (luma(c) < 90) return "lacquer";
+    if (luma(c) > 200) return "bone";
+    return "umber";
+  }
+  const h = hue(c);
+  if (h < 18 || h >= 345) return "rust";
+  if (h < 45) return "ember";
+  if (h < 70) return "ochre";
+  if (h < 95) return "gold";
+  if (h < 135) return "lime";
+  if (h < 165) return "verdigris";
+  if (h < 195) return "teal";
+  if (h < 230) return "signal";
+  if (h < 265) return "night";
+  if (h < 300) return "violet";
+  if (h < 345) return "neon";
+  return "chroma";
+}
+function contrastRatio(a,b) {
+  const L = (c) => {
+    const lin = [c.r,c.g,c.b].map(v => {
+      v/=255; return v<=0.04045 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+    });
+    return 0.2126*lin[0]+0.7152*lin[1]+0.0722*lin[2];
+  };
+  const L1 = L(a)+0.05, L2 = L(b)+0.05;
+  return (Math.max(L1,L2)/Math.min(L1,L2));
+}
+
+function addFiles(list) {
+  [...list].filter(f => f.type.startsWith("image/")).forEach(f => {
+    if (state.files.length >= 6) return;
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.src = url;
+    state.files.push({ id: crypto.randomUUID(), name: f.name, url, img });
+  });
+  renderThumbs();
+}
+
+function renderThumbs() {
+  $("thumbs").innerHTML = state.files.map(f => `
+    <div class="thumb">
+      <img src="${f.url}" alt="" data-id="${f.id}">
+      <button class="x" data-id="${f.id}">✕</button>
+    </div>`).join("");
+  $("thumbs").querySelectorAll("button.x").forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      state.files = state.files.filter(x => x.id !== b.dataset.id);
+      renderThumbs();
+    };
+  });
+  $("thumbs").querySelectorAll("img").forEach(img => {
+    img.onclick = (ev) => {
+      const file = state.files.find(x => x.id === img.dataset.id);
+      if (!file) return;
+      injectExact(samplePixel(file.img, ev, img));
+    };
+  });
+}
+
+function samplePixel(imgEl, ev, displayEl) {
+  const canvas = document.createElement("canvas");
+  canvas.width = imgEl.naturalWidth; canvas.height = imgEl.naturalHeight;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(imgEl, 0, 0);
+  const rect = displayEl.getBoundingClientRect();
+  const x = Math.max(0, Math.min(canvas.width-1, Math.floor((ev.clientX-rect.left)/rect.width*canvas.width)));
+  const y = Math.max(0, Math.min(canvas.height-1, Math.floor((ev.clientY-rect.top)/rect.height*canvas.height)));
+  const p = ctx.getImageData(x,y,1,1).data;
+  return { r:p[0], g:p[1], b:p[2] };
+}
+
+function injectExact(c) {
+  if (!state.core.length) { toast("Forge first, then click the still"); return; }
+  const token = {
+    id: "found_" + (state.found.length+1),
+    name: nameFromHue(c),
+    job: "found ink",
+    r:c.r,g:c.g,b:c.b, hex: rgbToHex(c.r,c.g,c.b), locked: true
+  };
+  // if very close to an existing found, replace it
+  const hit = state.found.findIndex(t => dist(t,c) < 18);
+  if (hit >= 0) state.found[hit] = token;
+  else state.found.unshift(token);
+  toast("Pinned " + token.hex + " · " + token.name);
+  render();
+}
+
+function clearAll() {
+  state.files.forEach(f => URL.revokeObjectURL(f.url));
+  state.files = []; state.core = []; state.found = [];
+  renderThumbs();
+  $("results").hidden = true;
+  $("empty").hidden = false;
+}
+
+function mergeBag(bag, thresh=26) {
+  const merged = [];
+  bag.forEach(c => {
+    const hit = merged.find(m => dist(m,c) < thresh);
+    if (!hit) merged.push({ ...c, n: c.n || 1 });
+    else {
+      const n = hit.n + (c.n||1);
+      hit.r = Math.round((hit.r*hit.n + c.r*(c.n||1))/n);
+      hit.g = Math.round((hit.g*hit.n + c.g*(c.n||1))/n);
+      hit.b = Math.round((hit.b*hit.n + c.b*(c.n||1))/n);
+      hit.n = n;
+    }
+  });
+  return merged;
+}
+
+function sampleCanvas(img) {
+  const maxW = 220;
+  const scale = Math.min(1, maxW / img.naturalWidth);
+  const w = Math.max(1, Math.round(img.naturalWidth * scale));
+  const h = Math.max(1, Math.round(img.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, w, h);
+  const data = ctx.getImageData(0,0,w,h).data;
+  const buckets = Array.from({length: 12}, () => []);
+  const lights = [], darks = [];
+  for (let i=0;i<data.length;i+=4) {
+    if (data[i+3] < 200) continue;
+    const c = { r:data[i], g:data[i+1], b:data[i+2] };
+    const L = luma(c), S = sat(c);
+    if (S < 0.16) {
+      if (L < 55) darks.push(c);
+      else if (L > 190) lights.push(c);
+      continue;
+    }
+    if (S >= 0.42 && L > 28 && L < 235) {
+      buckets[Math.floor(hue(c)/30)%12].push(c);
+    }
+  }
+  const accents = [];
+  buckets.forEach(list => {
+    if (list.length < 4) return; // tiny, but 4 samples at 220w is enough for a neon sign
+    list.sort((a,b) => sat(b)-sat(a));
+    const top = list.slice(0, Math.min(40, list.length));
+    const avg = top.reduce((a,c)=>({r:a.r+c.r,g:a.g+c.g,b:a.b+c.b}), {r:0,g:0,b:0});
+    const n = top.length;
+    accents.push({ r:Math.round(avg.r/n), g:Math.round(avg.g/n), b:Math.round(avg.b/n), n: list.length, kind:"accent" });
+  });
+  accents.sort((a,b) => sat(b)-sat(a) || b.n-a.n);
+  return { accents, darks, lights };
+}
+
+function pick(list, pred) {
+  const i = list.findIndex(pred);
+  if (i < 0) return list.shift();
+  return list.splice(i,1)[0];
+}
+
+async function extract() {
+  if (!state.files.length) { toast("Add a still first"); return; }
+  const extraN = +$("extra").value;
+  const q = +$("quality").value;
+  const bag = [];
+  const accentBag = [];
+  for (const f of state.files) {
+    await waitImg(f.img);
+    try {
+      const pal = thief.getPalette(f.img, 12, q) || [];
+      const dom = thief.getColor(f.img, q);
+      if (dom) bag.push({ r:dom[0], g:dom[1], b:dom[2], n: 8 });
+      pal.forEach(p => bag.push({ r:p[0], g:p[1], b:p[2], n: 3 }));
+    } catch (err) { console.warn(err); }
+    const samp = sampleCanvas(f.img);
+    samp.accents.forEach(a => accentBag.push(a));
+  }
+  const structural = mergeBag(bag, 24);
+  const accents = mergeBag(accentBag, 30).sort((a,b) => sat(b)-sat(a));
+  assignPlate(structural, accents, extraN);
+  render();
+}
+
+function assignPlate(structural, accents, extraN) {
+  const pool = structural.map(c => ({...c})).sort((a,b) => luma(a)-luma(b));
+
+  const ground = pick(pool, c => luma(c) < 48) || { r:16,g:15,b:12 };
+  const ink = pick(pool, c => luma(c) > 188) || pick(pool, c => luma(c) > 150) || { r:232,g:225,b:210 };
+  const panel = pick(pool, c => luma(c) < 95 && dist(c, ground) > 10) || { ...ground, r: Math.min(255, ground.r+18), g: Math.min(255, ground.g+16), b: Math.min(255, ground.b+12) };
+  const muted = pick(pool, c => sat(c) < 0.32 && luma(c) > 60 && luma(c) < 175)
+    || pick(pool, c => sat(c) < 0.45) || { r:110,g:102,b:86 };
+
+  // chromatic roles prefer accents that are far from the warm mean of the scene
+  const sceneMeanHue = hue(structural.sort((a,b)=>(b.n||1)-(a.n||1))[0] || ground);
+  const chromaPool = mergeBag([
+    ...pool.filter(c => sat(c) > 0.28),
+    ...accents
+  ], 22);
+
+  function takeChroma(prefer) {
+    let bestI = -1, best = -1;
+    chromaPool.forEach((c,i) => {
+      if (dist(c,ground)<16 || dist(c,ink)<16) return;
+      const sceneSep = Math.min(hueDist(c, ground), hueDist(c, panel), 180);
+      const offAxis = Math.min(hueDist(c, {r:200,g:80,b:20}), hueDist(c, {r:180,g:120,b:30}));
+      let score = sat(c)*50 + Math.min(sceneSep, 80)*0.4;
+      if (prefer === "cool") score += (hue(c)>90 && hue(c)<260) ? 35 : 0;
+      if (prefer === "hot") score += (hue(c)<50 || hue(c)>330) ? 25 : 0;
+      if (prefer === "gold") score += (hue(c)>40 && hue(c)<95) ? 30 : 0;
+      if (prefer === "lime") score += (hue(c)>70 && hue(c)<140) ? 28 : 0;
+      score += offAxis * 0.15;
+      if (score > best) { best = score; bestI = i; }
+    });
+    if (bestI < 0) return chromaPool.shift();
+    return chromaPool.splice(bestI,1)[0];
+  }
+
+  const observed = takeChroma("cool") || takeChroma();
+  const attention = takeChroma("lime") || takeChroma("gold");
+  const rupture = takeChroma("hot");
+  const goldC = takeChroma("gold");
+
+  const raw = [ground, panel, ink, muted, observed, attention, rupture, goldC];
+  state.core = raw.map((c,i) => {
+    const job = JOBS[i];
+    const rgb = c || { r:20,g:18,b:14 };
+    return {
+      id: job.id,
+      name: nameFromHue(rgb),
+      job: job.job,
+      r: rgb.r, g: rgb.g, b: rgb.b,
+      hex: rgbToHex(rgb.r,rgb.g,rgb.b),
+      locked: false
+    };
+  });
+
+  const used = [...state.core];
+  const leftovers = chromaPool
+    .filter(c => used.every(u => dist(u,c) > 28 && (sat(c)<0.2 || hueDist(u,c) > 18)))
+    .sort((a,b) => sat(b)-sat(a));
+  state.found = leftovers.slice(0, extraN).map((c,i) => ({
+    id: "found_"+(i+1),
+    name: nameFromHue(c),
+    job: "found ink",
+    r:c.r,g:c.g,b:c.b, hex: rgbToHex(c.r,c.g,c.b), locked: false
+  }));
+}
+
+function token(id) { return state.core.find(t => t.id === id) || state.core[0]; }
+
+function render() {
+  $("empty").hidden = true;
+  $("results").hidden = false;
+  $("eyeNote").style.display = "block";
+  const name = $("plateName").value.trim() || "Plate";
+  $("plateId").textContent = name;
+  $("hName").textContent = name;
+
+  $("chips").innerHTML = state.core.map((t,i) => `
+    <div class="cell">
+      <div class="sw" style="background:${t.hex}" data-core="${i}"></div>
+      <div class="info">
+        <input class="name" data-core="${i}" value="${t.name}" />
+        <div class="hex">${t.hex}</div>
+        <input class="job" data-core="${i}" value="${t.job}" />
+      </div>
+    </div>`).join("");
+
+  $("chips").querySelectorAll(".name").forEach(inp => inp.onchange = () => { state.core[+inp.dataset.core].name = inp.value.trim()||"unnamed"; writeExport(); });
+  $("chips").querySelectorAll(".job").forEach(inp => inp.onchange = () => { state.core[+inp.dataset.core].job = inp.value; writeExport(); });
+  $("chips").querySelectorAll(".sw, .hex").forEach((el, idx) => {
+    el.onclick = () => {
+      const t = state.core[+el.dataset.core] || state.core[idx];
+      if (!t) return;
+      navigator.clipboard.writeText(t.hex);
+      toast(t.hex);
+    };
+  });
+
+  if (state.found.length) {
+    $("foundWrap").hidden = false;
+    $("found").innerHTML = state.found.map((t,i) => `
+      <div class="pill" data-f="${i}" title="click to copy"><i style="background:${t.hex}"></i>${t.hex}  ${t.name}</div>`).join("");
+    $("found").querySelectorAll(".pill").forEach(p => {
+      p.onclick = () => { navigator.clipboard.writeText(state.found[+p.dataset.f].hex); toast(state.found[+p.dataset.f].hex); };
+    });
+  } else $("foundWrap").hidden = true;
+
+  const g = token("ground"), p = token("panel"), ink = token("ink"), muted = token("muted");
+  const obs = token("observed"), att = token("attention"), rup = token("rupture"), gold = token("gold");
+  const apply = (el) => {
+    el.style.setProperty("--p-ground", g.hex);
+    el.style.setProperty("--p-panel", p.hex);
+    el.style.setProperty("--p-ink", ink.hex);
+    el.style.setProperty("--p-muted", muted.hex);
+    el.style.setProperty("--p-observed", obs.hex);
+    el.style.setProperty("--p-attention", att.hex);
+    el.style.setProperty("--p-rupture", rup.hex);
+    el.style.setProperty("--p-gold", gold.hex);
+  };
+  apply($("harness"));
+  $("vHuman").style.color = ink.hex;
+  $("vMachine").style.color = muted.hex;
+  $("vRecord").style.color = ink.hex;
+  $("plate").style.background = p.hex;
+  document.documentElement.style.setProperty("--bg", g.hex);
+  document.documentElement.style.setProperty("--panel", p.hex);
+  document.documentElement.style.setProperty("--ink", ink.hex);
+  document.documentElement.style.setProperty("--muted", muted.hex);
+  document.documentElement.style.setProperty("--line", muted.hex);
+  document.documentElement.style.setProperty("--accent", obs.hex);
+  document.documentElement.style.setProperty("--gold", gold.hex);
+
+  const cr = contrastRatio(ink, g);
+  $("contrast").textContent = `ink on ground  ${cr.toFixed(2)}:1  ${cr>=4.5?"AA":"low — eyedrop a lighter ink"}`;
+
+  const foundHex = state.found.map(t => t.hex).join(" ");
+  $("trace").innerHTML =
+    `<span class="dim">→ tool.extract_plate</span>\n` +
+    `<span class="dim">   stills ${state.files.length} · core 8 · found ${state.found.length}</span>\n` +
+    `<span class="ok">← ground ${g.hex}</span>  <span class="dim">panel ${p.hex}</span>\n` +
+    `<span class="ok">← observed ${obs.name} ${obs.hex}</span>\n` +
+    `<span class="warn">← attention ${att.name} ${att.hex}</span>\n` +
+    `<span class="bad">← rupture ${rup.name} ${rup.hex}</span>\n` +
+    `<span class="gold">← gold ${gold.name} ${gold.hex}</span>` +
+    (foundHex ? `\n<span class="dim">← found ${foundHex}</span>` : "") +
+    `\n<span class="dim">seal when the harness still feels like the still</span>`;
+
+  $("law").textContent = `${name}. ${state.core.map(t => t.name).join(" · ")}.` +
+    (state.found.length ? ` Found inks sit outside the law on purpose.` : "");
+  writeExport();
+}
+
+function slug(s) { return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"") || "token"; }
+
+function allTokens() { return [...state.core, ...state.found]; }
+
+function writeExport() {
+  const tokens = allTokens();
+  const name = $("plateName").value.trim() || "Plate";
+  let out = "";
+  if (state.fmt === "hex") {
+    out = tokens.map(t => `${t.hex}  ${t.name}  (${t.id} · ${t.job})`).join("\n");
+  } else if (state.fmt === "css") {
+    out = `/* ${name} */\n:root {\n` +
+      tokens.map(t => `  --${t.id}: ${t.hex};  /* ${t.name} · ${t.job} */`).join("\n") +
+      "\n}\n";
+  } else if (state.fmt === "godot") {
+    const constName = (t) => t.id.toUpperCase();
+    out = `## ${name} — Godot 4 color pack\nextends Resource\nclass_name ColorPlate\n\n` +
+      tokens.map(t => `const ${constName(t)} := Color("${t.hex.toLowerCase()}")  # ${t.name} — ${t.job}`).join("\n") +
+      `\n\nconst TOKENS := {\n` +
+      tokens.map(t => `\t"${t.id}": ${constName(t)},`).join("\n") +
+      `\n}\n\n` +
+      `func apply_to_theme(theme: Theme) -> void:\n` +
+      `\ttheme.set_color("font_color", "Label", INK)\n` +
+      `\ttheme.set_color("font_color", "Button", INK)\n` +
+      `\tvar panel := StyleBoxFlat.new()\n` +
+      `\tpanel.bg_color = PANEL\n` +
+      `\tpanel.set_corner_radius_all(6)\n` +
+      `\ttheme.set_stylebox("panel", "PanelContainer", panel)\n` +
+      `\tvar btn := StyleBoxFlat.new()\n` +
+      `\tbtn.bg_color = ATTENTION\n` +
+      `\tbtn.set_corner_radius_all(4)\n` +
+      `\ttheme.set_stylebox("normal", "Button", btn)\n`;
+  } else if (state.fmt === "json") {
+    out = JSON.stringify({
+      name, kind: "color-plate",
+      core: state.core.map(t => ({ id:t.id, name:t.name, job:t.job, hex:t.hex, rgb:[t.r,t.g,t.b] })),
+      found: state.found.map(t => ({ id:t.id, name:t.name, job:t.job, hex:t.hex, rgb:[t.r,t.g,t.b] }))
+    }, null, 2);
+  } else if (state.fmt === "gpl") {
+    out = `GIMP Palette\nName: ${name}\nColumns: 8\n#\n` +
+      tokens.map(t => `${String(t.r).padStart(3)} ${String(t.g).padStart(3)} ${String(t.b).padStart(3)}\t${t.id}_${slug(t.name)}`).join("\n") + "\n";
+  }
+  $("export").value = out;
+}
+
+function downloadExport() {
+  const ext = { hex:"txt", css:"css", godot:"gd", json:"json", gpl:"gpl" }[state.fmt];
+  const blob = new Blob([$("export").value], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = slug($("plateName").value || "plate") + "." + ext;
+  a.click();
+}
+</script>
+</body>
+</html>

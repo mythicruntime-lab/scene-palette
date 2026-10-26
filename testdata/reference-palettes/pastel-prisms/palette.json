@@ -1,0 +1,586 @@
+{
+  "schema": 1,
+  "kind": "color-plate",
+  "name": "Pastel Prisms",
+  "createdAt": "2026-08-28T00:00:00.000Z",
+  "generator": {
+    "name": "scene-palette",
+    "version": "2.0.0",
+    "extraction": 4
+  },
+  "polarity": "light",
+  "lightScene": true,
+  "medianL": 0.8828,
+  "params": {
+    "budget": 140000,
+    "chromaMin": 0.085,
+    "foundInks": 6,
+    "polarityMode": "auto",
+    "variant": 0,
+    "variantCount": 1
+  },
+  "sources": [
+    {
+      "file": "pastel-prisms.png",
+      "mime": "image/png",
+      "bytes": 393570,
+      "hash": {
+        "algo": "sha256",
+        "value": "1fa2ba165967d76457a9eca47b1a3fb8b4fccde2a79ec2265ddd9b48fd92d768"
+      },
+      "natural": [
+        384,
+        256
+      ],
+      "working": [
+        384,
+        256
+      ],
+      "transforms": [
+        {
+          "op": "decode",
+          "via": "sharp-raw-reference-harness"
+        }
+      ],
+      "path": "sources/01-pastel-prisms.png"
+    }
+  ],
+  "stills": 1,
+  "tags": [],
+  "family": null,
+  "core": [
+    {
+      "key": "ground",
+      "id": "ground",
+      "name": "bone",
+      "job": "ground",
+      "hex": "#F6F2E9",
+      "rgb": [
+        246,
+        242,
+        233
+      ],
+      "r": 246,
+      "g": 242,
+      "b": 233,
+      "oklch": [
+        0.9618,
+        0.0127,
+        86.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1,
+        "onPanel": 1.18
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.9,
+          1
+        ],
+        "raw": "#F6F2E9",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": []
+      }
+    },
+    {
+      "key": "panel",
+      "id": "panel",
+      "name": "linen",
+      "job": "panels",
+      "hex": "#E4E0D7",
+      "rgb": [
+        228,
+        224,
+        215
+      ],
+      "r": 228,
+      "g": 224,
+      "b": 215,
+      "oklch": [
+        0.9073,
+        0.0129,
+        86.8
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.18,
+        "onPanel": 1
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.7,
+          0.88
+        ],
+        "raw": "#F2F1E3",
+        "chromaCap": 0.055,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "separate",
+            "against": "ground",
+            "minDeltaL": 0.035,
+            "from": "#F2F1E3",
+            "to": "#E4E0D7"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ink",
+      "id": "ink",
+      "name": "violet",
+      "job": "ink · voices",
+      "hex": "#6C5D76",
+      "rgb": [
+        108,
+        93,
+        118
+      ],
+      "r": 108,
+      "g": 93,
+      "b": 118,
+      "oklch": [
+        0.502,
+        0.043,
+        311.7
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 5.42,
+        "onPanel": 4.6
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0,
+          0.06
+        ],
+        "raw": "#D8B5ED",
+        "chromaCap": 0.045,
+        "capped": true,
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 4.5,
+            "from": "#CFBDDA",
+            "to": "#786882"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 4.5,
+            "from": "#786882",
+            "to": "#6C5D76"
+          }
+        ]
+      }
+    },
+    {
+      "key": "muted",
+      "id": "muted",
+      "name": "ash",
+      "job": "meta · quiet",
+      "hex": "#74826B",
+      "rgb": [
+        116,
+        130,
+        107
+      ],
+      "r": 116,
+      "g": 130,
+      "b": 107,
+      "oklch": [
+        0.5884,
+        0.038,
+        133.2
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.65,
+        "onPanel": 3.1
+      },
+      "origin": {
+        "kind": "structure",
+        "method": "luminance-quantile",
+        "quantile": [
+          0.34,
+          0.6
+        ],
+        "raw": "#CEDDC4",
+        "chromaCap": 0.07,
+        "capped": false,
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#CEDDC4",
+            "to": "#808E77"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#808E77",
+            "to": "#74826B"
+          }
+        ]
+      }
+    },
+    {
+      "key": "observed",
+      "id": "observed",
+      "name": "cyan",
+      "job": "observed fact",
+      "hex": "#008C98",
+      "rgb": [
+        0,
+        140,
+        152
+      ],
+      "r": 0,
+      "g": 140,
+      "b": 152,
+      "oklch": [
+        0.5842,
+        0.0998,
+        205.4
+      ],
+      "locked": false,
+      "derived": true,
+      "contrast": {
+        "onGround": 3.61,
+        "onPanel": 3.06
+      },
+      "origin": {
+        "kind": "derived",
+        "method": "role-ideal-hue",
+        "idealHue": 205,
+        "role": "observed",
+        "medianC": 0.086,
+        "medianL": 0.6044,
+        "reason": "the still offered no distinct hue for this slot",
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground+panel",
+            "target": 3,
+            "from": "#13929E",
+            "to": "#008C98"
+          }
+        ]
+      }
+    },
+    {
+      "key": "attention",
+      "id": "attention",
+      "name": "gold",
+      "job": "attention",
+      "hex": "#8D8031",
+      "rgb": [
+        141,
+        128,
+        49
+      ],
+      "r": 141,
+      "g": 128,
+      "b": 49,
+      "oklch": [
+        0.5957,
+        0.1002,
+        100
+      ],
+      "locked": false,
+      "derived": true,
+      "contrast": {
+        "onGround": 3.57,
+        "onPanel": 3.03
+      },
+      "origin": {
+        "kind": "derived",
+        "method": "role-ideal-hue",
+        "idealHue": 100,
+        "role": "attention",
+        "medianC": 0.086,
+        "medianL": 0.6044,
+        "reason": "the still offered no distinct hue for this slot",
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground+panel",
+            "target": 3,
+            "from": "#908334",
+            "to": "#8D8031"
+          }
+        ]
+      }
+    },
+    {
+      "key": "rupture",
+      "id": "rupture",
+      "name": "orchid",
+      "job": "rupture only",
+      "hex": "#9472A6",
+      "rgb": [
+        148,
+        114,
+        166
+      ],
+      "r": 148,
+      "g": 114,
+      "b": 166,
+      "oklch": [
+        0.6044,
+        0.086,
+        313.6
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 3.6,
+        "onPanel": 3.06
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "hue-bin · sqrt(area)·chroma²",
+        "raw": "#D9B6EE",
+        "hueBin": 31,
+        "band": 2,
+        "area": 0.134064,
+        "salience": 0.26779,
+        "stills": [
+          0
+        ],
+        "repairs": [
+          {
+            "op": "contrast",
+            "against": "ground",
+            "target": 3,
+            "from": "#D9B6EE",
+            "to": "#A07EB3"
+          },
+          {
+            "op": "contrast",
+            "against": "panel",
+            "target": 3,
+            "from": "#A07EB3",
+            "to": "#9472A6"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gold",
+      "id": "gold",
+      "name": "ember",
+      "job": "human acts only",
+      "hex": "#B66961",
+      "rgb": [
+        182,
+        105,
+        97
+      ],
+      "r": 182,
+      "g": 105,
+      "b": 97,
+      "oklch": [
+        0.6049,
+        0.1001,
+        26.7
+      ],
+      "locked": false,
+      "derived": true,
+      "contrast": {
+        "onGround": 3.63,
+        "onPanel": 3.08
+      },
+      "origin": {
+        "kind": "derived",
+        "method": "role-ideal-hue",
+        "idealHue": 27,
+        "role": "rupture",
+        "medianC": 0.086,
+        "medianL": 0.6044,
+        "reason": "the still offered no distinct hue for this slot",
+        "repairs": []
+      }
+    }
+  ],
+  "found": [
+    {
+      "key": "found_1",
+      "name": "aubergine",
+      "job": "found ink",
+      "hex": "#D9B6EE",
+      "rgb": [
+        217,
+        182,
+        238
+      ],
+      "r": 217,
+      "g": 182,
+      "b": 238,
+      "oklch": [
+        0.825,
+        0.0855,
+        312.6
+      ],
+      "locked": false,
+      "derived": false,
+      "contrast": {
+        "onGround": 1.58,
+        "onPanel": 1.34
+      },
+      "origin": {
+        "kind": "signal",
+        "method": "leftover — not taken by a role",
+        "raw": "#D9B6EE",
+        "hueBin": 31,
+        "band": 2,
+        "area": 0.134064,
+        "salience": 0.26779,
+        "stills": [
+          0
+        ],
+        "repairs": []
+      }
+    }
+  ],
+  "notes": [
+    "bright still (median L 0.88) — built a light plate",
+    "panel stepped off ground — the still had no separate surface tone",
+    "ink lifted to 5.4:1 for body copy",
+    "3 signal slots derived — the still ran out of distinct paint"
+  ],
+  "facets": {
+    "polarity": "light",
+    "groundL": 0.9618,
+    "medianL": 0.8828,
+    "dominantHue": 314,
+    "accentHues": [
+      205,
+      100,
+      314,
+      27
+    ],
+    "hueSpread": 178,
+    "chroma": {
+      "min": 0.0127,
+      "max": 0.1002,
+      "mean": 0.0643
+    },
+    "temperature": "cool",
+    "warmAccents": 1,
+    "coolAccents": 3,
+    "derivedSlots": 3,
+    "pickedSlots": 0,
+    "foundInks": 1,
+    "minContrastOnGround": 3.57,
+    "panelSeparationL": 0.0544
+  },
+  "signature": {
+    "version": 1,
+    "roles": [
+      {
+        "id": "ground",
+        "lab": [
+          0.9618,
+          0.0007,
+          0.0127
+        ]
+      },
+      {
+        "id": "panel",
+        "lab": [
+          0.9073,
+          0.0007,
+          0.0128
+        ]
+      },
+      {
+        "id": "ink",
+        "lab": [
+          0.502,
+          0.0286,
+          -0.0321
+        ]
+      },
+      {
+        "id": "muted",
+        "lab": [
+          0.5884,
+          -0.026,
+          0.0277
+        ]
+      },
+      {
+        "id": "observed",
+        "lab": [
+          0.5842,
+          -0.0902,
+          -0.0429
+        ]
+      },
+      {
+        "id": "attention",
+        "lab": [
+          0.5957,
+          -0.0173,
+          0.0987
+        ]
+      },
+      {
+        "id": "rupture",
+        "lab": [
+          0.6044,
+          0.0593,
+          -0.0623
+        ]
+      },
+      {
+        "id": "gold",
+        "lab": [
+          0.6049,
+          0.0894,
+          0.045
+        ]
+      }
+    ],
+    "hue12": [
+      0.1338,
+      0,
+      0,
+      0.1339,
+      0,
+      0,
+      0.1335,
+      0,
+      0,
+      0,
+      0.5987,
+      0
+    ],
+    "lightness": [
+      0.9618,
+      0.9073,
+      0.502,
+      0.5884,
+      0.5842,
+      0.5957,
+      0.6044,
+      0.6049
+    ]
+  }
+}

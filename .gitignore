@@ -1,0 +1,53 @@
+# Build output, generated reports, downloaded corpora and local scratch work
+/scene-palette
+/scene-palette.exe
+/bin/
+/dist/
+/coverage.out
+/coverage.html
+*.test
+*.prof
+*.log
+
+# Optional development dependencies and browser test artifacts
+node_modules/
+playwright-report/
+test-results/
+
+# Local credentials and machine-specific settings
+.env
+.env.*
+!.env.example
+!.env.*.example
+.npmrc
+.netrc
+.aws/
+.ssh/
+.codex/
+.agents/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+secrets.json
+secrets.yaml
+secrets.yml
+
+# Personal palette exports belong in a local vault, not the source tree
+/palette.json
+/index.json
+/vault/
+/exports/
+/*.zip
+
+# Editors and desktop metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
