@@ -17,11 +17,11 @@ if (args.includes("--help")) {
   [--manifest path/to/manifest.json] [--output bin/corpus/RUN] [--html index.html]
   [--browser /path/to/browser] [--channel msedge] [--require-readable]
 
-Manifest: {"images":[{"id":"anime-01","file":"images/anime.png",
-  "category":"anime","source":"source title or URL","corpus":"fresh"}]}
+Manifest: {"images":[{"id":"illustration-01","file":"images/illustration.png",
+  "category":"illustration","source":"source title or URL","corpus":"fresh"}]}
 Image paths are relative to the manifest. All additional metadata is preserved.
 corpus can be fresh or regression. Explicit manifests default to fresh; omitting
---manifest uses the ten retained reference fixtures and marks them regression.
+--manifest uses the ten generated reference patterns and marks them regression.
 Optional sha256 values are verified. A fresh label describes the test corpus,
 not proof that a human has performed a usability study.
 

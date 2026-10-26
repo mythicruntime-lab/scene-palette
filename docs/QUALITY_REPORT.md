@@ -1,4 +1,4 @@
-# Historical local palette review — 2026-10-26
+# Palette quality and validation — 2026-10-26
 
 Before this public repository was created, the Windows Go engine and standalone
 HTML were checked on 20 publicly available images plus 10 privately supplied
@@ -36,28 +36,18 @@ patterns, not the historical media reviewed below.
 
 ## Historical corpus and local evidence
 
-`testdata/fresh-corpus.json` retains the 20 public source URLs, file hashes, credits,
-and usage notes. It contains metadata only: the media is not included in this
-repository or Windows packages. The five anime examples were all Ghibli, and two
-concepts shared an artist, so this was not exhaustive style coverage.
+The earlier review covered 20 publicly available illustrations, game screenshots,
+photographs, and concept images, plus ten privately supplied regression images.
+Five illustration references came from one animation studio and two concept images
+shared an artist, so this was not exhaustive style coverage.
 
-Reproducing the public-image portion requires obtaining the source files separately
-under their applicable terms and placing them at the manifest's local paths. With
-those files available, the historical matrix can be rerun into a new directory:
+Original source credits, URLs, file hashes, media, and detailed per-image reports
+are retained in the separate development archive. They are not distributed here.
+The observations below summarize that historical review without identifying works
+or implying that the generated fixtures reproduce their visual characteristics.
 
-```powershell
-node scripts/parity-corpus.mjs --url http://127.0.0.1:PORT/ --html path\to\release\index.html --manifest testdata/fresh-corpus.json --output bin/corpus/fresh20-rerun --require-readable
-```
-
-Playwright is a development dependency; the historical run used installed Edge
-headlessly. Its reports contained thumbnails, default swatches, full palettes,
-per-case metrics, input hashes, and exact JSON differences. These paths identify
-local evidence retained in the original development checkout. They are not files
-or downloadable links in this public repository:
-
-- `bin/corpus/fresh20-readability-v4/report.html` — historical 20-image report.
-- `bin/corpus/regression-readability-v4/report.html` — historical private-image report.
-- `bin/readability-v4-validation.json` — historical Windows build and test evidence.
+For additional evaluation, supply images you are permitted to use through a custom
+manifest. See the README and the corpus runner's help for the manifest format.
 
 The historical comparison was exact across the complete durable snapshot, excluding
 only wall-clock `createdAt` and human-review workflow state. Each engine had a
@@ -109,7 +99,7 @@ The private corpus added 11 failing forced-polarity cases. These were shared v3
 algorithm failures, not Go-port mismatches or rounding at a threshold.
 
 The v3 repair ran against ground and then panel. When those surfaces needed opposite
-repair directions, the second repair could undo the first. Hades forced Light
+repair directions, the second repair could undo the first. A dark game scene forced Light
 reached about 1.03:1 on ground for a core accent while passing panel; the lunar
 interior forced Dark had body ink at 1.63:1 on ground while passing 4.5:1 on panel.
 
@@ -138,10 +128,10 @@ new synthetic goldens do not claim equivalence to the private images they replac
 ### P2: generated accents can lose the source's visual identity
 
 Ten of the 20 default plates require at least one invented accent. The grayscale
-Migrant Mother photograph produces four invented hues; Earthrise, aurora, and the
-snowy Spring concept each need three. The labels and origin metadata disclose this,
+portrait photograph produces four invented hues; a space photograph, an aurora, and
+a snowy environment concept each need three. The labels and origin metadata disclose this,
 but the resulting interface can look much more colourful than its reference.
-Kaguya's near-white drawing also gains strong teal/brown accents. This is a product
+A near-white drawing also gains strong teal/brown accents. This is a product
 tradeoff between four semantic roles and fidelity to a sparse source.
 
 **Next decision:** offer a source-faithful mode with fewer accent roles, or stronger
@@ -150,8 +140,8 @@ control over invented colours. Do not imply those colours were sampled from the 
 ### P2: derived accents can be too similar to each other
 
 Three default plates fall below the selector's 0.07 OKLab distance threshold:
-Nausicaä (observed/rupture, 0.0668), Spirited Away (attention/gold, 0.0679), and
-Spring (attention/gold, 0.0675). The derived top-up path does not enforce the same
+a dark blue illustration (observed/rupture, 0.0668), a dim interior illustration
+(attention/gold, 0.0679), and a snowy environment concept (attention/gold, 0.0675). The derived top-up path does not enforce the same
 final distinctness test used for real four-colour sets. Similar roles are especially
 weak in status-heavy UI. These are diagnostics in this colour space, not a claim
 that a single distance threshold proves accessibility.
@@ -162,7 +152,7 @@ that a single distance threshold proves accessibility.
 
 Eleven default plates contain a real signal accent shifted by more than 0.10 OKLab
 distance. In the lunar interior, pale yellow `#FBF598` becomes olive `#686200`
-(0.469). Kaguya's pale green `#CDECA4` becomes `#68833F` (0.331). The output is
+(0.469). A drawing's pale green `#CDECA4` becomes `#68833F` (0.331). The output is
 readable, but the luminous or delicate mood is lost. This is distinguishable from
 invention: the colour has a source, followed by a large recorded repair.
 
@@ -170,36 +160,7 @@ invention: the colour has a source, followed by a large recorded repair.
 between fidelity and contrast. The existing pixel-pick/lock workflow can preserve an
 exact colour, but the user must then assess its readability.
 
-## Historical default plate observations
-
-All rows below passed the measured contrast targets in Auto during the historical
-public-image evaluation. Distances are minimum accent-to-accent Euclidean OKLab
-distances. The historical visual report marked derived accents with stars;
-diagnostic flags were not counted as parity failures. These source attributions
-and observations do not describe the generated patterns in this repository.
-
-| Source | Auto | Variants | Derived / 4 | Min distance | Visual observation |
-|---|---|---:|---:|---:|---|
-| [Princess Kaguya](https://www.ghibli.jp/works/kaguyahime/) | Light | 1 | 2 | .080 | Pale paper retained; strong added accents and darker green lose delicacy. |
-| [Ponyo](https://www.ghibli.jp/works/ponyo/) | Dark | 1 | 2 | .081 | Blue/pink survive; invented cyan/yellow broaden the scene. |
-| [Nausicaä](https://www.ghibli.jp/works/nausicaa/) | Dark | 1 | 2 | .067 | Dark blue atmosphere survives; two cool roles are close. |
-| [Howl's Moving Castle](https://www.ghibli.jp/works/howl/) | Light | 5 | 0 | .103 | Varied skin/clothing scene supplies several usable sets; yellow is darkened. |
-| [Spirited Away](https://www.ghibli.jp/works/chihiro/) | Dark | 1 | 2 | .068 | Train's dark mood survives; attention/gold are close. |
-| [Celeste](https://store.steampowered.com/app/504230/) | Dark | 6 | 0 | .181 | Snow, dialogue UI, and small saturated details provide distinct accents. |
-| [Stardew Valley](https://store.steampowered.com/app/413150/) | Dark | 6 | 0 | .148 | Dense warm pixel art yields variety without invention. |
-| [Hades](https://store.steampowered.com/app/1145360/) | Dark | 6 | 0 | .197 | Neon effects and contrasting environment colours separate well. |
-| [Factorio](https://store.steampowered.com/app/427520/) | Dark | 4 | 0 | .077 | Earth/fire palette stays warm; separation is comparatively narrow. |
-| [Hollow Knight](https://store.steampowered.com/app/367520/) | Dark | 1 | 1 | .075 | Soft glowing fight scene gives fewer distinct accents and one invention. |
-| [Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/) | Dark | 1 | 3 | .079 | Sparse blue subject on black cannot supply four source hues. |
-| [Migrant Mother](https://commons.wikimedia.org/wiki/File:Lange-MigrantMother02.jpg) | Dark | 1 | 4 | .082 | Grayscale structure is faithful; all four accents are invented. |
-| [Iceland aurora](https://commons.wikimedia.org/wiki/File:Aurora_Borealis-Northern_Lights_Iceland.jpg) | Dark | 1 | 3 | .089 | Faint sky colour mostly falls below the default signal floor. |
-| [Tokyo neon](https://commons.wikimedia.org/wiki/File:Neon-street-in-Tokyo-Japan.jpg) | Dark | 6 | 0 | .234 | Many small bright signs produce the strongest default role separation. |
-| [Clownfish](https://commons.wikimedia.org/wiki/File:Clown_fish_with_Anemone.jpg) | Dark | 6 | 0 | .125 | Saturated violet/orange survive; deep blue is lifted substantially. |
-| [Sintel city](https://www.davidrevoy.com/article45/sintel-art-direction) | Light | 1 | 1 | .103 | Sepia mood retained, with a conspicuous added teal role. |
-| [Spring environment](https://studio.blender.org/projects/spring/?asset=837) | Light | 1 | 3 | .068 | Snow/stone structure works; added saturated accents weaken the subdued mood. |
-| [Toroidal colony](https://www.nasa.gov/image-article/retrofuturistic-nasa-space-art/) | Light | 6 | 0 | .200 | Dense multicolour painting supports distinct roles; pale signals darken. |
-| [GJ 486 b](https://science.nasa.gov/asset/webb/exoplanet-gj-486-b-artist-concept/) | Dark | 4 | 0 | .075 | Tiny star and rim supply warm variants, with limited role separation. |
-| [Lunar interior](https://www.esa.int/ESA_Multimedia/Images/2020/11/Habitat_workstations) | Light | 5 | 0 | .095 | Pale architecture yields heavily darkened accents, changing its mood. |
-
-The readability repair addresses the forced-polarity failures. Invented hues, similar
-derived accents, and large source-colour adjustments remain separate quality limits.
+The generated-fixture checks and historical review answer different questions:
+the former protect deterministic behavior and implementation parity; the latter
+identify visual tradeoffs to consider when applying palettes to actual interfaces.
+Neither establishes a universal measure of palette quality.

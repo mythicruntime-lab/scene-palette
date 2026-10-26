@@ -1804,9 +1804,9 @@ function downloadBlob(blob, filename) {
    5. extraction
    ------------------------------------------------------------
    Structure comes from luminance quantiles over the whole frame,
-   so the plate keeps the still's own cast (Edgerunners ground is
-   warm brown, not grey) — then chroma is capped so it can never
-   turn into a neon.
+   so the plate keeps the still's own cast, such as warm brown
+   surfaces in a night scene. Initial chroma is capped per role
+   before readability repair.
 
    Signal colours are binned by hue and weighted
    sqrt(area) · chroma², so a 40-pixel lime cuff can out-score a

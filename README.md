@@ -1,6 +1,6 @@
 # Scene Palette
 
-Drop a still (Edgerunners shot, concept art, tool screenshot). Get a **named plate**:
+Drop a still (photograph, concept art, tool screenshot). Get a **named plate**:
 
 ground · panels · ink · muted · observed · attention · rupture · gold
 
@@ -79,11 +79,10 @@ palettes, readability and colour diagnostics, and an offline HTML inspection rep
 folder for each run. `--require-readable` also fails the run when a generated, unlocked core ink
 misses its target on either surface in either engine. Locked/manual exclusions are reported;
 raw found inks and aesthetic diagnostics remain outside that gate.
-The dated [quality report](docs/QUALITY_REPORT.md) records a historical local evaluation of
-20 public images and its measured weaknesses. Those image files and reports are not included.
-`testdata/fresh-corpus.json` retains source references and hashes; using it requires obtaining
-the images separately under their owners' terms. Generated-pattern parity tests do not replace
-that real-image review.
+The [quality report](docs/QUALITY_REPORT.md) records public regression coverage and the
+limitations found during earlier image testing. The original media, source-credit manifest,
+and detailed research reports remain in the separate development archive. This repository
+ships generated patterns; use your own appropriately licensed images for a custom corpus.
 
 `forge` accepts one to eight PNG, JPEG, or GIF files and pools them with equal weight. Browser defaults
 are preserved: a 140,000-pixel budget per still, `.085` signal floor, six found inks, auto polarity,
@@ -137,7 +136,7 @@ unsigned and is not published automatically. Image test corpora and test reports
 ## How it picks
 
 **Structure** (ground, panel, ink, muted) comes from luminance quantiles over the whole frame, so the
-plate keeps the still's own cast — an Edgerunners alley grounds out warm brown, not neutral grey.
+plate keeps the still's own cast, such as the warm brown surfaces of a softly lit alley.
 Initial chroma is capped per slot, keeping structural colours subdued before readability repair.
 
 **Polarity is read from the frame.** A night bay grounds out on its darks; a hazy daytime facade
@@ -416,9 +415,8 @@ single-step **Undo** action.
 
 Scene Palette code, documentation, and generated test patterns are licensed under the
 [MIT License](LICENSE), copyright 2026 Scene Palette contributors. Bundled/adapted components
-retain their own notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). External images
-referenced by the optional evaluation manifest remain the property of their owners and are
-not included or relicensed.
+retain their own notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Images you supply
+remain subject to their owners' terms; the project license does not relicense them.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development and test instructions, and
 [SECURITY.md](SECURITY.md) for privacy, vulnerability reporting, and local secret scanning.
