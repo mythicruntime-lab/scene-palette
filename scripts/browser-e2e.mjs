@@ -271,6 +271,105 @@ function syntheticPNG(width, height) {
   return Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
 
+async function checkShelfSecurity(target, label) {
+  const fixture = JSON.parse(await fs.readFile(path.join(root,
+    "testdata/reference-palettes/empty-neon-street/palette.json"), "utf8"));
+  const upload = async value => target.locator("#plateFile").setInputFiles({
+    name:"security-shelf.json", mimeType:"application/json", buffer:Buffer.from(JSON.stringify(value))
+  });
+  await target.locator("#importBtn").click();
+  await upload(fixture);
+  await target.waitForFunction(() => state.core.length === 8);
+  await target.locator("#sealPlate").click();
+  await target.locator("#saveBtn").click();
+  const seed = await target.evaluate(() => JSON.parse(JSON.stringify(state.shelf[0])));
+  const marker = '<img data-shelf-attack src="data:image/png;base64,AAAA" onerror="window.__shelfSecuritySentinel=(window.__shelfSecuritySentinel||0)+1">';
+  const invalid = [];
+  for (const mutate of [
+    p => { p.core[0].hex = '#101010">' + marker; },
+    p => { p.found = [{ ...p.core[2], id:null, key:"found_1", hex:marker }]; },
+    p => { p.core[0].id = marker; },
+    p => { p.stills = marker; },
+    p => { p.core[2].origin.kind = { toString:null, valueOf:null }; },
+    p => { p.core[2].origin.repairs = [{ from:{ toString:null, valueOf:null } }]; },
+    p => { p.sources[0].natural = [{ toString:null, valueOf:null }, 80]; },
+    p => { p.params.variant = { toString:null, valueOf:null }; },
+    p => { p.review.history = [{ ...p.review, invalidatedBy:{ toString:null, valueOf:null } }]; },
+    p => { p.name = { html:marker }; },
+    p => { p.notes = [{ html:marker }]; },
+    p => { p.core[1] = p.core[0]; },
+    p => { p.found = [null]; }
+  ]) {
+    const plate = structuredClone(seed); plate.id = "hostile-" + invalid.length;
+    mutate(plate); invalid.push(plate);
+  }
+  const invalidSingle = structuredClone(seed);
+  invalidSingle.core[2].origin.kind = { toString:null, valueOf:null };
+  const errorOffset = report.errors.length;
+  await target.locator("#importBtn").click();
+  await upload(invalidSingle);
+  await target.waitForFunction(() => document.getElementById("toastMsg").textContent.includes("invalid kind"));
+  await target.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+  const rejectionErrors = report.errors.splice(errorOffset);
+  assert.equal(rejectionErrors.length, 1, "Expected exactly the logged single-palette validation rejection");
+  assert.ok(rejectionErrors[0].startsWith(label + " console: Error: invalid kind\n"), rejectionErrors[0]);
+  (report.expectedValidationErrors ||= []).push(...rejectionErrors);
+  assert.equal((await readPlate(target)).review.agentEligible, true, "Rejected single import changed the existing sealed plate");
+  const safeText = structuredClone(seed);
+  safeText.id = "safe-text"; safeText.name = marker + "\n*/untrusted name";
+  safeText.core[2].name = marker;
+  safeText.core[2].origin.extra = { text:marker };
+  safeText.found = [{ ...safeText.core[2], id:marker, key:"found_1" }];
+  await target.locator("#shelfImport").click();
+  await upload({ plates:[...invalid, safeText] });
+  await target.waitForFunction(() => state.shelf.length === 2);
+  assert.match(await target.locator("#toastMsg").textContent(), new RegExp(invalid.length + " invalid entries skipped"));
+  const inspect = async () => {
+    await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.equal(await target.evaluate(() => window.__shelfSecuritySentinel || 0), 0, `${label}: executable shelf content ran`);
+    assert.equal(await target.locator("[data-shelf-attack]").count(), 0, `${label}: injected node reached the DOM`);
+  };
+  await inspect();
+  await target.locator('[data-use="0"]').click();
+  await target.locator('[data-a="0"]').click();
+  await target.locator('[data-b="1"]').click();
+  await target.locator("#pairBtn").click();
+  await target.locator('[data-why="ink"]').click();
+  for (const format of ["css", "godot", "hex", "gpl", "json"]) {
+    await target.locator(`[data-fmt="${format}"]`).click();
+    assert.ok((await target.locator("#export").inputValue()).length);
+  }
+  const outputSafety = await target.evaluate(() => {
+    const plate = state.shelf[0];
+    return {
+      css:formatPlate(plate, "css"), godot:formatPlate(plate, "godot"),
+      themeCSS:themeExport(state.theme, "css"), themeGodot:themeExport(state.theme, "godot")
+    };
+  });
+  for (const [kind, content] of Object.entries(outputSafety)) {
+    assert.ok(!content.includes("--<img") && !content.includes('"<img'), `${label}: unsafe ${kind} identifier`);
+    if (kind.toLowerCase().includes("css")) assert.ok(!content.includes("*/untrusted"), "CSS comment escaped through name");
+  }
+  await inspect();
+  // Bypass file import to exercise the independent localStorage boundary. Startup
+  // must not write back or erase the rejected records from the saved input.
+  const stored = JSON.stringify([seed, ...invalid]);
+  await target.evaluate(value => localStorage.setItem("scene-palette.shelf.v1", value), stored);
+  await target.reload();
+  await target.waitForFunction(() => state.shelf.length === 1);
+  assert.match(await target.locator("#toastMsg").textContent(), new RegExp(invalid.length + " invalid saved shelf entries skipped"));
+  assert.equal(await target.evaluate(() => localStorage.getItem("scene-palette.shelf.v1")), stored);
+  assert.equal(await target.evaluate(() => plateReview(state.shelf[0]).agentEligible), true, "Valid seal lost on restore");
+  await target.locator('[data-use="0"]').click();
+  assert.equal((await readPlate(target)).review.agentEligible, true, "Valid seal lost on Use");
+  await inspect();
+  await target.evaluate(() => localStorage.removeItem("scene-palette.shelf.v1"));
+  await target.reload();
+  await target.waitForFunction(() => state.shelf.length === 0 && state.core.length === 0);
+  passed(`Hostile shelf import and restore are inert; valid seals and escaped text survive: ${label}`);
+}
+
+
 try {
   const executablePath = option("--browser", process.env.SCENE_PALETTE_BROWSER);
   let channel = option("--channel", process.env.SCENE_PALETTE_BROWSER_CHANNEL);
@@ -303,6 +402,8 @@ try {
   const fallback = await context.newPage(); watch(fallback, "standalone");
   await fallback.goto(pathToFileURL(standaloneHTML).href);
   await fallback.locator("#extractBtn").waitFor();
+  await checkShelfSecurity(page, "Go");
+  await checkShelfSecurity(fallback, "standalone");
 
   const synthetic = path.join(output, "oversized-transparent.png");
   await fs.writeFile(synthetic, syntheticPNG(1800, 900));

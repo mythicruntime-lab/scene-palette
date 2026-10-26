@@ -2387,7 +2387,7 @@ function applyStagePick(still, p) {
       Object.assign(t, { r: col.r, g: col.g, b: col.b, hex: hex(col), name: nameOf(col),
                          locked: true, derived: false, origin: pickOrigin() });
       const cr = contrast(col, token("ground"));
-      toast(`${t.id} = ${t.hex} · locked` + (t.id !== "ground" && cr < 3 ? ` · only ${cr.toFixed(1)}:1 on ground` : ""));
+      toast(`${t.id} = ${safeHex(t.hex)} · locked` + (t.id !== "ground" && cr < 3 ? ` · only ${cr.toFixed(1)}:1 on ground` : ""));
     }
     state.arm = null;
   } else {
@@ -2645,7 +2645,7 @@ function originNarrative(t) {
     const q = Array.isArray(o.quantile) && o.quantile.length >= 2
       ? `${Math.round(+o.quantile[0] * 100)}–${Math.round(+o.quantile[1] * 100)}% luminance band` : "scene luminance";
     lead = `Observed structure from the ${q}; this role follows the scene's light and dark hierarchy.`;
-    if (o.raw) facts.push(`Observed ${o.raw}; delivered ${t.hex}.`);
+    if (o.raw) facts.push(`Observed ${o.raw}; delivered ${safeHex(t.hex)}.`);
     if (o.capped) facts.push(`Chroma was capped at ${o.chromaCap} so a structural role would not turn neon.`);
   } else if (kind === "signal") {
     lead = o.method && String(o.method).startsWith("leftover")
@@ -2730,17 +2730,17 @@ function render() {
       badge = `<span class="cr ${cr >= target ? "ok" : "lo"}" title="contrast on ground · target ${target}:1">${cr.toFixed(1)}:1</span>`;
     }
     return `<div class="cell${t.locked ? " locked" : ""}${t.derived ? " derived" : ""}">
-      <button type="button" class="sw" style="background:${t.hex}" data-copy="${i}" aria-label="Copy ${esc(t.id)} color ${esc(t.hex)}"></button>
+      <button type="button" class="sw" style="background:${safeHex(t.hex)}" data-copy="${i}" aria-label="Copy ${esc(t.id)} color ${esc(t.hex)}"></button>
       <div class="cellbar">
-        <button type="button" class="tiny" data-why="${t.id}" aria-controls="whyPanel" aria-expanded="${state.whyRole === "core:" + t.id}"
+        <button type="button" class="tiny" data-why="${esc(t.id)}" aria-controls="whyPanel" aria-expanded="${state.whyRole === "core:" + t.id}"
           title="Explain where this color came from">why</button>
-        <button type="button" class="tiny" data-pick="${t.id}" title="Arm this slot, then click the still">pick</button>
+        <button type="button" class="tiny" data-pick="${esc(t.id)}" title="Arm this slot, then click the still">pick</button>
         <button type="button" class="tiny${t.locked ? " on" : ""}" data-lock="${i}" aria-pressed="${t.locked}"
           title="Hold through a re-forge">${t.locked ? "locked" : "lock"}</button>
       </div>
       <div class="info">
         <input class="name" data-name="${i}" value="${esc(t.name)}" aria-label="${esc(t.id)} token name" />
-        <div class="hexline"><button type="button" class="hex" data-copy="${i}" aria-label="Copy ${esc(t.hex)}">${t.hex}</button>${badge}</div>
+        <div class="hexline"><button type="button" class="hex" data-copy="${i}" aria-label="Copy ${esc(t.hex)}">${safeHex(t.hex)}</button>${badge}</div>
         <input class="job" data-job="${i}" value="${esc(t.job)}" aria-label="${esc(t.id)} token purpose" />
       </div>
     </div>`;
@@ -2781,7 +2781,7 @@ function render() {
     ? state.found.map((t, i) =>
         `<span class="ink-pill" role="group" aria-label="${esc(t.name)} found ink">
            <button type="button" class="ink-copy" data-f="${i}" aria-label="Copy ${esc(t.hex)} ${esc(t.name)}">
-             <i style="background:${t.hex}" aria-hidden="true"></i>${t.hex} <em>${esc(t.name)}</em>${t.locked ? " ●" : ""}
+             <i style="background:${safeHex(t.hex)}" aria-hidden="true"></i>${safeHex(t.hex)} <em>${esc(t.name)}</em>${t.locked ? " ●" : ""}
            </button>
            <button type="button" class="tiny" data-f-why="${i}" aria-controls="whyPanel" aria-expanded="${state.whyRole === "found:" + t.uid}"
              aria-label="Explain where ${esc(t.hex)} ${esc(t.name)} came from">why</button>
@@ -3036,7 +3036,7 @@ function harnessHTML(plate, opts) {
   const P = {};
   ["ground","panel","ink","muted","observed","attention","rupture","gold"]
     .forEach(k => P[k] = plateToken(plate, k));
-  const vars = Object.keys(P).map(k => `--p-${k}:${P[k].hex}`).join(";")
+  const vars = Object.keys(P).map(k => `--p-${k}:${safeHex(P[k].hex)}`).join(";")
              + `;--p-on-attention:${onC(P.attention)};--p-on-observed:${onC(P.observed)}`
              + `;--p-on-rupture:${onC(P.rupture)};--p-on-gold:${onC(P.gold)}`;
 
@@ -3047,13 +3047,13 @@ function harnessHTML(plate, opts) {
 
   const trace =
     `<span class="dim">→ tool.extract_plate</span>\n` +
-    `<span class="dim">   stills ${plate.stills || 0} · core 8 · found ${plate.found.length}</span>\n` +
-    `<span class="ok">← ground ${P.ground.hex}</span>  <span class="dim">panel ${P.panel.hex}</span>\n` +
-    `<span class="ok">← observed ${esc(P.observed.name)} ${P.observed.hex}</span>\n` +
-    `<span class="warn">← attention ${esc(P.attention.name)} ${P.attention.hex}</span>\n` +
-    `<span class="bad">← rupture ${esc(P.rupture.name)} ${P.rupture.hex}</span>\n` +
-    `<span class="au">← gold ${esc(P.gold.name)} ${P.gold.hex}</span>` +
-    (plate.found.length ? `\n<span class="dim">← found ${plate.found.map(t => t.hex).join(" ")}</span>` : "") +
+    `<span class="dim">   stills ${esc(plate.stills || 0)} · core 8 · found ${plate.found.length}</span>\n` +
+    `<span class="ok">← ground ${safeHex(P.ground.hex)}</span>  <span class="dim">panel ${safeHex(P.panel.hex)}</span>\n` +
+    `<span class="ok">← observed ${esc(P.observed.name)} ${safeHex(P.observed.hex)}</span>\n` +
+    `<span class="warn">← attention ${esc(P.attention.name)} ${safeHex(P.attention.hex)}</span>\n` +
+    `<span class="bad">← rupture ${esc(P.rupture.name)} ${safeHex(P.rupture.hex)}</span>\n` +
+    `<span class="au">← gold ${esc(P.gold.name)} ${safeHex(P.gold.hex)}</span>` +
+    (plate.found.length ? `\n<span class="dim">← found ${plate.found.map(t => safeHex(t.hex)).join(" ")}</span>` : "") +
     `\n<span class="dim">review · ${review.agentEligible ? "human-sealed · agent-eligible" : `${review.status} · agent blocked`}</span>` +
     `\n<span class="dim">decision · ${esc(decisionTrace)}</span>` +
     `\n<span class="dim">focus · ${esc(focusTrace)}</span>` +
@@ -3084,6 +3084,8 @@ function harnessHTML(plate, opts) {
 
 /* ---------- import ---------- */
 const HEXRE = /^#?[0-9a-fA-F]{6}$/;
+// Only canonical colour literals may reach HTML styles or generated code.
+const safeHex = value => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : "#14120E";
 function plateMetadata(value) {
   const source = value && typeof value === "object" ? value : {};
   const createdAt = typeof source.createdAt === "string" &&
@@ -3121,6 +3123,7 @@ function coerceColour(o) {
 }
 /** Tolerant on input, strict on output: always exactly the eight roles. */
 function parsePlateJSON(text) {
+  if (text.length > SHELF_MAX_BYTES) throw new Error("palette file exceeds 8 MiB");
   let j = JSON.parse(text);
   if (!j || typeof j !== "object") throw new Error("not a plate object");
   // a theme file has sides, not a core — take the dark side rather than fail
@@ -3129,8 +3132,10 @@ function parsePlateJSON(text) {
     if (side) { j = { name: ((j.dark && j.dark.name) || j.name || "Imported") + " · dark side",
                       core: side, polarity: "dark" }; }
   }
+  boundedShelfValue(j);
   const srcCore = Array.isArray(j.core) ? j.core : [];
-  const byKey = {};
+  validateShelfMetadata({ ...j, core:srcCore, found:Array.isArray(j.found) ? j.found : [] });
+  const byKey = Object.create(null);
   srcCore.forEach(t => { const k = t && (t.key || t.id); if (k) byKey[k] = t; });
   // Fall back to position ONLY for a keyless list. With keys present, position
   // is meaningless — a two-entry {ground, ink} plate would hand ink's colour to
@@ -3170,7 +3175,7 @@ function parsePlateJSON(text) {
     params: j.params && typeof j.params === "object" && !Array.isArray(j.params)
       ? clonePlain(j.params) : null,
     stills: Array.isArray(j.stills) ? j.stills.length
-          : typeof j.stills === "number" ? j.stills
+          : Number.isSafeInteger(j.stills) && j.stills >= 0 && j.stills <= 256 ? j.stills
           : Array.isArray(j.sources) ? j.sources.length : 0,
     sources: Array.isArray(j.sources) ? j.sources : [],
     core, found, missing: 8 - matched,
@@ -3236,16 +3241,220 @@ async function importPlateFiles(files) {
 }
 
 /* ---------- shelf ---------- */
+// Shelf JSON is untrusted even when it came from this browser's storage.
+const SHELF_MAX_BYTES = 8 * 1024 * 1024;
+function shelfObject(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+function boundedShelfValue(value) {
+  const pending = [[value, 0]];
+  let count = 0;
+  while (pending.length) {
+    const [item, depth] = pending.pop();
+    if (++count > 100000 || depth > 32) throw new Error("shelf data is too complex");
+    if (typeof item === "number" && !Number.isFinite(item)) throw new Error("non-finite shelf number");
+    if (typeof item === "string" && item.length > 65536) throw new Error("shelf text is too long");
+    if (item && typeof item === "object") {
+      if (Array.isArray(item) && item.length + count + pending.length > 100000) throw new Error("shelf data is too complex");
+      const children = Object.values(item);
+      if (children.length + count + pending.length > 100000) throw new Error("shelf data is too complex");
+      for (const child of children) pending.push([child, depth + 1]);
+    }
+  }
+}
+function validateShelfMetadata(plate) {
+  const object = (value, label) => {
+    if (value != null && !shelfObject(value)) throw new Error("invalid " + label);
+    return value || {};
+  };
+  const strings = (value, keys) => {
+    for (const key of keys) if (value[key] != null && typeof value[key] !== "string") throw new Error("invalid " + key);
+  };
+  const numbers = (value, keys) => {
+    for (const key of keys) if (value[key] != null && (typeof value[key] !== "number" || !Number.isFinite(value[key]))) throw new Error("invalid " + key);
+  };
+  const booleans = (value, keys) => {
+    for (const key of keys) if (value[key] != null && typeof value[key] !== "boolean") throw new Error("invalid " + key);
+  };
+  const list = (value, label, maximum = 256) => {
+    if (value != null && (!Array.isArray(value) || value.length > maximum)) throw new Error("invalid " + label);
+    return value || [];
+  };
+  const stringList = (value, label) => {
+    if (list(value, label).some(item => typeof item !== "string")) throw new Error("invalid " + label);
+  };
+  const dimensions = (value, label) => {
+    if (value != null && (!Array.isArray(value) || value.length !== 2 ||
+        value.some(item => typeof item !== "number" || !Number.isFinite(item) || item < 0))) throw new Error("invalid " + label);
+  };
+  const hash = value => strings(object(value, "hash"), ["algo", "value"]);
+  const source = value => {
+    const record = object(value, "source");
+    strings(record, ["file", "mime", "path"]); numbers(record, ["bytes"]); booleans(record, ["retained"]);
+    hash(record.hash); dimensions(record.natural, "natural dimensions"); dimensions(record.working, "working dimensions");
+    for (const transform of list(record.transforms, "transforms", 64)) {
+      const step = object(transform, "transform");
+      strings(step, ["op", "via", "reason"]);
+      dimensions(step.from, "transform source"); dimensions(step.to, "transform target");
+    }
+  };
+  const reviewRecord = (value, historyEntry = false) => {
+    const review = object(value, "review");
+    strings(review, ["status", "scope", "changedBy", "sealedAt", "sealedBy", "invalidatedAt", "invalidatedBy"]);
+    numbers(review, ["version"]); booleans(review, ["agentEligible"]); hash(review.fingerprint);
+    const proposal = object(review.proposal, "proposal");
+    strings(proposal, ["name", "source", "createdAt", "polarity"]); numbers(proposal, ["version"]); hash(proposal.fingerprint);
+    for (const token of list(proposal.core, "proposal core", 32).concat(list(proposal.found, "proposal found", 32))) {
+      const row = object(token, "proposal token");
+      strings(row, ["key", "id", "hex", "name", "job"]); booleans(row, ["locked"]);
+    }
+    list(proposal.sources, "proposal sources").forEach(source);
+    const decision = object(review.decision, "decision");
+    numbers(decision, ["version", "changeCount", "fieldCount"]); booleans(decision, ["baseline"]);
+    hash(decision.proposalFingerprint); hash(decision.currentFingerprint);
+    for (const change of list(decision.changes, "decision changes")) {
+      const row = object(change, "decision change"); strings(row, ["key", "kind"]); stringList(row.fields, "changed fields");
+      for (const side of [row.before, row.after]) {
+        const record = object(side, "decision values");
+        strings(record, ["name", "polarity", "key", "id", "hex", "job"]); booleans(record, ["locked"]);
+        list(record.sources, "decision sources").forEach(source);
+      }
+    }
+    const assessment = object(review.assessment, "assessment");
+    strings(assessment, ["status"]); numbers(assessment, ["version", "attentionCount"]);
+    for (const check of list(assessment.checks, "assessment checks")) {
+      const row = object(check, "assessment check"); strings(row, ["id", "label", "status", "detail"]); stringList(row.roles, "assessment roles");
+    }
+    if (!historyEntry) list(review.history, "review history").forEach(entry => reviewRecord(entry, true));
+  };
+  list(plate.sources, "sources").forEach(source);
+  const params = object(plate.params, "parameters");
+  strings(params, ["polarityMode"]); numbers(params, ["budget", "chromaMin", "foundInks", "variant", "variantCount"]);
+  const generator = object(plate.generator, "generator");
+  strings(generator, ["name", "version"]);
+  if (generator.extraction != null && !(typeof generator.extraction === "number" && Number.isFinite(generator.extraction)) &&
+      !(typeof generator.extraction === "string" && /^\d+$/.test(generator.extraction))) throw new Error("invalid extraction version");
+  reviewRecord(plate.review);
+  for (const token of plate.core.concat(plate.found || [])) {
+    strings(object(token, "token"), ["id", "key", "name", "job"]);
+    const origin = object(token && token.origin, "origin");
+    strings(origin, ["kind", "method", "raw", "reason", "sample"]);
+    numbers(origin, ["area", "hueBin", "band", "idealH", "chromaCap"]); booleans(origin, ["capped"]);
+    if (typeof origin.quantile === "number") { if (!Number.isFinite(origin.quantile) || origin.quantile < 0 || origin.quantile > 1) throw new Error("invalid origin quantile"); }
+    else dimensions(origin.quantile, "origin quantile");
+    if (list(origin.stills, "origin stills").some(index => !Number.isSafeInteger(index) || index < 0)) throw new Error("invalid origin stills");
+    if (origin.still != null) source(origin.still);
+    for (const location of [origin.point, origin.natural]) {
+      const point = object(location, "origin point"); strings(point, ["space"]); numbers(point, ["x", "y"]); dimensions(point.of, "origin dimensions");
+    }
+    for (const item of list(origin.repairs, "origin repairs", 64)) {
+      const repair = object(item, "repair"); strings(repair, ["op", "against", "from", "to"]); numbers(repair, ["target"]);
+    }
+  }
+}
+
+function normalizeShelfEntry(value) {
+  if (!shelfObject(value) || !Array.isArray(value.core) || value.core.length !== ROLES.length)
+    throw new Error("a shelf plate needs all eight roles");
+  boundedShelfValue(value);
+  validateShelfMetadata(value);
+  const plate = clonePlain(value); // Preserve extension fields and recorded review/provenance.
+  const text = (object, key) => {
+    if (object[key] != null && typeof object[key] !== "string") throw new Error("invalid " + key);
+  };
+  for (const key of ["id", "name", "createdAt", "kind", "family"]) text(plate, key);
+  for (const key of ["params", "generator", "review", "facets", "signature"]) {
+    if (plate[key] != null && !shelfObject(plate[key])) throw new Error("invalid " + key);
+  }
+  for (const key of ["tags", "notes"]) {
+    if (plate[key] != null && (!Array.isArray(plate[key]) || plate[key].length > 256 ||
+        plate[key].some(item => typeof item !== "string"))) throw new Error("invalid " + key);
+  }
+  if (plate.lightScene != null && typeof plate.lightScene !== "boolean") throw new Error("invalid polarity");
+  if (plate.polarity != null && !["dark", "light"].includes(plate.polarity)) throw new Error("invalid polarity");
+  if (plate.polarity != null && plate.lightScene != null && (plate.polarity === "light") !== plate.lightScene)
+    throw new Error("contradictory polarity");
+  if (plate.stills != null && (!Number.isSafeInteger(plate.stills) || plate.stills < 0 || plate.stills > 256))
+    throw new Error("invalid still count");
+  if (plate.medianL != null && (typeof plate.medianL !== "number" || plate.medianL < 0 || plate.medianL > 1))
+    throw new Error("invalid median luminance");
+  if (plate.sources != null && (!Array.isArray(plate.sources) || plate.sources.length > 256 ||
+      plate.sources.some(source => !shelfObject(source) ||
+        source.file != null && typeof source.file !== "string" ||
+        source.hash != null && (!shelfObject(source.hash) || typeof source.hash.algo !== "string" || typeof source.hash.value !== "string"))))
+    throw new Error("invalid source records");
+  const keyed = plate.core.some(token => token && (token.id != null || token.key != null));
+  const roles = new Map();
+  plate.core.forEach((token, index) => {
+    if (!shelfObject(token)) throw new Error("invalid core token");
+    const id = keyed ? token.id || token.key : ROLES[index].id;
+    if (!ROLES.some(role => role.id === id) || roles.has(id) ||
+        token.id != null && token.id !== id || token.key != null && token.key !== id)
+      throw new Error("invalid or duplicate core role");
+    roles.set(id, token);
+  });
+  const normalizeToken = (token, role) => {
+    if (!shelfObject(token)) throw new Error("invalid colour token");
+    for (const key of ["id", "key", "name", "job"]) text(token, key);
+    if (token.origin != null && !shelfObject(token.origin)) throw new Error("invalid colour origin");
+    for (const key of ["locked", "derived"]) {
+      if (token[key] != null && typeof token[key] !== "boolean") throw new Error("invalid " + key);
+    }
+    const representations = [];
+    if (token.hex != null) {
+      if (typeof token.hex !== "string" || !HEXRE.test(token.hex.trim())) throw new Error("invalid hex colour");
+      const h = token.hex.trim().replace(/^#/, "");
+      representations.push([0, 2, 4].map(offset => parseInt(h.slice(offset, offset + 2), 16)));
+    }
+    if (token.rgb != null) {
+      if (!Array.isArray(token.rgb) || token.rgb.length !== 3) throw new Error("invalid RGB colour");
+      representations.push(token.rgb);
+    }
+    if (["r", "g", "b"].some(key => token[key] != null)) representations.push([token.r, token.g, token.b]);
+    if (!representations.length || representations.some(rgb => rgb.some(channel =>
+        !Number.isInteger(channel) || channel < 0 || channel > 255))) throw new Error("invalid RGB channels");
+    const [r, g, b] = representations[0];
+    if (representations.some(rgb => rgb[0] !== r || rgb[1] !== g || rgb[2] !== b))
+      throw new Error("hex and RGB colours disagree");
+    const result = { ...token, r, g, b, rgb:[r, g, b], hex:hex({ r, g, b }) };
+    if (role) { result.id = role.id; result.key = role.id; }
+    if (result.name == null) result.name = nameOf(result);
+    if (result.job == null) result.job = role ? role.job : "found ink";
+    return result;
+  };
+  plate.core = ROLES.map(role => normalizeToken(roles.get(role.id), role));
+  if (plate.found != null && (!Array.isArray(plate.found) || plate.found.length > 256)) throw new Error("invalid found inks");
+  plate.found = (plate.found || []).map(token => normalizeToken(token, null));
+  if (plate.lightScene == null) plate.lightScene = plate.polarity ? plate.polarity === "light" : relLum(plate.core[0]) > .2;
+  if (plate.stills == null) plate.stills = Array.isArray(plate.sources) ? plate.sources.length : 0;
+  if (plate.name == null) plate.name = "Imported plate";
+  return plate;
+}
+function parseShelfJSON(text) {
+  if (text.length > SHELF_MAX_BYTES) throw new Error("shelf file exceeds 8 MiB");
+  const value = JSON.parse(text);
+  const incoming = Array.isArray(value) ? value : shelfObject(value) && value.plates;
+  if (!Array.isArray(incoming) || incoming.length > 400) throw new Error("expected at most 400 shelf entries");
+  const plates = [];
+  let skipped = 0;
+  for (const entry of incoming) {
+    try { plates.push(normalizeShelfEntry(entry)); }
+    catch { skipped++; }
+  }
+  return { plates, skipped };
+}
+
 const SHELF_KEY = "scene-palette.shelf.v1";
 function loadShelf() {
   try {
     const raw = localStorage.getItem(SHELF_KEY);
-    const j = raw ? JSON.parse(raw) : [];
-    const plates = Array.isArray(j)
-      ? j.filter(p => p && Array.isArray(p.core) && p.core.length === 8)
-      : [];
-    return normalizeShelfIds(plates);
-  } catch { return []; }
+    const parsed = parseShelfJSON(raw || "[]");
+    if (parsed.skipped) state.shelfRestoreMessage = `${parsed.skipped} invalid saved shelf entries skipped; stored data was not changed`;
+    return normalizeShelfIds(parsed.plates);
+  } catch {
+    state.shelfRestoreMessage = "Saved shelf could not be read; stored data was not changed";
+    return [];
+  }
 }
 function persistShelf() {
   try { localStorage.setItem(SHELF_KEY, JSON.stringify(state.shelf)); return true; }
@@ -3373,7 +3582,7 @@ function renderShelf() {
   }
   box.innerHTML = state.shelf.map((p, i) => `
     <div class="card${state.abA === p.id ? " inA" : ""}${state.abB === p.id ? " inB" : ""}">
-      <div class="csw">${p.core.map(t => `<i style="background:${t.hex}"></i>`).join("")}</div>
+      <div class="csw">${p.core.map(t => `<i style="background:${safeHex(t.hex)}"></i>`).join("")}</div>
       <div class="cname" title="${esc(p.name)}">${esc(p.name)}</div>
       <div class="cmeta">${p.lightScene ? "light" : "dark"} · ${p.found.length} found · ${plateReview(p).agentEligible ? "human-sealed" : "unsealed"}${state.activeShelfId === p.id ? " · current" : ""}</div>
       <div class="cbtns">
@@ -3451,7 +3660,7 @@ function renderCompare() {
     const rows = ROLES.map(r => {
       const a = plateToken(A, r.id), b = plateToken(B, r.id);
       return a.hex === b.hex ? null
-        : `<i style="background:${a.hex}"></i>${a.hex} → <i style="background:${b.hex}"></i>${b.hex}` +
+        : `<i style="background:${safeHex(a.hex)}"></i>${safeHex(a.hex)} → <i style="background:${safeHex(b.hex)}"></i>${safeHex(b.hex)}` +
           `  <span style="color:var(--muted)">${r.id}</span>  ΔE ${deltaE(a, b).toFixed(3)}`;
     }).filter(Boolean);
     diff = `<div class="abdiff"><b>${rows.length ? `${rows.length} of 8 roles differ` : "identical plates"}</b>` +
@@ -3470,8 +3679,8 @@ function renderCompare() {
    ============================================================ */
 
 function plateTokens(plate) {
-  return plate.core.map(t => ({ ...t, key: t.id }))
-    .concat(plate.found.map((t, i) => ({ ...t, key: "found_" + (i + 1) })));
+  return plate.core.map((t, i) => ({ ...t, key:ROLES[i].id, hex:safeHex(t.hex) }))
+    .concat(plate.found.map((t, i) => ({ ...t, key:"found_" + (i + 1), hex:safeHex(t.hex) })));
 }
 
 function makeTheme(p1, p2) {
@@ -3553,7 +3762,7 @@ function themeExport(theme, fmt) {
 
   if (fmt === "css") {
     const decls = (tk, ind) => tk.map(t =>
-      `${ind}--${t.key}: ${t.hex};`.padEnd(ind.length + 30) +
+      `${ind}--${t.key}: ${safeHex(t.hex)};`.padEnd(ind.length + 30) +
       ` /* ${safeComment(t.name)} · ${safeComment(t.job)} */`).join("\n");
     return `/* ${name} — Scene Palette theme */\n` +
       `:root {\n  color-scheme: ${theme.paired ? "dark light" : "dark"};\n${decls(D, "  ")}\n}\n\n` +
@@ -3597,9 +3806,9 @@ function themeExport(theme, fmt) {
     return `GIMP Palette\nName: ${name}\nColumns: 8\n#\n${rows(D, "dark")}\n${rows(L, altKey)}\n`;
   }
   return `# dark — ${safeComment(theme.dark.name)}\n` +
-    D.map(t => `${t.hex}  ${safeComment(t.name)}  (${t.key})`).join("\n") +
+    D.map(t => `${safeHex(t.hex)}  ${safeComment(t.name)}  (${t.key})`).join("\n") +
     `\n\n# ${altKey} — ${safeComment(theme.light.name)}\n` +
-    L.map(t => `${t.hex}  ${safeComment(t.name)}  (${t.key})`).join("\n") + "\n";
+    L.map(t => `${safeHex(t.hex)}  ${safeComment(t.name)}  (${t.key})`).join("\n") + "\n";
 }
 
 function renderTheme() {
@@ -3620,7 +3829,7 @@ function renderTheme() {
     const t = state.theme, rep = themeReport(t);
     const side = (p, label) => `<div class="tside">
       <div class="abhead"><span>${label}</span><b>${esc(p.name)}</b></div>
-      <div class="csw">${p.core.map(x => `<i style="background:${x.hex}"></i>`).join("")}</div>
+      <div class="csw">${p.core.map(x => `<i style="background:${safeHex(x.hex)}"></i>`).join("")}</div>
     </div>`;
     box.innerHTML = `<div class="theme-card">
       <div class="tsides">${side(t.dark, t.paired ? "Dark side" : "Base")}${side(t.light, t.paired ? "Light side" : "Alt")}</div>
@@ -3683,7 +3892,7 @@ function renderMatrix() {
   };
   const rows = state.core.filter(t => t.id !== "ground" && t.id !== "panel").map(t => `
     <div class="mrow">
-      <div class="mtok"><i style="background:${t.hex}"></i>${esc(t.name)} <em>${esc(t.id)}</em></div>
+      <div class="mtok"><i style="background:${safeHex(t.hex)}"></i>${esc(t.name)} <em>${esc(t.id)}</em></div>
       ${cell(t, g)}${cell(t, p)}
     </div>`).join("");
 
@@ -3693,7 +3902,7 @@ function renderMatrix() {
   const fills = ["attention", "observed", "rupture", "gold"].map(id => {
     const t = token(id), fg = onC(t), v = contrast(fg, t), [cls, lab] = crLevel(v);
     return `<div class="mrow">
-      <div class="mtok"><i style="background:${t.hex}"></i>label on ${esc(t.name)} <em>${esc(id)}</em></div>
+      <div class="mtok"><i style="background:${safeHex(t.hex)}"></i>label on ${esc(t.name)} <em>${esc(id)}</em></div>
       <div class="mcell"><span>${hex(fg)}</span></div>
       <div class="mcell"><span>${v.toFixed(2)}:1</span><span class="lvl ${cls}">${lab}</span></div>
     </div>`;
@@ -3907,7 +4116,7 @@ ${[...history].reverse().map(entry => {
 }).join("\n")}
 
 ` : "";
-  const row = t => `| \`${t.key || t.id}\` | ${t.hex} | ${t.name} | ${t.job || ""} | ${
+  const row = t => `| \`${t.key || t.id}\` | ${safeHex(t.hex)} | ${t.name} | ${t.job || ""} | ${
     t.origin ? t.origin.kind : "unknown"} |`;
   const src = (plate.sources || []).map(s =>
     `- \`${s.path || s.file}\` — ${s.file}, ${s.natural ? s.natural.join("×") : "?"} → ${
@@ -3916,7 +4125,7 @@ ${[...history].reverse().map(entry => {
   ).join("\n") || "- none recorded";
   const picked = (plate.core || []).concat(plate.found || [])
     .filter(t => t.origin && t.origin.kind === "picked")
-    .map(t => `- \`${t.key || t.id}\` ${t.hex} — picked at (${t.origin.natural.x}, ${t.origin.natural.y}) of \`${t.origin.still.file}\``)
+    .map(t => `- \`${t.key || t.id}\` ${safeHex(t.hex)} — picked at (${t.origin.natural.x}, ${t.origin.natural.y}) of \`${t.origin.still.file}\``)
     .join("\n");
   return `# ${plate.name}
 
@@ -4267,18 +4476,18 @@ function writeExport() {
  *  Export tab call the same one, so a token can never render two ways. */
 function formatPlate(plate, fmt) {
   const tk = plateTokens(plate);
-  const name = plate.name || "Plate";
+  const name = safeComment(plate.name || "Plate");
   const ground = plateToken(plate, "ground");
   const review = safeComment(reviewExportLabel(plate));
   const state = { fmt };                       // shadow: this function reads no app state
   let out = "";
   if (state.fmt === "hex") {
-    out = `# Review: ${review}\n` + tk.map(t => `${t.hex}  ${safeComment(t.name)}  (${t.key} · ${safeComment(t.job)})`).join("\n");
+    out = `# Review: ${review}\n` + tk.map(t => `${safeHex(t.hex)}  ${safeComment(t.name)}  (${t.key} · ${safeComment(t.job)})`).join("\n");
   } else if (state.fmt === "css") {
     out = `/* ${name} — Scene Palette */\n/* Review: ${review} */\n:root {\n`
       + tk.map(t => {
           const { L, C, H } = rgbToLch(t);
-          return `  --${t.key}: ${t.hex};`.padEnd(30)
+          return `  --${t.key}: ${safeHex(t.hex)};`.padEnd(30)
                + ` /* ${safeComment(t.name)} · ${safeComment(t.job)} · oklch(${(L*100).toFixed(1)}% ${C.toFixed(3)} ${H.toFixed(0)}) */`;
         }).join("\n")
       + "\n}\n";
@@ -4397,15 +4606,16 @@ $("plateFile").addEventListener("change", async e => {
   if (state.shelfImport) {                            // merging a whole shelf file
     state.shelfImport = false;
     try {
-      const j = JSON.parse(await f.text());
-      const incoming = (Array.isArray(j) ? j : j && j.plates) || [];
-      const good = incoming.filter(p => p && Array.isArray(p.core) && p.core.length === 8);
-      if (!good.length) throw new Error("no plates in that file");
+      if (f.size > SHELF_MAX_BYTES) throw new Error("shelf file exceeds 8 MiB");
+      const parsed = parseShelfJSON(await f.text());
+      const good = parsed.plates;
+      if (!good.length) throw new Error(parsed.skipped ? `${parsed.skipped} invalid entries; no valid plates` : "no plates in that file");
       const priorShelf = clonePlain(state.shelf);
       const priorA = state.abA, priorB = state.abB, priorActive = state.activeShelfId;
       const priorTheme = clonePlain(state.theme);
       const merged = mergeShelfImport(state.shelf, good, 40);
       const details = [];
+      if (parsed.skipped) details.push(`${parsed.skipped} invalid entries skipped`);
       if (merged.duplicates) details.push(`${merged.duplicates} exact revision${merged.duplicates === 1 ? "" : "s"} already here`);
       if (merged.skippedCapacity) details.push(`${merged.skippedCapacity} held back at the 40-plate limit`);
       if (!merged.imported.length) {
@@ -4450,6 +4660,7 @@ $("tabs").querySelectorAll("[data-fmt]").forEach(btn => btn.onclick = () => {
 });
 state.shelf = loadShelf();
 renderShelf();
+if (state.shelfRestoreMessage) toast(state.shelfRestoreMessage, true);
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && state.arm) { state.arm = null; renderArmbar(); }

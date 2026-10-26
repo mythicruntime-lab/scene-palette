@@ -27,6 +27,7 @@ const assessmentSource = sliceSource("function reviewRGB(token)", "\nfunction se
 const historySource = sliceSource("function normalizeReviewHistory(history)", "\nfunction sealMatches");
 const shelfRevisionSource = sliceSource("function shelfRevisionValue(plate)", "\nfunction savePlate()");
 const plateImportSource = sliceSource("const HEXRE =", "\nfunction applyPlate");
+const shelfValidationSource = sliceSource("// Shelf JSON is untrusted", "\nconst SHELF_KEY =");
 const palettes = fs.readdirSync(vaultRoot, { withFileTypes: true })
   .filter(entry => entry.isDirectory())
   .map(entry => {
@@ -211,7 +212,7 @@ const plateImportAudit = {
   relLum() { return 0; }
 };
 vm.createContext(plateImportAudit);
-vm.runInContext(`${plateImportSource}\nparsed = parsePlateJSON(text);`, plateImportAudit);
+vm.runInContext(`${plateImportSource}\n${shelfValidationSource}\nparsed = parsePlateJSON(text);`, plateImportAudit);
 
 assert.equal(plateImportAudit.parsed.createdAt, importDocument.createdAt);
 assert.deepStrictEqual(JSON.parse(JSON.stringify(plateImportAudit.parsed.generator)), importDocument.generator);
@@ -235,6 +236,11 @@ importedBefore = contentFingerprint(importedDocument.name, importedDocument.ligh
 importedAfter = contentFingerprint(parsedDocument.name, parsedDocument.lightScene,
   parsedDocument.core, parsedDocument.found, parsedDocument.sources, REVIEW_SCOPE);`, fingerprintAudit);
 assert.equal(fingerprintAudit.importedAfter.value, fingerprintAudit.importedBefore.value);
+
+// The tolerant single-palette importer shares the metadata type boundary.
+plateImportAudit.text = JSON.stringify({ ...importDocument, core:importDocument.core.map((token, i) =>
+  i === 2 ? { ...token, origin:{ kind:{ toString:null, valueOf:null } } } : token) });
+assert.throws(() => vm.runInContext("parsePlateJSON(text)", plateImportAudit), /invalid kind/);
 
 // Generated found inks have output keys but no semantic IDs. Import must not
 // turn found_1 into a new identity and invalidate an otherwise matching seal.
@@ -360,5 +366,94 @@ assert.notEqual(shelfRevisionAudit.importMerge.shelf[0].id, shelfRevisionAudit.p
 assert.equal(shelfRevisionAudit.importMerge.shelf[1].id, shelfRevisionAudit.prior.id);
 assert.equal(new Set(shelfRevisionAudit.normalized.map(plate => plate.id)).size, 3);
 assert.equal(shelfRevisionAudit.normalized[0].id, "shared");
+
+// Both shelf entry points must validate the complete durable record, while
+// retaining legitimate extension fields and the exact sealed semantic content.
+const shelfFixture = JSON.parse(fs.readFileSync(path.join(root,
+  "testdata/reference-palettes/empty-neon-street/palette.json"), "utf8"));
+shelfFixture.id = "stable-shelf-id";
+shelfFixture.extension = { owner:"human", nested:[1, "keep me"] };
+const shelfValidation = { ...plateImportAudit, fixture:shelfFixture, parsed:null, result:null };
+vm.createContext(shelfValidation);
+vm.runInContext(`${plateImportSource}\n${shelfValidationSource}\nresult = normalizeShelfEntry(fixture);`, shelfValidation);
+assert.deepEqual(JSON.parse(JSON.stringify(shelfValidation.result)), shelfFixture,
+  "A valid shelf record changed during normalization");
+const hostile = '<img src="data:,invalid" onerror="window.__shelfSecuritySentinel=1">';
+const malformed = [null, [], { core:Array(8).fill(null) }];
+for (const mutate of [
+  p => { p.core[0].hex = '#000000">' + hostile; },
+  p => { p.core[0].id = hostile; },
+  p => { p.core[0].key = "ink"; },
+  p => { p.core[1] = p.core[0]; },
+  p => { p.core[0].rgb[0] = (p.core[0].rgb[0] + 1) % 256; },
+  p => { p.core[0].r = 1.25; },
+  p => { p.core[0].r = "12"; },
+  p => { p.found = [null]; },
+  p => { p.found = [{ hex:hostile }]; },
+  p => { p.core[2].origin.kind = { toString:null, valueOf:null }; },
+  p => { p.core[2].origin.repairs = [{ from:{ toString:null, valueOf:null } }]; },
+  p => { p.core[2].origin.natural = { x:{ toString:null, valueOf:null } }; },
+  p => { p.core[2].origin.quantile = [{ toString:null, valueOf:null }, 1]; },
+  p => { p.sources[0].natural = [{ toString:null, valueOf:null }, 80]; },
+  p => { p.sources[0].path = { toString:null, valueOf:null }; },
+  p => { p.generator.extraction = { toString:null, valueOf:null }; },
+  p => { p.params.variant = { toString:null, valueOf:null }; },
+  p => { p.review = { proposal:{ name:{ toString:null, valueOf:null } } }; },
+  p => { p.review = { decision:{ changeCount:{ toString:null, valueOf:null } } }; },
+  p => { p.review = { history:[{ invalidatedBy:{ toString:null, valueOf:null } }] }; },
+  p => { p.stills = hostile; },
+  p => { p.stills = -1; },
+  p => { p.name = {}; },
+  p => { p.sources = [null]; },
+  p => { p.sources[0].hash = { algo:[], value:"x" }; },
+  p => { p.review = []; },
+  p => { p.params = []; },
+  p => { p.notes = [{}]; },
+  p => { p.lightScene = !p.lightScene; },
+  p => { p.extension = "x".repeat(65537); },
+  p => { p.extension = Array(100001).fill(0); },
+  p => { p.extension = Array.from({ length:34 }).reduce(value => ({ child:value }), {}); }
+]) {
+  const value = structuredClone(shelfFixture); mutate(value); malformed.push(value);
+}
+shelfValidation.text = JSON.stringify({ plates:[shelfFixture, ...malformed] });
+vm.runInContext("parsed = parseShelfJSON(text);", shelfValidation);
+assert.equal(shelfValidation.parsed.skipped, malformed.length);
+assert.deepEqual(JSON.parse(JSON.stringify(shelfValidation.parsed.plates)), [shelfFixture]);
+for (const text of ['{}', '{"plates":{}}', JSON.stringify(Array(401).fill(null)), ' '.repeat(8 * 1024 * 1024 + 1)]) {
+  shelfValidation.text = text;
+  assert.throws(() => vm.runInContext("parseShelfJSON(text)", shelfValidation));
+}
+// Display text remains text, and harmless extension/provenance metadata survives.
+shelfValidation.fixture = structuredClone(shelfFixture);
+shelfValidation.fixture.name = hostile;
+shelfValidation.fixture.core[2].name = hostile;
+shelfValidation.fixture.core[2].origin.extra = { quoted:hostile };
+vm.runInContext("result = normalizeShelfEntry(fixture);", shelfValidation);
+assert.equal(shelfValidation.result.name, hostile);
+assert.equal(shelfValidation.result.core[2].origin.extra.quoted, hostile);
+// Legacy positional and key-only colours normalize without inventing paint.
+shelfValidation.fixture = { core:shelfFixture.core.map(token => ({ hex:token.hex })), found:[] };
+vm.runInContext("result = normalizeShelfEntry(fixture);", shelfValidation);
+assert.deepEqual(Array.from(shelfValidation.result.core, token => token.hex), shelfFixture.core.map(token => token.hex));
+shelfValidation.fixture = { ...shelfFixture, core:shelfFixture.core.map(({ id, ...token }) => token) };
+vm.runInContext("result = normalizeShelfEntry(fixture);", shelfValidation);
+assert.deepEqual(Array.from(shelfValidation.result.core, token => token.id), roleIDs);
+// Fingerprints are recomputed from content, never trusted from imported eligibility flags.
+shelfValidation.fixture = importDocument;
+vm.runInContext("result = normalizeShelfEntry(fixture);", shelfValidation);
+fingerprintAudit.importedDocument = importDocument;
+fingerprintAudit.parsedDocument = JSON.parse(JSON.stringify(shelfValidation.result));
+vm.runInContext(`
+importedBefore = contentFingerprint(importedDocument.name, importedDocument.lightScene,
+  importedDocument.core, importedDocument.found, importedDocument.sources, REVIEW_SCOPE);
+importedAfter = contentFingerprint(parsedDocument.name, parsedDocument.lightScene,
+  parsedDocument.core, parsedDocument.found, parsedDocument.sources, REVIEW_SCOPE);`, fingerprintAudit);
+assert.equal(fingerprintAudit.importedAfter.value, fingerprintAudit.importedBefore.value);
+fingerprintAudit.parsedDocument.core[0].name = "tampered";
+vm.runInContext(`importedAfter = contentFingerprint(parsedDocument.name, parsedDocument.lightScene,
+  parsedDocument.core, parsedDocument.found, parsedDocument.sources, REVIEW_SCOPE);`, fingerprintAudit);
+assert.notEqual(fingerprintAudit.importedAfter.value, fingerprintAudit.importedBefore.value);
+
 
 console.log(`JavaScript contracts: OK (${actual.count} indexed plates; source-bound ${fingerprintAudit.sourceBound.value}; provenance, metadata round-trips, review readiness, seal history, and safe shelf merges verified)`);
