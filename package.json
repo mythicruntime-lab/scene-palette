@@ -1,0 +1,16 @@
+{
+  "name": "scene-palette-development",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "check": "node scripts/generate-fixtures.mjs --check && node scripts/color-math-fixture.mjs --check && node scripts/verify-js-index.mjs && node scripts/reference-extract.mjs --check",
+    "check:browser": "node scripts/verify-browser.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1",
+    "sharp": "0.35.5"
+  }
+}

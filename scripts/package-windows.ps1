@@ -5,9 +5,18 @@ Build a portable, unsigned Windows release without changing the source HTML.
 .DESCRIPTION
 Run from any directory. Requires Go and Git; no installer or runtime is needed
 by the recipient. Each invocation creates a fresh folder and ZIP under bin/releases.
+Use -RequireClean for a review package. -ReleaseTag additionally requires the local
+v<application-version> tag at HEAD and an explicit -ExpectedGoVersion (goX.Y.Z).
+Clean/tag builds ignore user Go configuration, workspaces, and injected build flags,
+and use the selected local toolchain without automatic switching. Development builds
+retain those settings. The script never creates tags or publishes anything.
 #>
 [CmdletBinding()]
-param()
+param(
+    [switch]$RequireClean,
+    [string]$ReleaseTag,
+    [string]$ExpectedGoVersion
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -61,18 +70,83 @@ function Get-SourceSnapshot {
 }
 
 $oldEnvironment = @{}
-foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED')) {
+foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED', 'GOENV', 'GOFLAGS', 'GOWORK',
+    'GOTOOLCHAIN', 'GOROOT', 'GO111MODULE', 'GOEXPERIMENT', 'GOAMD64', 'GOFIPS140', 'GODEBUG')) {
     $oldEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
 }
 Push-Location $repoRoot
 try {
     $commit = (Invoke-Git @('rev-parse', 'HEAD')).Trim()
     $dirty = [bool](Invoke-Git @('status', '--porcelain', '--untracked-files=normal'))
+    $cleanRequired = $RequireClean -or -not [string]::IsNullOrWhiteSpace($ReleaseTag)
+    if ($cleanRequired -and $dirty) { throw 'This build requires a clean source tree. Commit or set aside source changes first.' }
+    if ($ReleaseTag -and $ReleaseTag -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') {
+        throw 'ReleaseTag must be the local application version tag (vX.Y.Z).'
+    }
+    if ($ExpectedGoVersion -and $ExpectedGoVersion -notmatch '^go[0-9]+\.[0-9]+\.[0-9]+$') {
+        throw 'ExpectedGoVersion must name an exact patched toolchain, for example go1.27.3.'
+    }
+    if ($ReleaseTag -and -not $ExpectedGoVersion) {
+        throw 'Tagged release builds require -ExpectedGoVersion after checking the supported Go patch release.'
+    }
+    if ($cleanRequired) {
+        # A clean Git tree does not constrain GOFLAGS overlays, alternate modfiles,
+        # parent workspaces, or settings persisted by 'go env -w'. Ignore all of
+        # those before invoking Go, including version/toolchain discovery.
+        $env:GOENV = 'off'
+        $env:GOWORK = 'off'
+        $env:GOTOOLCHAIN = 'local'
+        $env:GO111MODULE = 'on'
+        $env:GOAMD64 = 'v1'
+        $env:GOFIPS140 = 'off'
+        foreach ($name in @('GOFLAGS', 'GOROOT', 'GOEXPERIMENT', 'GODEBUG')) {
+            [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+        }
+    }
+    $env:GOOS = 'windows'
+    $env:GOARCH = 'amd64'
+    $env:CGO_ENABLED = '0'
+    $goVersion = (& $go version) -join ' '
+    if ($LASTEXITCODE -ne 0) { throw 'go version failed.' }
+    $goToolchain = ((& $go env GOVERSION) -join '').Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'go env GOVERSION failed.' }
+    if ($ExpectedGoVersion -and $goToolchain -ne $ExpectedGoVersion) {
+        throw "Expected $ExpectedGoVersion, but the selected Go toolchain is $goToolchain."
+    }
+    $environmentJSON = (& $go env -json GOENV GOFLAGS GOWORK GOTOOLCHAIN GO111MODULE GOEXPERIMENT GOAMD64 GOFIPS140 GOOS GOARCH CGO_ENABLED) -join "`n"
+    if ($LASTEXITCODE -ne 0) { throw 'Could not read the effective Go build environment.' }
+    $goEnvironment = $environmentJSON | ConvertFrom-Json
+    if (-not $cleanRequired) {
+        # Developer flags/configuration can contain paths or secret-bearing linker
+        # values. Record which overrides are active, never their arbitrary contents.
+        $goEnvironment = [ordered]@{
+            GOOS = 'windows'; GOARCH = 'amd64'; CGO_ENABLED = '0'
+            GOENV = $(if ($goEnvironment.GOENV) { 'enabled (path omitted)' } else { 'off' })
+            GOFLAGS = $(if ($goEnvironment.GOFLAGS) { 'configured (values omitted)' } else { '' })
+            GOWORK = $(if ($goEnvironment.GOWORK -in @('', 'off')) { $goEnvironment.GOWORK } else { 'enabled (path omitted)' })
+            GOTOOLCHAIN = $(if ($goEnvironment.GOTOOLCHAIN -in @('local', 'auto')) { $goEnvironment.GOTOOLCHAIN } else { 'configured (value omitted)' })
+            GO111MODULE = $(if ($goEnvironment.GO111MODULE -in @('', 'on', 'off', 'auto')) { $goEnvironment.GO111MODULE } else { 'configured (value omitted)' })
+            GOEXPERIMENT = $(if ($goEnvironment.GOEXPERIMENT) { 'configured (values omitted)' } else { '' })
+            GOAMD64 = $(if ($goEnvironment.GOAMD64 -match '^v[1-4]$') { $goEnvironment.GOAMD64 } else { 'configured (value omitted)' })
+            GOFIPS140 = $(if ($goEnvironment.GOFIPS140 -in @('', 'off')) { $goEnvironment.GOFIPS140 } else { 'configured (value omitted)' })
+        }
+    }
+    $buildFlags = @('-trimpath', '-buildvcs=false', '-ldflags=-s -w')
+    if ($cleanRequired) {
+        # A default.pgo outside the tracked source must not silently affect a release.
+        # Read-only module resolution also prevents dependency metadata changes.
+        $buildFlags += @('-pgo=off', '-mod=readonly')
+    }
     $source = Get-SourceSnapshot
     $contract = Get-Content -LiteralPath (Join-Path $repoRoot 'internal\palette\contract.go') -Raw
     $versionMatch = [regex]::Match($contract, 'ToolVersion\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"')
     if (-not $versionMatch.Success) { throw 'Could not read ToolVersion from internal/palette/contract.go.' }
     $version = $versionMatch.Groups[1].Value
+    if ($ReleaseTag) {
+        if ($ReleaseTag -ne ('v' + $version)) { throw "ReleaseTag must match application version v$version." }
+        $tagCommit = (Invoke-Git @('rev-parse', '--verify', ('refs/tags/' + $ReleaseTag + '^{commit}'))).Trim()
+        if ($tagCommit -ne $commit) { throw "ReleaseTag $ReleaseTag does not point to HEAD." }
+    }
     $extractionMatch = [regex]::Match($contract, 'ExtractionVersion\s*=\s*([0-9]+)')
     if (-not $extractionMatch.Success) { throw 'Could not read ExtractionVersion from internal/palette/contract.go.' }
     $extractionVersion = [int]$extractionMatch.Groups[1].Value
@@ -86,14 +160,16 @@ try {
     }
     New-Item -ItemType Directory -Path $packageDir | Out-Null
 
-    $env:GOOS = 'windows'
-    $env:GOARCH = 'amd64'
-    $env:CGO_ENABLED = '0'
-    $goVersion = (& $go version) -join ' '
-    if ($LASTEXITCODE -ne 0) { throw 'go version failed.' }
-    $buildArgs = @('build', '-trimpath', '-buildvcs=false', '-ldflags=-s -w', '-o', (Join-Path $packageDir 'scene-palette.exe'), '.')
+    $buildArgs = @('build') + $buildFlags + @('-o', (Join-Path $packageDir 'scene-palette.exe'), '.')
     & $go @buildArgs
     if ($LASTEXITCODE -ne 0) { throw "go build failed ($LASTEXITCODE). Partial output is retained at $packageDir" }
+
+    $binaryBuildInfo = @(& $go version -m (Join-Path $packageDir 'scene-palette.exe'))
+    if ($LASTEXITCODE -ne 0 -or $binaryBuildInfo.Count -eq 0) { throw 'Could not read the executable Go build information.' }
+    $binaryVersionMatch = [regex]::Match($binaryBuildInfo[0], ':\s+(go\S+)\s*$')
+    if (-not $binaryVersionMatch.Success -or $binaryVersionMatch.Groups[1].Value -ne $goToolchain) {
+        throw "The executable Go version does not match the recorded toolchain $goToolchain."
+    }
 
     Copy-Item -LiteralPath (Join-Path $repoRoot 'index.html') -Destination $packageDir
     Copy-Item -LiteralPath (Join-Path $repoRoot 'Run Scene Palette.cmd') -Destination $packageDir
@@ -120,7 +196,8 @@ the original JavaScript engine; the executable also provides the Go engine.
 Advanced: scene-palette.exe serve starts without opening a browser.
 Use scene-palette.exe help for local command-line tools.
 
-This is an unsigned local build. No installer, signing, or publishing occurred.
+This is an unsigned portable build. Windows may show an unrecognized-app warning.
+Obtain the package from the project maintainer and verify the accompanying checksum.
 build-info.json records the source revision, working-tree state, and hashes.
 SHA256SUMS.txt contains SHA-256 hashes of the files in this package.
 LICENSE and THIRD_PARTY_NOTICES.md contain the applicable license notices.
@@ -133,12 +210,18 @@ LICENSE and THIRD_PARTY_NOTICES.md contain the applicable license notices.
         builtAtUtc = $builtAt.ToString('o')
         platform = 'windows/amd64'
         goVersion = $goVersion
+        goToolchain = $goToolchain
+        executableGoVersion = $binaryVersionMatch.Groups[1].Value
+        cleanSourceRequired = [bool]$cleanRequired
+        goEnvironmentMode = $(if ($cleanRequired) { 'isolated-release' } else { 'inherited-development' })
+        goEnvironment = $goEnvironment
+        releaseTag = $(if ($ReleaseTag) { $ReleaseTag } else { $null })
         cgoEnabled = $false
         signed = $false
         sourceCommit = $commit
         sourceDirty = $dirty
         sourceTreeSha256 = $source.sha256
-        buildFlags = @('-trimpath', '-buildvcs=false', '-ldflags=-s -w')
+        buildFlags = $buildFlags
         sourceFiles = $source.files
     }
     [IO.File]::WriteAllText((Join-Path $packageDir 'build-info.json'), ($metadata | ConvertTo-Json -Depth 6) + "`r`n", $utf8)

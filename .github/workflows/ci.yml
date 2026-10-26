@@ -1,0 +1,122 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Contracts (${{ matrix.os }}, Go ${{ matrix.go }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            go: '1.26.x'
+          - os: windows-latest
+            go: '1.27.x'
+          # Minimum-language compatibility only; releases use a supported toolchain.
+          - os: ubuntu-latest
+            go: '1.23.x'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      # Node must precede go test: several Go tests invoke the actual HTML/JS oracle.
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: false # Standard library only; no go.sum.
+      - run: npm ci --no-audit --no-fund
+      - run: go test -count=1 ./...
+      - run: go vet ./...
+      - run: npm run check
+
+  browsers:
+    name: Browsers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.27.x'
+          check-latest: true
+          cache: false
+      - run: npm ci --no-audit --no-fund
+      - name: Install Chromium and Linux browser dependencies
+        if: runner.os == 'Linux'
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Install Chromium fallback on Windows
+        if: runner.os == 'Windows'
+        run: npx --no-install playwright install chromium
+      # The existing harness uses installed Edge on Windows and Chromium on Linux.
+      - run: npm run check:browser
+      - name: Keep generated-fixture diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-diagnostics-${{ matrix.os }}
+          path: |
+            bin/ci/*/server.log
+            bin/ci/*/result.json
+            bin/e2e/ci-*/
+            bin/corpus/ci-*/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  secrets:
+    name: Secrets (history and source)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install checksum-pinned Gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool_dir="$RUNNER_TEMP/scene-palette-gitleaks"
+          mkdir -p "$tool_dir"
+          curl --fail --silent --show-error --location --retry 3 --max-time 120 \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
+            --output "$tool_dir/gitleaks.tar.gz"
+          printf '%s  %s\n' '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb' "$tool_dir/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf "$tool_dir/gitleaks.tar.gz" -C "$tool_dir" gitleaks
+          printf '%s\n' "$tool_dir" >> "$GITHUB_PATH"
+      - name: Scan all reachable history and the exact source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bin/ci/secrets "$RUNNER_TEMP/scene-palette-source"
+          gitleaks git . --log-opts=--all --config .gitleaks.toml --redact=100 \
+            --ignore-gitleaks-allow --no-banner --report-format json --report-path bin/ci/secrets/history.json
+          git archive --format=tar HEAD | tar -x -C "$RUNNER_TEMP/scene-palette-source"
+          gitleaks dir "$RUNNER_TEMP/scene-palette-source" --config .gitleaks.toml --redact=100 \
+            --ignore-gitleaks-allow --no-banner --report-format json --report-path bin/ci/secrets/source.json
