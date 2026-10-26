@@ -18,8 +18,8 @@ import (
 
 const (
 	SchemaVersion                         = 1
-	ToolVersion                           = "2.0.0"
-	ExtractionVersion                     = 4
+	ToolVersion                           = "2.1.0"
+	ExtractionVersion                     = 5
 	Kind                                  = "color-plate"
 	ReviewScopePaletteContent             = "palette-content"
 	ReviewScopePaletteAndSourceIdentities = "palette-and-source-identities"

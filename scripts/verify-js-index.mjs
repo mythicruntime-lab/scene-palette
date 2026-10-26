@@ -40,8 +40,6 @@ const palettes = fs.readdirSync(vaultRoot, { withFileTypes: true })
 const context = {
   palettes,
   result: null,
-  SCHEMA_VERSION: 1,
-  TOOL_VERSION: "2.0.0",
   plateFacets() {
     throw new Error("fixture is missing frozen facets");
   },
@@ -50,7 +48,8 @@ const context = {
   }
 };
 vm.createContext(context);
-vm.runInContext(`${kebabSource};\n${buildIndexSource}\nresult = buildIndex(palettes);`, context);
+vm.runInContext(`${sliceSource("const SCHEMA_VERSION", "const bytesToHex")}
+${kebabSource};\n${buildIndexSource}\nresult = buildIndex(palettes);`, context);
 
 const actual = JSON.parse(JSON.stringify(context.result));
 const expected = JSON.parse(fs.readFileSync(goldenPath, "utf8"));

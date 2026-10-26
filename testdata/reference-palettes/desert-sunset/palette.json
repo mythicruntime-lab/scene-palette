@@ -5,8 +5,8 @@
   "createdAt": "2026-08-28T00:00:00.000Z",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0",
-    "extraction": 4
+    "version": "2.1.0",
+    "extraction": 5
   },
   "polarity": "light",
   "lightScene": true,
@@ -15,6 +15,7 @@
     "budget": 140000,
     "chromaMin": 0.085,
     "foundInks": 6,
+    "colorPolicy": "readable-ui",
     "polarityMode": "auto",
     "variant": 0,
     "variantCount": 1

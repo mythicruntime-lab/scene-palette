@@ -312,7 +312,7 @@ for (const entry of selected) {
 
 const stageFixture = {
   schema: 1,
-  source: { file: "index.html", extraction: 4 },
+  source: { file: "index.html", extraction: indexPalettes[0].generator.extraction },
   params: { budget: 140000, chromaMin: 0.085, luminanceBins: 64, hueBins: 36, bands: 3 },
   images: stages
 };

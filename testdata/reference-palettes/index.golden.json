@@ -4,7 +4,7 @@
   "note": "Derived from each folder's palette.json. Safe to delete; rebuild from the folders.",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "count": 10,
   "entries": [
@@ -15,7 +15,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "bauhaus-primary.png",
@@ -31,7 +31,7 @@
         "ink": "#635975",
         "muted": "#7F7969",
         "observed": "#1E50C3",
-        "attention": "#987400",
+        "attention": "#997400",
         "rupture": "#853BA9",
         "gold": "#DD2C27"
       },
@@ -42,15 +42,15 @@
         "dominantHue": 263,
         "accentHues": [
           263,
-          87,
+          86,
           313,
           28
         ],
-        "hueSpread": 176,
+        "hueSpread": 177,
         "chroma": {
           "min": 0.0248,
           "max": 0.2123,
-          "mean": 0.1093
+          "mean": 0.1094
         },
         "temperature": "cool",
         "warmAccents": 1,
@@ -107,9 +107,9 @@
           {
             "id": "attention",
             "lab": [
-              0.5785,
-              0.0064,
-              0.1181
+              0.5796,
+              0.0077,
+              0.1184
             ]
           },
           {
@@ -130,9 +130,9 @@
           }
         ],
         "hue12": [
-          0.1968,
+          0.1967,
           0,
-          0.3135,
+          0.3136,
           0,
           0,
           0.1181,
@@ -149,7 +149,7 @@
           0.4842,
           0.5768,
           0.4734,
-          0.5785,
+          0.5796,
           0.5004,
           0.5829
         ]
@@ -162,7 +162,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "desert-sunset.png",
@@ -309,7 +309,7 @@
       "tags": [],
       "polarity": "dark",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "empty-neon-street.png",
@@ -456,7 +456,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "flower-field.png",
@@ -603,7 +603,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "fog-field.png",
@@ -619,7 +619,7 @@
         "ink": "#4A534E",
         "muted": "#676B68",
         "observed": "#007781",
-        "attention": "#786900",
+        "attention": "#756600",
         "rupture": "#B14841",
         "gold": "#9A5B00"
       },
@@ -638,7 +638,7 @@
         "chroma": {
           "min": 0.0059,
           "max": 0.1387,
-          "mean": 0.0609
+          "mean": 0.0606
         },
         "temperature": "mixed",
         "warmAccents": 2,
@@ -695,9 +695,9 @@
           {
             "id": "attention",
             "lab": [
-              0.5191,
-              -0.0176,
-              0.1063
+              0.509,
+              -0.0168,
+              0.1042
             ]
           },
           {
@@ -718,13 +718,13 @@
           }
         ],
         "hue12": [
-          0.3009,
+          0.3023,
           0,
-          0.2611,
-          0.2382,
+          0.2623,
+          0.2348,
           0,
           0,
-          0.1997,
+          0.2006,
           0,
           0,
           0,
@@ -737,7 +737,7 @@
           0.4326,
           0.5233,
           0.5194,
-          0.5191,
+          0.509,
           0.5399,
           0.531
         ]
@@ -750,7 +750,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "minimal-still-life.png",
@@ -897,7 +897,7 @@
       "tags": [],
       "polarity": "dark",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "monochrome-architecture.png",
@@ -1044,7 +1044,7 @@
       "tags": [],
       "polarity": "light",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "pastel-prisms.png",
@@ -1191,7 +1191,7 @@
       "tags": [],
       "polarity": "dark",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "red-teal-portrait.png",
@@ -1338,7 +1338,7 @@
       "tags": [],
       "polarity": "dark",
       "createdAt": "2026-08-28T00:00:00.000Z",
-      "extraction": 4,
+      "extraction": 5,
       "sources": [
         {
           "file": "winter-cabin.png",
@@ -1354,7 +1354,7 @@
         "ink": "#A9BCCB",
         "muted": "#9B8074",
         "observed": "#3285EB",
-        "attention": "#AA63F3",
+        "attention": "#A862F2",
         "rupture": "#F4425A",
         "gold": "#E247B9"
       },
@@ -1365,7 +1365,7 @@
         "dominantHue": 256,
         "accentHues": [
           256,
-          304,
+          303,
           18,
           340
         ],
@@ -1430,9 +1430,9 @@
           {
             "id": "attention",
             "lab": [
-              0.6446,
-              0.1168,
-              -0.1746
+              0.6405,
+              0.1155,
+              -0.1753
             ]
           },
           {
@@ -1463,7 +1463,7 @@
           0,
           0.1778,
           0,
-          0.265,
+          0.2649,
           0.1382
         ],
         "lightness": [
@@ -1472,7 +1472,7 @@
           0.7855,
           0.6218,
           0.6195,
-          0.6446,
+          0.6405,
           0.6468,
           0.6524
         ]

@@ -4,7 +4,7 @@
   "note": "Derived from each folder's palette.json. Safe to delete; rebuild from the folders.",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "count": 2,
   "entries": [

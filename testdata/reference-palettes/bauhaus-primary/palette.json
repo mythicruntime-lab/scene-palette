@@ -5,8 +5,8 @@
   "createdAt": "2026-08-28T00:00:00.000Z",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0",
-    "extraction": 4
+    "version": "2.1.0",
+    "extraction": 5
   },
   "polarity": "light",
   "lightScene": true,
@@ -15,6 +15,7 @@
     "budget": 140000,
     "chromaMin": 0.085,
     "foundInks": 6,
+    "colorPolicy": "readable-ui",
     "polarityMode": "auto",
     "variant": 0,
     "variantCount": 5
@@ -276,25 +277,25 @@
       "id": "attention",
       "name": "gold",
       "job": "attention",
-      "hex": "#987400",
+      "hex": "#997400",
       "rgb": [
-        152,
+        153,
         116,
         0
       ],
-      "r": 152,
+      "r": 153,
       "g": 116,
       "b": 0,
       "oklch": [
-        0.5785,
-        0.1183,
-        86.9
+        0.5796,
+        0.1186,
+        86.3
       ],
       "locked": false,
       "derived": false,
       "contrast": {
-        "onGround": 3.62,
-        "onPanel": 3.06
+        "onGround": 3.61,
+        "onPanel": 3.04
       },
       "origin": {
         "kind": "signal",
@@ -321,6 +322,13 @@
             "target": 3,
             "from": "#A77F00",
             "to": "#987400"
+          },
+          {
+            "op": "source-distance",
+            "against": "ground+panel",
+            "target": 3,
+            "from": "#987400",
+            "to": "#997400"
           }
         ]
       }
@@ -494,15 +502,15 @@
     "dominantHue": 263,
     "accentHues": [
       263,
-      87,
+      86,
       313,
       28
     ],
-    "hueSpread": 176,
+    "hueSpread": 177,
     "chroma": {
       "min": 0.0248,
       "max": 0.2123,
-      "mean": 0.1093
+      "mean": 0.1094
     },
     "temperature": "cool",
     "warmAccents": 1,
@@ -559,9 +567,9 @@
       {
         "id": "attention",
         "lab": [
-          0.5785,
-          0.0064,
-          0.1181
+          0.5796,
+          0.0077,
+          0.1184
         ]
       },
       {
@@ -582,9 +590,9 @@
       }
     ],
     "hue12": [
-      0.1968,
+      0.1967,
       0,
-      0.3135,
+      0.3136,
       0,
       0,
       0.1181,
@@ -601,7 +609,7 @@
       0.4842,
       0.5768,
       0.4734,
-      0.5785,
+      0.5796,
       0.5004,
       0.5829
     ]

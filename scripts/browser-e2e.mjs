@@ -137,12 +137,13 @@ async function download(target, selector, file) {
   await result.saveAs(path.join(output, file));
   return fs.readFile(path.join(output, file));
 }
-async function delayedExtraction(target) {
-  let started, release, completed;
+async function delayedExtraction(target, options = {}) {
+  let started, release, completed, requests = 0;
   const start = new Promise(resolve => { started = resolve; });
   const hold = new Promise(resolve => { release = resolve; });
   const done = new Promise(resolve => { completed = resolve; });
   await target.route("**/api/extract", async route => {
+    if (options.firstOnly && requests++ > 0) return route.continue();
     try {
       const response = await route.fetch();
       started();
@@ -370,6 +371,256 @@ async function checkShelfSecurity(target, label) {
 }
 
 
+async function checkFoundInkIdentity(target, label) {
+  const fixture = JSON.parse(await fs.readFile(path.join(root,
+    "testdata/reference-palettes/empty-neon-street/palette.json"), "utf8"));
+  fixture.name = "E2E found identity";
+  fixture.found = fixture.core.slice(2, 6).map((token, index) => ({ ...token,
+    id:null, key:"found_" + (index + 1), name:"Identity ink " + (index + 1) }));
+  delete fixture.review;
+  const upload = async value => target.locator("#plateFile").setInputFiles({
+    name:"found-identity.json", mimeType:"application/json", buffer:Buffer.from(JSON.stringify(value))
+  });
+  await target.locator("#importBtn").click();
+  await upload(fixture);
+  await target.waitForFunction(() => state.found.length === 4);
+  await target.locator("#sealPlate").click();
+  const sealed = await readPlate(target);
+  assert.equal(sealed.review.agentEligible, true);
+  const hostile = structuredClone(sealed);
+  hostile.id = "transient-found-identity";
+  hostile.found[0].uid = { toString:null, valueOf:null };
+  delete hostile.found[1].uid;
+  hostile.found[2].uid = hostile.found[3].uid = 7;
+  assert.equal(await target.evaluate(plate => plateReview(plate).agentEligible, hostile), true,
+    "Transient UID extension fields must not change the durable fingerprint");
+  await target.locator("#shelfImport").click();
+  await upload({ kind:"scene-palette-shelf", version:1, plates:[hostile] });
+  await target.waitForFunction(() => state.shelf.length === 1);
+  const stored = await target.evaluate(() => localStorage.getItem("scene-palette.shelf.v1"));
+  const inspect = async stage => {
+    const ids = await target.evaluate(() => state.found.map(token => token.uid));
+    assert.ok(ids.every(Number.isSafeInteger), `${label}/${stage}: found IDs must be safe editor numbers`);
+    assert.equal(new Set(ids).size, 4, `${label}/${stage}: found IDs must be unique`);
+    const current = await readPlate(target);
+    assert.deepEqual(semantic(current), semantic(sealed), `${label}/${stage}: UID allocation changed durable colour data`);
+    assert.equal(current.review.agentEligible, true, `${label}/${stage}: UID allocation invalidated a valid seal`);
+    assert.deepEqual(current.review.fingerprint, sealed.review.fingerprint);
+    for (let index = 0; index < 4; index++) {
+      await target.locator(`[data-f-why="${index}"]`).click();
+      const expected = sealed.found[index];
+      assert.equal(await target.locator("#whyPanel .why-head strong").textContent(),
+        `Why ${expected.name} is ${expected.hex}`, `${label}/${stage}: Why targeted the wrong found ink`);
+      assert.equal(await target.evaluate(() => state.whyRole), "found:" + ids[index]);
+      assert.deepEqual(await target.locator("[data-f-why]").evaluateAll(buttons =>
+        buttons.map(button => button.getAttribute("aria-expanded"))),
+        ids.map((_, at) => String(at === index)));
+    }
+    assert.equal(await target.evaluate(() => localStorage.getItem("scene-palette.shelf.v1")), stored,
+      "Opening the editor must preserve the original saved UID extensions");
+    assert.equal((await readPlate(target)).review.agentEligible, true, "Reading found origins changed the seal");
+  };
+  await target.locator('[data-use="0"]').click();
+  await inspect("shelf file");
+  await target.reload();
+  await target.waitForFunction(() => state.shelf.length === 1);
+  await target.locator('[data-use="0"]').click();
+  await inspect("storage restore");
+  await target.locator("#importBtn").click();
+  await upload(hostile);
+  await target.waitForFunction(() => state.activeShelfId === null);
+  await inspect("single palette");
+  await target.evaluate(() => localStorage.removeItem("scene-palette.shelf.v1"));
+  await target.reload();
+  passed(`Malicious, missing, and duplicate found UIDs cannot break Why or saved seals: ${label}`);
+}
+
+async function selectColourPolicy(target, policy) {
+  await target.locator("#colorPolicy").selectOption(policy);
+  await target.waitForFunction(expected => state.colorPolicy === expected && goPending === null &&
+    document.getElementById("colorPolicy").value === expected, policy);
+}
+async function prepareColourFixture(target, image, name, policy, go) {
+  await loadImages(target, [imagePath(image)], name);
+  await selectColourPolicy(target, policy);
+  await target.evaluate(async () => { await setPolarity("auto"); });
+  return forge(target, go);
+}
+async function checkColourPolicyParity(goTarget, htmlTarget) {
+  for (const [image, neutral] of [["monochrome-architecture.png", true], ["pastel-prisms.png", false]]) {
+    for (const policy of ["readable-ui", "source-hues"]) {
+      const name = `E2E colour policy ${image}`;
+      await prepareColourFixture(goTarget, image, name, policy, true);
+      await prepareColourFixture(htmlTarget, image, name, policy, false);
+      for (const polarity of ["auto", "dark", "light"]) {
+        if (polarity !== "auto") {
+          await forcePolarity(goTarget, polarity);
+          await forcePolarity(htmlTarget, polarity);
+        }
+        const actual = await readPlate(goTarget), expected = await readPlate(htmlTarget);
+        assert.deepEqual(semantic(actual), semantic(expected), `${image}: ${policy}/${polarity} exact engine parity`);
+        for (const [target, plate, label] of [[goTarget, actual, "Go"], [htmlTarget, expected, "standalone"]]) {
+          assert.equal(plate.params.colorPolicy, policy);
+          assert.equal(plate.params.polarityMode, polarity);
+          assert.equal(await target.locator("#colorPolicy").inputValue(), policy);
+          assert.match(await target.locator("#colourDiagnostics").innerText(), policy === "source-hues" ? /^Source hues/ : /^Readable UI/);
+          await assertGeneratedReadable(target, plate, `${label}: ${image} ${policy}/${polarity}`);
+          if (neutral && policy === "source-hues") {
+            for (const token of plate.core) assert.ok(token.rgb.every(channel => channel === token.rgb[0]),
+              `${label}: Source hues invented chromatic paint for grayscale ${token.id}: ${token.hex}`);
+          }
+          if (policy === "readable-ui") {
+            const distances = await target.evaluate(p => p.core.slice(4).flatMap((a, i) =>
+              p.core.slice(4 + i + 1).map(b => deltaE(a, b))), plate);
+            assert.ok(distances.every(distance => distance >= .07), `${label}: final readable-UI accents collided`);
+          }
+        }
+      }
+    }
+    passed(`Both colour policies match exactly and remain readable in Auto/Dark/Light: ${image}`,
+      neutral ? "Source hues preserves neutral RGB in every core role" : "Limited/pastel hue fixture");
+  }
+}
+async function checkColourRoundtripAndPaint(target, label, go) {
+  await prepareColourFixture(target, "pastel-prisms.png", "E2E source paint", "source-hues", go);
+  await target.locator("#sealPlate").click();
+  const sealed = await readPlate(target);
+  assert.equal(sealed.review.agentEligible, true);
+  const sourceRole = sealed.core.find(t => ["observed", "attention", "rupture", "gold"].includes(t.id) &&
+    /^#[a-f\d]{6}$/i.test(t.origin?.raw || "") && t.origin.raw.toUpperCase() !== t.hex.toUpperCase()) ||
+    sealed.core.find(t => /^#[a-f\d]{6}$/i.test(t.origin?.raw || "") && t.origin.raw.toUpperCase() !== t.hex.toUpperCase());
+  assert.ok(sourceRole, "Source-paint regression needs an actual recorded adjustment");
+  const role = sourceRole.id;
+  await target.locator(`[data-why="${role}"]`).click();
+  assert.equal(await target.locator("#whyPanel .source-paint").count(), 2);
+  assert.match(await target.locator("#whyPanel").innerText(), /Before adjustment/);
+  assert.ok((await target.locator("#colourDiagnostics").innerText()).length > 0);
+  await target.evaluate(() => renderColourDiagnostics());
+  assert.deepEqual(await readPlate(target), sealed, `${label}: reading colour diagnostics changed a sealed palette`);
+  await target.locator("#closeWhy").click();
+  assert.deepEqual(await readPlate(target), sealed);
+  await target.locator("#deriveBtn").click();
+  await target.waitForFunction(() => !!state.theme && goPending === null);
+  const theme = await target.evaluate(() => JSON.parse(JSON.stringify(state.theme)));
+  for (const side of [theme.dark, theme.light]) assert.equal(side.params.colorPolicy, "source-hues", "Counterpart lost colour policy");
+  assert.deepEqual(await readPlate(target), sealed, "Deriving a counterpart changed the visible sealed palette");
+  await target.locator("#saveBtn").click();
+  await target.locator('[data-fmt="json"]').click();
+  const savedPath = `colour-policy-${label}.json`;
+  const exported = JSON.parse(await download(target, "#downloadBtn", savedPath));
+  assert.deepEqual(exported, sealed);
+  await target.reload();
+  await target.waitForFunction(() => state.shelf.length === 1);
+  await target.locator('[data-use="0"]').click();
+  assert.equal(await target.locator("#colorPolicy").inputValue(), "source-hues");
+  assert.deepEqual(semantic(await readPlate(target)), semantic(sealed), "Shelf reload changed the recorded colour policy or palette");
+  assert.equal((await readPlate(target)).review.agentEligible, true);
+  await target.locator("#importBtn").click();
+  await target.locator("#plateFile").setInputFiles(path.join(output, savedPath));
+  await target.waitForFunction(() => state.activeShelfId === null && state.colorPolicy === "source-hues");
+  assert.deepEqual(semantic(await readPlate(target)), semantic(sealed));
+  assert.equal((await readPlate(target)).review.agentEligible, true);
+  passed(`Source-hues policy survives counterpart, JSON, and shelf round trips: ${label}`);
+
+  const beforePaint = await readPlate(target);
+  await target.locator(`[data-why="${role}"]`).click();
+  await target.locator("#useSourcePaint").click();
+  const restored = await readPlate(target);
+  const changed = restored.core.find(token => token.id === role);
+  assert.equal(changed.hex, sourceRole.origin.raw.toUpperCase());
+  assert.equal(changed.locked, true);
+  const rawChannels = [1, 3, 5].map(offset => parseInt(changed.hex.slice(offset, offset + 2), 16));
+  assert.deepEqual(changed.rgb, rawChannels);
+  const { repairs: oldRepairs = [], ...oldOrigin } = sourceRole.origin;
+  const { repairs: newRepairs, ...newOrigin } = changed.origin;
+  assert.deepEqual(newOrigin, oldOrigin, "Use source colour lost recorded provenance");
+  assert.deepEqual(newRepairs.slice(0, -1), oldRepairs);
+  assert.deepEqual(newRepairs.at(-1), { op:"restore-source", from:sourceRole.hex, to:changed.hex, by:"human" });
+  assert.equal(restored.review.status, "edited");
+  assert.equal(restored.review.agentEligible, false);
+  assert.ok(restored.review.history.length > beforePaint.review.history.length, "Superseded seal was not archived");
+  for (const token of restored.core.filter(token => token.id !== role)) {
+    assert.equal(token.hex, beforePaint.core.find(old => old.id === token.id).hex, "Use source colour changed another role");
+  }
+  await target.locator("#toastAction").click();
+  assert.deepEqual(await readPlate(target), beforePaint, "Undo did not restore the palette and its matching seal");
+  passed(`Source paint restores exact RGB, locks, records the human edit, and supports sealed Undo: ${label}`);
+
+  const hostile = structuredClone(exported);
+  const rawMarker = '#FFFFFF"><img data-colour-attack src="data:,bad" onerror="window.__colourDiagnosticsSentinel=1">';
+  hostile.core.find(token => token.id === role).origin.raw = rawMarker;
+  await target.locator("#importBtn").click();
+  await target.locator("#plateFile").setInputFiles({ name:"hostile-origin.json", mimeType:"application/json", buffer:Buffer.from(JSON.stringify(hostile)) });
+  await target.waitForFunction(id => state.core.find(token => token.id === id)?.origin.raw.includes("data-colour-attack"), role);
+  await target.locator(`[data-why="${role}"]`).click();
+  await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.equal(await target.locator("[data-colour-attack]").count(), 0);
+  assert.equal(await target.evaluate(() => window.__colourDiagnosticsSentinel || 0), 0);
+  assert.equal(await target.locator("#whyPanel .source-comparison").count(), 0);
+  assert.equal(await target.locator("#useSourcePaint").count(), 0);
+  assert.equal((await readPlate(target)).core.find(token => token.id === role).origin.raw, rawMarker,
+    "Display validation silently rewrote recorded provenance");
+  assert.equal((await readPlate(target)).review.agentEligible, false, "Changed raw provenance retained a stale seal");
+  passed(`Hostile origin.raw remains inert and cannot create source swatches: ${label}`);
+
+  await target.evaluate(() => localStorage.removeItem("scene-palette.shelf.v1"));
+  await target.reload();
+  assert.equal(await target.locator("#shelfImport").isVisible(), true, "Fresh empty shelf must offer Import shelf");
+  await target.locator("#shelfImport").click();
+  await target.locator("#plateFile").setInputFiles({ name:"restored-shelf.json", mimeType:"application/json",
+    buffer:Buffer.from(JSON.stringify({ kind:"scene-palette-shelf", version:1, plates:[exported] })) });
+  await target.waitForFunction(() => state.shelf.length === 1);
+  await target.locator('[data-use="0"]').click();
+  assert.deepEqual(semantic(await readPlate(target)), semantic(sealed));
+  assert.equal((await readPlate(target)).review.agentEligible, true);
+  await target.evaluate(() => localStorage.removeItem("scene-palette.shelf.v1"));
+  await target.reload();
+  passed(`Fresh empty shelf can restore a saved Source-hues palette: ${label}`);
+}
+async function checkColourPolicyRaces(goTarget, htmlTarget) {
+  const prepare = async name => {
+    await prepareColourFixture(goTarget, "empty-neon-street.png", name, "readable-ui", true);
+    await prepareColourFixture(htmlTarget, "empty-neon-street.png", name, "readable-ui", false);
+  };
+  await prepare("E2E cancelled colour policy");
+  const before = await readPlate(goTarget);
+  const gate = await delayedExtraction(goTarget, { firstOnly:true });
+  await goTarget.locator("#colorPolicy").selectOption("source-hues");
+  await gate.started();
+  await goTarget.locator("#colorPolicy").selectOption("readable-ui");
+  await gate.finish();
+  assert.equal(await goTarget.locator("#colorPolicy").inputValue(), "readable-ui");
+  assert.deepEqual(await readPlate(goTarget), before, "Late Source hues response overwrote the restored Readable UI choice");
+  passed("Returning to Readable UI cancels a delayed Source hues response");
+
+  for (const action of ["Forge", "Remix", "polarity"]) {
+    await prepare(`E2E policy then ${action}`);
+    const baseline = await readPlate(goTarget);
+    assert.ok(baseline.params.variantCount > 1, "Policy race fixture needs multiple variants");
+    const pending = await delayedExtraction(goTarget, { firstOnly:true });
+    await goTarget.locator("#colorPolicy").selectOption("source-hues");
+    await pending.started();
+    await goTarget.locator(action === "Forge" ? "#extractBtn" : action === "Remix" ? "#remixBtn" : '[data-pol="light"]').click();
+    await pending.finish();
+    await goTarget.waitForFunction(() => !document.getElementById("extractBtn").disabled);
+    const actual = await readPlate(goTarget);
+    const policy = actual.params.colorPolicy;
+    assert.ok(["readable-ui", "source-hues"].includes(policy));
+    assert.equal(await goTarget.evaluate(() => state.colorPolicy), policy, `${action}: state and snapshot policies diverged`);
+    assert.equal(await goTarget.locator("#colorPolicy").inputValue(), policy, `${action}: selector advertises a policy that was not applied`);
+    assert.match(await goTarget.locator("#colourDiagnostics").innerText(), policy === "source-hues" ? /^Source hues/ : /^Readable UI/);
+    if (action === "Forge") assert.equal(actual.params.variant, 0);
+    if (action === "Remix") assert.equal(actual.params.variant, (baseline.params.variant + 1) % actual.params.variantCount);
+    if (action === "polarity") assert.equal(actual.params.polarityMode, "light");
+    await selectColourPolicy(htmlTarget, policy);
+    await htmlTarget.evaluate(async mode => { await setPolarity(mode); }, actual.params.polarityMode);
+    await htmlTarget.evaluate(async variant => { await applyVariant(variant); }, actual.params.variant);
+    assert.deepEqual(semantic(actual), semantic(await readPlate(htmlTarget)), `${action}: displayed result does not match its recorded policy`);
+    passed(`Pending Source hues followed by ${action} keeps selector, palette, and engine policy consistent`);
+  }
+}
+
+
 try {
   const executablePath = option("--browser", process.env.SCENE_PALETTE_BROWSER);
   let channel = option("--channel", process.env.SCENE_PALETTE_BROWSER_CHANNEL);
@@ -402,8 +653,19 @@ try {
   const fallback = await context.newPage(); watch(fallback, "standalone");
   await fallback.goto(pathToFileURL(standaloneHTML).href);
   await fallback.locator("#extractBtn").waitFor();
+  // Native Chromium/Edge cube roots have differed from the reference arithmetic
+  // by one ULP. Near-neutral hues expose that drift before palette rounding.
+  for (const [target, label] of [[page, "Go"], [fallback, "standalone"]]) {
+    const neutralHues = await target.evaluate(() => [6, 22].map(value =>
+      rgbToLch({ r:value, g:value, b:value }).H));
+    assert.deepEqual(neutralHues, [89.87556269699212, 89.87556266224881],
+      label + ": real-browser neutral hue arithmetic must match Go at full precision");
+    passed("Real-browser colour arithmetic matches the Go reference at full precision: " + label);
+  }
   await checkShelfSecurity(page, "Go");
   await checkShelfSecurity(fallback, "standalone");
+  await checkFoundInkIdentity(page, "Go");
+  await checkFoundInkIdentity(fallback, "standalone");
 
   const synthetic = path.join(output, "oversized-transparent.png");
   await fs.writeFile(synthetic, syntheticPNG(1800, 900));
@@ -457,6 +719,11 @@ try {
     }
     passed(`Generated palettes remain readable on both surfaces in forced dark and light: ${label}`);
   }
+  await checkColourRoundtripAndPaint(page, "Go", true);
+  await checkColourRoundtripAndPaint(fallback, "standalone", false);
+  await checkColourPolicyRaces(page, fallback);
+  await checkColourPolicyParity(page, fallback);
+  await prepareColourFixture(page, "empty-neon-street.png", "E2E after colour workflows", "readable-ui", true);
   await fallback.close();
 
   // Deliberate imported user choices must remain visible and warn accurately;

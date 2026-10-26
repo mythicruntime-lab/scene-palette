@@ -60,7 +60,7 @@ type expectedRepair struct {
 
 func TestStructureMatchesJavaScriptForEveryPolarity(t *testing.T) {
 	fixture := loadStructureFixture(t)
-	if fixture.Schema != 1 || fixture.Source.Extraction != 4 {
+	if fixture.Schema != 1 || fixture.Source.Extraction != 5 {
 		t.Fatalf("unexpected fixture contract: schema %d extraction %d", fixture.Schema, fixture.Source.Extraction)
 	}
 	modes := []Polarity{PolarityAuto, PolarityDark, PolarityLight}

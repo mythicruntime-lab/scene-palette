@@ -29,22 +29,24 @@ const (
 var nameSeparatorPattern = regexp.MustCompile(`[^a-zA-Z0-9]+`)
 
 type Options struct {
-	Name      string
-	CreatedAt string
-	Budget    int
-	ChromaMin float64
-	FoundInks int
-	Polarity  extract.Polarity
-	Variant   int // zero-based; the CLI presents this as one-based
+	ColorPolicy extract.ColorPolicy
+	Name        string
+	CreatedAt   string
+	Budget      int
+	ChromaMin   float64
+	FoundInks   int
+	Polarity    extract.Polarity
+	Variant     int // zero-based; the CLI presents this as one-based
 }
 
 func DefaultOptions() Options {
 	return Options{
-		Budget:    140000,
-		ChromaMin: 0.085,
-		FoundInks: 6,
-		Polarity:  extract.PolarityAuto,
-		Variant:   0,
+		ColorPolicy: extract.ReadableUI,
+		Budget:      140000,
+		ChromaMin:   0.085,
+		FoundInks:   6,
+		Polarity:    extract.PolarityAuto,
+		Variant:     0,
 	}
 }
 
@@ -69,7 +71,7 @@ func Build(paths []string, options Options) (palette.Snapshot, error) {
 
 	pooled := extract.Pool(histograms)
 	structure := extract.BuildStructure(pooled, options.Polarity)
-	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, maxVariants)
+	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, maxVariants, options.ColorPolicy)
 	assembly := extract.BuildPlateAssembly(structure, accents, options.FoundInks)
 	if options.Variant >= len(assembly.Variants) {
 		return palette.Snapshot{}, fmt.Errorf(
@@ -88,15 +90,19 @@ func Build(paths []string, options Options) (palette.Snapshot, error) {
 		Variant:      assembly.Variants[options.Variant],
 		VariantCount: len(assembly.Variants),
 		Params: palette.SnapshotParamsInput{
-			Budget:    options.Budget,
-			ChromaMin: options.ChromaMin,
-			FoundInks: options.FoundInks,
+			ColorPolicy: options.ColorPolicy,
+			Budget:      options.Budget,
+			ChromaMin:   options.ChromaMin,
+			FoundInks:   options.FoundInks,
 		},
 		Sources: sources,
 	})
 }
 
 func validate(paths []string, options Options) error {
+	if !extract.ValidColorPolicy(options.ColorPolicy) {
+		return fmt.Errorf("forge color policy must be readable-ui or source-hues")
+	}
 	if len(paths) == 0 {
 		return fmt.Errorf("forge requires at least one image")
 	}

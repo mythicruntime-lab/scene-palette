@@ -5,8 +5,8 @@
   "createdAt": "2026-08-28T00:00:00.000Z",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0",
-    "extraction": 4
+    "version": "2.1.0",
+    "extraction": 5
   },
   "polarity": "light",
   "lightScene": true,
@@ -15,6 +15,7 @@
     "budget": 140000,
     "chromaMin": 0.085,
     "foundInks": 6,
+    "colorPolicy": "readable-ui",
     "polarityMode": "auto",
     "variant": 0,
     "variantCount": 1
@@ -288,25 +289,25 @@
       "id": "attention",
       "name": "gold",
       "job": "attention",
-      "hex": "#786900",
+      "hex": "#756600",
       "rgb": [
-        120,
-        105,
+        117,
+        102,
         0
       ],
-      "r": 120,
-      "g": 105,
+      "r": 117,
+      "g": 102,
       "b": 0,
       "oklch": [
-        0.5191,
-        0.1077,
-        99.4
+        0.509,
+        0.1055,
+        99.2
       ],
       "locked": false,
       "derived": true,
       "contrast": {
-        "onGround": 3.74,
-        "onPanel": 3.12
+        "onGround": 3.91,
+        "onPanel": 3.26
       },
       "origin": {
         "kind": "derived",
@@ -323,6 +324,13 @@
             "target": 3,
             "from": "#998700",
             "to": "#786900"
+          },
+          {
+            "op": "distinctness",
+            "against": "ground+panel",
+            "target": 3,
+            "from": "#786900",
+            "to": "#756600"
           }
         ]
       }
@@ -439,7 +447,7 @@
     "chroma": {
       "min": 0.0059,
       "max": 0.1387,
-      "mean": 0.0609
+      "mean": 0.0606
     },
     "temperature": "mixed",
     "warmAccents": 2,
@@ -496,9 +504,9 @@
       {
         "id": "attention",
         "lab": [
-          0.5191,
-          -0.0176,
-          0.1063
+          0.509,
+          -0.0168,
+          0.1042
         ]
       },
       {
@@ -519,13 +527,13 @@
       }
     ],
     "hue12": [
-      0.3009,
+      0.3023,
       0,
-      0.2611,
-      0.2382,
+      0.2623,
+      0.2348,
       0,
       0,
-      0.1997,
+      0.2006,
       0,
       0,
       0,
@@ -538,7 +546,7 @@
       0.4326,
       0.5233,
       0.5194,
-      0.5191,
+      0.509,
       0.5399,
       0.531
     ]

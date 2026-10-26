@@ -2,6 +2,7 @@ package extract
 
 import (
 	"fmt"
+	"strings"
 
 	"scene-palette/internal/colorx"
 )
@@ -69,20 +70,20 @@ var plateRoles = []plateRole{
 // BuildPlateAssembly maps every accent set into the eight semantic tokens and
 // selects the raw candidates left over as found inks. This is the fresh,
 // unlocked extraction path; browser lock and pin state remains a UI concern.
-func BuildPlateAssembly(structure StructureResult, accents AccentStage, foundLimit int) PlateAssembly {
+func BuildPlateAssembly(structure StructureResult, accents AccentStage, foundLimit int, skipFinal ...bool) PlateAssembly {
 	assembly := PlateAssembly{
 		FoundLimit: foundLimit,
 		Variants:   make([]PlateVariant, 0, len(accents.Sets)),
 	}
 	for index, set := range accents.Sets {
 		assembly.Variants = append(assembly.Variants, assembleVariant(
-			index, set, structure, accents.Filtered, len(accents.Sets), foundLimit,
+			index, set, structure, accents.Filtered, accents.RoleCandidates, len(accents.Sets), foundLimit, accents.Policy, len(skipFinal) == 0 || !skipFinal[0],
 		))
 	}
 	return assembly
 }
 
-func assembleVariant(index int, set []AccentColor, structure StructureResult, candidates []Candidate, variantCount, foundLimit int) PlateVariant {
+func assembleVariant(index int, set []AccentColor, structure StructureResult, candidates []Candidate, observed []AccentColor, variantCount, foundLimit int, policy ColorPolicy, finalize bool) PlateVariant {
 	orderedIndices := AssignRoleIndices(set)
 	usedNames := make(map[string]bool, len(plateRoles)+max(0, foundLimit))
 	core := make([]PlateToken, 0, len(plateRoles))
@@ -120,7 +121,7 @@ func assembleVariant(index int, set []AccentColor, structure StructureResult, ca
 					To:        colorx.Hex(color),
 				})
 			}
-			origin = accentPlateOrigin(accent, lateRepairs)
+			origin = AccentPlateOrigin(accent, lateRepairs)
 		}
 		core = append(core, PlateToken{
 			ID:      role.ID,
@@ -134,8 +135,43 @@ func assembleVariant(index int, set []AccentColor, structure StructureResult, ca
 		accentIndex++
 	}
 
+	refinementNotes := []string{}
+	if finalize {
+		inputs := make([]AccentInput, 4)
+		for i, token := range core[4:] {
+			raw, ok := ParseHex(token.Origin.Raw)
+			inputs[i] = AccentInput{RGB: token.RGB, Raw: raw, HasRaw: ok, Derived: token.Derived}
+		}
+		final := FinalizeAccents(inputs, observed, structure.Colors["ground"], structure.Colors["panel"], policy)
+		for i, color := range final.Colors {
+			token := &core[i+4]
+			if replacement, ok := final.Replacements[i]; ok {
+				token.Origin = AccentPlateOrigin(replacement, nil)
+				token.Derived = replacement.Derived
+			}
+			token.RGB, token.Hex = color, colorx.Hex(color)
+			token.Origin.Repairs = append(token.Origin.Repairs, final.Repairs[i]...)
+		}
+		refinementNotes = final.Notes
+		usedNames = make(map[string]bool)
+		for i := range core {
+			core[i].Name = nameColor(core[i].RGB, usedNames)
+		}
+	}
 	found := assembleFoundInks(candidates, core, usedNames, foundLimit)
 	notes := append([]string(nil), structure.Notes...)
+	notes = append(notes, refinementNotes...)
+	if finalize && NormalizeColorPolicy(policy) == SourceHues {
+		departures := []string{}
+		for _, token := range core[2:] {
+			if SourceHueDeparture(token.RGB, token.Origin.Raw, token.Origin.Method, token.Origin.IdealHue, token.Origin.MedianC) {
+				departures = append(departures, token.ID)
+			}
+		}
+		if len(departures) > 0 {
+			notes = append(notes, "source hues shifted for readability — "+strings.Join(departures, ", "))
+		}
+	}
 	derivedCount := 0
 	for _, token := range core {
 		if token.Derived {
@@ -175,7 +211,7 @@ func structurePlateOrigin(source StructureOrigin) TokenOrigin {
 	}
 }
 
-func accentPlateOrigin(accent AccentColor, lateRepairs []Repair) TokenOrigin {
+func AccentPlateOrigin(accent AccentColor, lateRepairs []Repair) TokenOrigin {
 	if accent.Derived {
 		origin := TokenOrigin{
 			Kind:    "derived",
@@ -184,6 +220,9 @@ func accentPlateOrigin(accent AccentColor, lateRepairs []Repair) TokenOrigin {
 		}
 		if accent.DerivedFrom != nil {
 			origin.Method = accent.DerivedFrom.Method
+			if origin.Method == "source-tonal-reuse" {
+				origin.Reason = "source hue or neutral paint reused to keep the palette within its source"
+			}
 			origin.IdealHue = accent.DerivedFrom.IdealHue
 			origin.Role = accent.DerivedFrom.Role
 			origin.MedianC = accent.DerivedFrom.MedianC

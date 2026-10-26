@@ -58,7 +58,7 @@ func checkGeneratedReadability(t *testing.T, name string, input image.Image) {
 	}
 }
 
-func TestJointContrastPreservesPassingAutoFixtures(t *testing.T) {
+func TestGeneratedAutoMatchesVersionedFixtures(t *testing.T) {
 	fixture := loadPlateFixture(t)
 	for _, reference := range fixture.Images {
 		t.Run(reference.Label, func(t *testing.T) {

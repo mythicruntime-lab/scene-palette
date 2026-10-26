@@ -5,8 +5,8 @@
   "createdAt": "2026-08-28T00:00:00.000Z",
   "generator": {
     "name": "scene-palette",
-    "version": "2.0.0",
-    "extraction": 4
+    "version": "2.1.0",
+    "extraction": 5
   },
   "polarity": "dark",
   "lightScene": false,
@@ -15,6 +15,7 @@
     "budget": 140000,
     "chromaMin": 0.085,
     "foundInks": 6,
+    "colorPolicy": "readable-ui",
     "polarityMode": "auto",
     "variant": 0,
     "variantCount": 6
@@ -283,25 +284,25 @@
       "id": "attention",
       "name": "violet",
       "job": "attention",
-      "hex": "#AA63F3",
+      "hex": "#A862F2",
       "rgb": [
-        170,
-        99,
-        243
+        168,
+        98,
+        242
       ],
-      "r": 170,
-      "g": 99,
-      "b": 243,
+      "r": 168,
+      "g": 98,
+      "b": 242,
       "oklch": [
-        0.6446,
-        0.2101,
-        303.8
+        0.6405,
+        0.2099,
+        303.4
       ],
       "locked": false,
       "derived": false,
       "contrast": {
-        "onGround": 3.76,
-        "onPanel": 3.07
+        "onGround": 3.7,
+        "onPanel": 3.02
       },
       "origin": {
         "kind": "signal",
@@ -328,6 +329,13 @@
             "target": 3,
             "from": "#9B53E2",
             "to": "#AA63F3"
+          },
+          {
+            "op": "source-distance",
+            "against": "ground+panel",
+            "target": 3,
+            "from": "#AA63F3",
+            "to": "#A862F2"
           }
         ]
       }
@@ -607,7 +615,7 @@
     "dominantHue": 256,
     "accentHues": [
       256,
-      304,
+      303,
       18,
       340
     ],
@@ -672,9 +680,9 @@
       {
         "id": "attention",
         "lab": [
-          0.6446,
-          0.1168,
-          -0.1746
+          0.6405,
+          0.1155,
+          -0.1753
         ]
       },
       {
@@ -705,7 +713,7 @@
       0,
       0.1778,
       0,
-      0.265,
+      0.2649,
       0.1382
     ],
     "lightness": [
@@ -714,7 +722,7 @@
       0.7855,
       0.6218,
       0.6195,
-      0.6446,
+      0.6405,
       0.6468,
       0.6524
     ]

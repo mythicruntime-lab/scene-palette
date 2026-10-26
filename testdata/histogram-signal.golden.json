@@ -2,7 +2,7 @@
   "schema": 1,
   "source": {
     "file": "index.html",
-    "extraction": 4
+    "extraction": 5
   },
   "params": {
     "budget": 140000,
@@ -7722,10 +7722,10 @@
                     "job": "observed fact",
                     "rgb": [
                       0,
-                      42,
-                      86
+                      43,
+                      88
                     ],
-                    "hex": "#002A56",
+                    "hex": "#002B58",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -7760,6 +7760,13 @@
                           "target": 3,
                           "from": "#B0D3FF",
                           "to": "#002A56"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#002A56",
+                          "to": "#002B58"
                         }
                       ]
                     }
@@ -8199,10 +8206,10 @@
                     "job": "observed fact",
                     "rgb": [
                       0,
-                      42,
-                      86
+                      43,
+                      88
                     ],
-                    "hex": "#002A56",
+                    "hex": "#002B58",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -8237,6 +8244,13 @@
                           "target": 3,
                           "from": "#B0D3FF",
                           "to": "#002A56"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#002A56",
+                          "to": "#002B58"
                         }
                       ]
                     }
@@ -8676,10 +8690,10 @@
                     "job": "observed fact",
                     "rgb": [
                       0,
-                      42,
-                      86
+                      43,
+                      88
                     ],
-                    "hex": "#002A56",
+                    "hex": "#002B58",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -8714,6 +8728,13 @@
                           "target": 3,
                           "from": "#B0D3FF",
                           "to": "#002A56"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#002A56",
+                          "to": "#002B58"
                         }
                       ]
                     }
@@ -9153,10 +9174,10 @@
                     "job": "observed fact",
                     "rgb": [
                       0,
-                      42,
-                      86
+                      43,
+                      88
                     ],
-                    "hex": "#002A56",
+                    "hex": "#002B58",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -9191,6 +9212,13 @@
                           "target": 3,
                           "from": "#B0D3FF",
                           "to": "#002A56"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#002A56",
+                          "to": "#002B58"
                         }
                       ]
                     }
@@ -11534,14 +11562,14 @@
                   },
                   {
                     "id": "attention",
-                    "name": "olive",
+                    "name": "moss",
                     "job": "attention",
                     "rgb": [
-                      80,
-                      70,
-                      0
+                      63,
+                      68,
+                      6
                     ],
-                    "hex": "#504600",
+                    "hex": "#3F4406",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -11559,6 +11587,13 @@
                           "target": 3,
                           "from": "#564B00",
                           "to": "#504600"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#504600",
+                          "to": "#3F4406"
                         }
                       ]
                     }
@@ -15239,11 +15274,11 @@
                     "name": "violet",
                     "job": "attention",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -15271,6 +15306,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -15597,11 +15639,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -15629,6 +15671,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -15981,11 +16030,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -16013,6 +16062,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -16373,11 +16429,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -16405,6 +16461,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -16824,11 +16887,11 @@
                     "name": "violet",
                     "job": "rupture only",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -16856,6 +16919,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -17216,11 +17286,11 @@
                     "name": "violet",
                     "job": "rupture only",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -17248,6 +17318,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -18999,11 +19076,11 @@
                     "name": "violet",
                     "job": "attention",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -19031,6 +19108,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -19357,11 +19441,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -19389,6 +19473,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -19741,11 +19832,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -19773,6 +19864,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -20133,11 +20231,11 @@
                     "name": "violet",
                     "job": "observed fact",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -20165,6 +20263,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -20584,11 +20689,11 @@
                     "name": "violet",
                     "job": "rupture only",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -20616,6 +20721,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -20976,11 +21088,11 @@
                     "name": "violet",
                     "job": "rupture only",
                     "rgb": [
-                      170,
-                      99,
-                      243
+                      168,
+                      98,
+                      242
                     ],
-                    "hex": "#AA63F3",
+                    "hex": "#A862F2",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -21008,6 +21120,13 @@
                           "target": 3,
                           "from": "#9B53E2",
                           "to": "#AA63F3"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#AA63F3",
+                          "to": "#A862F2"
                         }
                       ]
                     }
@@ -26423,11 +26542,11 @@
                     "name": "straw",
                     "job": "attention",
                     "rgb": [
-                      217,
-                      202,
-                      111
+                      210,
+                      195,
+                      104
                     ],
-                    "hex": "#D9CA6F",
+                    "hex": "#D2C368",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -26438,7 +26557,15 @@
                       "medianC": 0.1135,
                       "medianL": 0.8329,
                       "reason": "the still offered no distinct hue for this slot",
-                      "repairs": []
+                      "repairs": [
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#D9CA6F",
+                          "to": "#D2C368"
+                        }
+                      ]
                     }
                   },
                   {
@@ -28541,14 +28668,14 @@
                   },
                   {
                     "id": "attention",
-                    "name": "olive",
+                    "name": "pine",
                     "job": "attention",
                     "rgb": [
-                      62,
-                      54,
-                      0
+                      41,
+                      60,
+                      19
                     ],
-                    "hex": "#3E3600",
+                    "hex": "#293C13",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -28566,6 +28693,13 @@
                           "target": 3,
                           "from": "#998700",
                           "to": "#3E3600"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#3E3600",
+                          "to": "#293C13"
                         }
                       ]
                     }
@@ -31784,10 +31918,10 @@
                     "job": "attention",
                     "rgb": [
                       153,
-                      100,
+                      101,
                       0
                     ],
-                    "hex": "#996400",
+                    "hex": "#996500",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -31815,6 +31949,13 @@
                           "target": 3,
                           "from": "#A86F00",
                           "to": "#996400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#996400",
+                          "to": "#996500"
                         }
                       ]
                     }
@@ -34393,11 +34534,11 @@
                     "name": "lime",
                     "job": "attention",
                     "rgb": [
-                      53,
-                      63,
+                      54,
+                      64,
                       0
                     ],
-                    "hex": "#353F00",
+                    "hex": "#364000",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -34418,6 +34559,13 @@
                           "target": 3,
                           "from": "#B4CF31",
                           "to": "#353F00"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#353F00",
+                          "to": "#364000"
                         }
                       ]
                     }
@@ -35239,11 +35387,11 @@
                     "name": "lime",
                     "job": "attention",
                     "rgb": [
-                      53,
-                      63,
+                      54,
+                      64,
                       0
                     ],
-                    "hex": "#353F00",
+                    "hex": "#364000",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -35264,6 +35412,13 @@
                           "target": 3,
                           "from": "#B4CF31",
                           "to": "#353F00"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#353F00",
+                          "to": "#364000"
                         }
                       ]
                     }
@@ -36085,11 +36240,11 @@
                     "name": "lime",
                     "job": "attention",
                     "rgb": [
-                      53,
-                      63,
+                      54,
+                      64,
                       0
                     ],
-                    "hex": "#353F00",
+                    "hex": "#364000",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -36110,6 +36265,13 @@
                           "target": 3,
                           "from": "#B4CF31",
                           "to": "#353F00"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#353F00",
+                          "to": "#364000"
                         }
                       ]
                     }
@@ -36508,11 +36670,11 @@
                     "name": "lime",
                     "job": "attention",
                     "rgb": [
-                      53,
-                      63,
+                      54,
+                      64,
                       0
                     ],
-                    "hex": "#353F00",
+                    "hex": "#364000",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -36533,6 +36695,13 @@
                           "target": 3,
                           "from": "#B4CF31",
                           "to": "#353F00"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#353F00",
+                          "to": "#364000"
                         }
                       ]
                     }
@@ -39725,10 +39894,10 @@
                     "job": "attention",
                     "rgb": [
                       153,
-                      100,
+                      101,
                       0
                     ],
-                    "hex": "#996400",
+                    "hex": "#996500",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -39756,6 +39925,13 @@
                           "target": 3,
                           "from": "#A86F00",
                           "to": "#996400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#996400",
+                          "to": "#996500"
                         }
                       ]
                     }
@@ -41507,11 +41683,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      120,
-                      105,
+                      117,
+                      102,
                       0
                     ],
-                    "hex": "#786900",
+                    "hex": "#756600",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -41529,6 +41705,13 @@
                           "target": 3,
                           "from": "#998700",
                           "to": "#786900"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#786900",
+                          "to": "#756600"
                         }
                       ]
                     }
@@ -41992,14 +42175,14 @@
                   },
                   {
                     "id": "attention",
-                    "name": "gold",
+                    "name": "lime",
                     "job": "attention",
                     "rgb": [
-                      98,
-                      86,
-                      0
+                      84,
+                      91,
+                      17
                     ],
-                    "hex": "#625600",
+                    "hex": "#545B11",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -42017,6 +42200,13 @@
                           "target": 3,
                           "from": "#998700",
                           "to": "#625600"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#625600",
+                          "to": "#545B11"
                         }
                       ]
                     }
@@ -42482,11 +42672,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      120,
-                      105,
+                      117,
+                      102,
                       0
                     ],
-                    "hex": "#786900",
+                    "hex": "#756600",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -42504,6 +42694,13 @@
                           "target": 3,
                           "from": "#998700",
                           "to": "#786900"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#786900",
+                          "to": "#756600"
                         }
                       ]
                     }
@@ -43885,11 +44082,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -43917,6 +44114,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -44264,11 +44468,11 @@
                     "name": "gold",
                     "job": "human acts only",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -44296,6 +44500,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -44826,11 +45037,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -44858,6 +45069,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -45205,11 +45423,11 @@
                     "name": "gold",
                     "job": "human acts only",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -45237,6 +45455,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -45940,14 +46165,14 @@
                   },
                   {
                     "id": "observed",
-                    "name": "periwinkle",
+                    "name": "indigo",
                     "job": "observed fact",
                     "rgb": [
-                      187,
-                      210,
-                      255
+                      0,
+                      14,
+                      74
                     ],
-                    "hex": "#BBD2FF",
+                    "hex": "#000E4A",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -45975,6 +46200,13 @@
                           "target": 3,
                           "from": "#99BBFF",
                           "to": "#BBD2FF"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#BBD2FF",
+                          "to": "#000E4A"
                         }
                       ]
                     }
@@ -46026,10 +46258,10 @@
                     "job": "rupture only",
                     "rgb": [
                       255,
-                      197,
-                      188
+                      195,
+                      187
                     ],
-                    "hex": "#FFC5BC",
+                    "hex": "#FFC3BB",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -46057,6 +46289,13 @@
                           "target": 3,
                           "from": "#FFA296",
                           "to": "#FFC5BC"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#FFC5BC",
+                          "to": "#FFC3BB"
                         }
                       ]
                     }
@@ -47373,11 +47612,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -47405,6 +47644,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -47752,11 +47998,11 @@
                     "name": "gold",
                     "job": "human acts only",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -47784,6 +48030,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -48314,11 +48567,11 @@
                     "name": "gold",
                     "job": "attention",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -48346,6 +48599,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -48693,11 +48953,11 @@
                     "name": "gold",
                     "job": "human acts only",
                     "rgb": [
-                      152,
+                      153,
                       116,
                       0
                     ],
-                    "hex": "#987400",
+                    "hex": "#997400",
                     "locked": false,
                     "derived": false,
                     "origin": {
@@ -48725,6 +48985,13 @@
                           "target": 3,
                           "from": "#A77F00",
                           "to": "#987400"
+                        },
+                        {
+                          "op": "source-distance",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#987400",
+                          "to": "#997400"
                         }
                       ]
                     }
@@ -49814,14 +50081,14 @@
                   },
                   {
                     "id": "attention",
-                    "name": "olive",
+                    "name": "moss",
                     "job": "attention",
                     "rgb": [
-                      71,
-                      62,
-                      0
+                      57,
+                      63,
+                      5
                     ],
-                    "hex": "#473E00",
+                    "hex": "#393F05",
                     "locked": false,
                     "derived": true,
                     "origin": {
@@ -49839,6 +50106,13 @@
                           "target": 3,
                           "from": "#998700",
                           "to": "#473E00"
+                        },
+                        {
+                          "op": "distinctness",
+                          "against": "ground+panel",
+                          "target": 3,
+                          "from": "#473E00",
+                          "to": "#393F05"
                         }
                       ]
                     }

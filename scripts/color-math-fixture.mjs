@@ -23,7 +23,7 @@ const context = {};
 vm.createContext(context);
 vm.runInContext(
   sourceSlice("const clamp =", "/* ============================================================\n   2. names") +
-  "\nglobalThis.__math = { rgbToOklab, rgbToLch, lchToRgb, relLum, contrast, forceContrast, forceContrastPair, capChroma, deltaE, hueGap, hex, referenceAtan2 };",
+  "\nglobalThis.__math = { rgbToOklab, rgbToLch, lchToRgb, relLum, contrast, forceContrast, forceContrastPair, capChroma, deltaE, hueGap, hex, referenceAtan2, referenceCbrt };",
   context
 );
 const math = context.__math;
@@ -41,6 +41,19 @@ for (const [y, x, expected] of [
   [1, Infinity, 0], [-1, Infinity, -0], [Infinity, 1, Math.PI / 2]
 ]) assert.ok(Object.is(math.referenceAtan2(y, x), expected), `referenceAtan2(${y}, ${x})`);
 assert.ok(Number.isNaN(math.referenceAtan2(NaN, 1)));
+
+// Edge 156 changed native cbrt at these inputs, rotating near-neutral hue
+// and swapping sparse Source hues roles. The reference keeps exact historical
+// floats; these assertions intentionally have no numeric tolerance.
+assert.equal(math.rgbToLch({ r:6, g:6, b:6 }).H, 89.87556269699212);
+assert.equal(math.rgbToLch({ r:22, g:22, b:22 }).H, 89.87556266224881);
+assert.equal(math.rgbToLch({ r:23, g:23, b:23 }).H, 89.87556292841498);
+for (const [input, expected] of [
+  [0, 0], [-0, -0], [Infinity, Infinity], [-Infinity, -Infinity],
+  [Number.MIN_VALUE, 1.7031839360032603e-108], [1e-300, 1e-100],
+  [-1e-300, -1e-100], [1e-6, .01], [8, 2], [-8, -2], [1e300, 1e100]
+]) assert.ok(Object.is(math.referenceCbrt(input), expected), `referenceCbrt(${input})`);
+assert.ok(Number.isNaN(math.referenceCbrt(NaN)));
 
 const gray = value => ({ r:value, g:value, b:value });
 for (const [paint, ground, panel, target] of [

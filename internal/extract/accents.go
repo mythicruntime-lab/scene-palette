@@ -55,6 +55,7 @@ type AccentColor struct {
 }
 
 type AccentStage struct {
+	Policy         ColorPolicy
 	Filtered       []Candidate
 	RoleCandidates []AccentColor
 	Sets           [][]AccentColor
@@ -63,11 +64,15 @@ type AccentStage struct {
 // BuildAccentStage filters raw paint against the structural colors, repairs it
 // for both surfaces, generates the best four-color sets, and derives only the
 // colors the image cannot supply distinctly.
-func BuildAccentStage(rawCandidates []Candidate, structure StructureResult, maxSets int) AccentStage {
+func BuildAccentStage(rawCandidates []Candidate, structure StructureResult, maxSets int, policies ...ColorPolicy) AccentStage {
+	policy := ReadableUI
+	if len(policies) > 0 {
+		policy = NormalizeColorPolicy(policies[0])
+	}
 	filtered := make([]Candidate, 0, len(rawCandidates))
 	for _, candidate := range rawCandidates {
-		if colorx.DeltaE(candidate.RGB, structure.Colors["ground"]) > 0.10 &&
-			colorx.DeltaE(candidate.RGB, structure.Colors["ink"]) > 0.10 {
+		if policy == SourceHues || (colorx.DeltaE(candidate.RGB, structure.Colors["ground"]) > 0.10 &&
+			colorx.DeltaE(candidate.RGB, structure.Colors["ink"]) > 0.10) {
 			filtered = append(filtered, candidate)
 		}
 	}
@@ -135,10 +140,15 @@ func BuildAccentStage(rawCandidates []Candidate, structure StructureResult, maxS
 		}
 	}
 
+	sets := accentSets(roleCandidates, maxSets)
+	if policy == SourceHues {
+		sets = sourceHueSets(roleCandidates, structure, maxSets)
+	}
 	return AccentStage{
+		Policy:         policy,
 		Filtered:       filtered,
 		RoleCandidates: roleCandidates,
-		Sets:           accentSets(roleCandidates, maxSets),
+		Sets:           sets,
 	}
 }
 

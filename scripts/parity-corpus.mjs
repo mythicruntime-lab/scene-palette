@@ -16,6 +16,7 @@ if (args.includes("--help")) {
   console.log(`Usage: node scripts/parity-corpus.mjs [--url http://127.0.0.1:8765/]
   [--manifest path/to/manifest.json] [--output bin/corpus/RUN] [--html index.html]
   [--browser /path/to/browser] [--channel msedge] [--require-readable]
+  [--color-policy readable-ui|source-hues] [--require-distinct]
 
 Manifest: {"images":[{"id":"illustration-01","file":"images/illustration.png",
   "category":"illustration","source":"source title or URL","corpus":"fresh"}]}
@@ -33,20 +34,26 @@ summary.json, cases.json, differences.json, thumbnails and default palettes.
 Exit 1 means parity, input, browser or execution failure. --require-readable
 also fails if any generated, unlocked core ink misses its contrast target on
 either surface in either engine. Locked/manual exclusions are reported. Found
-inks and other diagnostic quality flags do not affect the exit code.
+inks are excluded. --require-distinct also gates final generated, unlocked accent
+pairs at 0.07 OKLab distance in readable-ui mode. Source-hues mode reports reduced
+distinction separately; it never inherits a readable-ui distinction pass. Other
+quality flags remain diagnostics. Run each policy into a separate output folder.
 
 Install playwright for development or set SCENE_PALETTE_PLAYWRIGHT / NODE_PATH.
 SCENE_PALETTE_BROWSER and SCENE_PALETTE_BROWSER_CHANNEL are also supported.`);
   process.exit(0);
 }
-const validOptions = new Set(["--url", "--manifest", "--output", "--html", "--browser", "--channel"]);
+const validOptions = new Set(["--url", "--manifest", "--output", "--html", "--browser", "--channel", "--color-policy"]);
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--require-readable") continue;
+  if (["--require-readable", "--require-distinct"].includes(args[i])) continue;
   assert.ok(validOptions.has(args[i]), `Unknown option: ${args[i]}`);
   assert.ok(args[i + 1] && !args[i + 1].startsWith("--"), `${args[i]} needs a value`);
   i++;
 }
 const requireReadable = args.includes("--require-readable");
+const requireDistinct = args.includes("--require-distinct");
+const colorPolicy = option("--color-policy", "readable-ui");
+assert.ok(["readable-ui", "source-hues"].includes(colorPolicy), "Use --color-policy readable-ui or source-hues");
 function option(name, fallback) {
   const at = args.indexOf(name);
   return at === -1 ? fallback : args[at + 1];
@@ -73,9 +80,9 @@ const configurations = [
   { id: "faint-signals", budget: 140000, chromaMin: 0.04, foundInks: 10, modes: ["auto"] },
   { id: "strong-signals", budget: 140000, chromaMin: 0.16, foundInks: 6, modes: ["auto"] },
   { id: "no-found-inks", budget: 140000, chromaMin: 0.085, foundInks: 0, modes: ["auto"] }
-];
+].map(config => ({ ...config, colorPolicy }));
 const report = {
-  schema: 1, startedAt: new Date().toISOString(), url: baseURL.href, runnerNodeVersion: process.version,
+  schema: 1, startedAt: new Date().toISOString(), url: baseURL.href, runnerNodeVersion: process.version, colorPolicy,
   methodology: {
     reference: "Selected standalone HTML JavaScript extraction in file://, using actual decoded working canvases; observed extraction versions recorded below",
     candidate: "Local Go API through the served app, using the same input files and browser",
@@ -85,6 +92,7 @@ const report = {
     settings: configurations, pooling: "First and last image, equal still weighting, baseline in all three polarities",
     diagnostics: "Measured contrast uses unrounded colors on both surfaces: ink >=4.5, other core nonsurfaces >=3. Found inks are raw paint and have no readability guarantee. Accent DeltaE is Euclidean OKLab (not CIEDE2000). Flags are evidence for visual review, not subjective quality verdicts.",
     thresholds: { inkContrast: 4.5, otherCoreContrast: 3, nearAccentDeltaE: 0.07, significantRawToFinalDeltaE: 0.10 },
+    distinctionGate: { enabled: requireDistinct, threshold: 0.07, policy: colorPolicy, scope: "Final generated unlocked accent pairs in readable-ui; source-hues and manual/locked pairs are explicitly excluded and reported." },
     readabilityGate: { enabled: requireReadable, scope: "Generated unlocked core inks on both surfaces, in both engines; locked or manual-origin tokens explicitly excluded and reported. Raw found inks are excluded." },
     limitation: "This is automated testing in fresh browser profiles, with a contact sheet for separate visual inspection; no recruited-human usability study is claimed. Synthetic fixtures and retained references do not establish fresh-source coverage. Original committed golden-reference tests must be run separately."
   }, extractionVersions: { go: [], reference: [] }, images: [], pools: [], errors: [], differences: [], cases: []
@@ -112,6 +120,7 @@ function assertSelection(plate, config, mode, variant, label) {
   assert.equal(plate.core.length, 8, `${label}: generated core is incomplete`);
   assert.ok(Number.isInteger(plate.params.variantCount) && plate.params.variantCount > 0, `${label}: generated variants are missing`);
   for (const field of ["budget", "chromaMin", "foundInks"]) assert.equal(plate.params[field], config[field], `${label}: ${field} was not applied`);
+  assert.equal(plate.params.colorPolicy, config.colorPolicy, `${label}: requested colour policy was not applied`);
   assert.equal(plate.params.polarityMode, mode, `${label}: requested polarity was not applied`);
   if (mode !== "auto") assert.equal(plate.lightScene, mode === "light", `${label}: forced scene polarity was not applied`);
   if (variant !== undefined) {
@@ -120,6 +129,7 @@ function assertSelection(plate, config, mode, variant, label) {
   }
 }
 async function setControls(page, config) {
+  await page.locator("#colorPolicy").selectOption(config.colorPolicy);
   await page.locator("#quality").selectOption(String(config.budget));
   for (const [id, value] of [["chroma", config.chromaMin * 1000], ["extra", config.foundInks]]) {
     await page.locator(`#${id}`).evaluate((input, next) => {
@@ -138,7 +148,7 @@ async function forge(page, isGo, config) {
     assert.equal(result.status(), 200, `Go extraction failed: ${await result.text()}`);
   }
   await page.waitForFunction(expected => state.core.length === 8 && !document.getElementById("extractBtn").disabled &&
-    state.params.budget === expected.budget && state.params.chromaMin === expected.chromaMin && state.params.foundInks === expected.foundInks, config);
+    state.params.colorPolicy === expected.colorPolicy && state.params.budget === expected.budget && state.params.chromaMin === expected.chromaMin && state.params.foundInks === expected.foundInks, config);
   assert.equal(await page.evaluate(() => !!state.goHistogram), isGo, "Unexpected extraction engine");
   assertSelection(await readPlate(page), config, "auto", 0, isGo ? "Go Forge" : "JavaScript Forge");
 }
@@ -158,7 +168,14 @@ async function metrics(page, plate) {
         excludedReason: locked ? "locked token" : generated ? null : "manual or unknown origin" };
     });
     const accents = p.core.filter(t => ["observed", "attention", "rupture", "gold"].includes(t.id));
-    const accentDistances = accents.flatMap((a, i) => accents.slice(i + 1).map(b => ({ roles: [a.id, b.id], deltaE: deltaE(color(a), color(b)) })));
+    const accentDistances = accents.flatMap((a, i) => accents.slice(i + 1).map(b => {
+      const policy = p.params?.colorPolicy || "readable-ui";
+      const manual = [a, b].some(t => t.locked || !["structure", "signal", "derived", "fallback"].includes(t.origin?.kind));
+      const distance = deltaE(color(a), color(b));
+      return { roles: [a.id, b.id], deltaE: distance, passes: distance >= 0.07,
+        gateEligible: policy === "readable-ui" && !manual,
+        excludedReason: policy !== "readable-ui" ? "source-hues policy" : manual ? "locked or manual colour" : null };
+    }));
     const rawToFinal = p.core.flatMap(t => {
       const raw = parse(t.origin?.raw);
       return raw ? [{ role: t.id, originKind: t.origin.kind, raw: t.origin.raw, final: t.hex, deltaE: deltaE(raw, color(t)), repairs: (t.origin.repairs || []).length }] : [];
@@ -235,6 +252,8 @@ async function runSample(sample, files, matrix) {
   sample.mismatches = 0;
   sample.readabilityFailureCases = 0;
   sample.readabilityExcludedTokens = 0;
+  sample.distinctionFailureCases = 0;
+  sample.distinctionExcludedPairs = 0;
   sample.qualityFlags = {};
   try {
     const goHolder = await makePage(baseURL.href, `${sample.id}/go`); holders.push(goHolder);
@@ -279,14 +298,25 @@ async function runSample(sample, files, matrix) {
           }
           const fields = diff(comparable(reference), comparable(candidate));
           const measured = await metrics(goPage, candidate);
-          const referenceReadability = (await metrics(jsPage, reference)).readability;
+          const referenceMetrics = await metrics(jsPage, reference);
+          const referenceReadability = referenceMetrics.readability;
           const allReadability = [["go", measured.readability], ["reference", referenceReadability]];
           const readabilityFailures = allReadability.flatMap(([engine, rows]) => rows.filter(r => r.gateEligible && !r.passes).map(r => ({ engine, ...r })));
           const readabilityExcluded = allReadability.flatMap(([engine, rows]) => rows.filter(r => !r.gateEligible).map(r => ({ engine, ...r })));
+          const allDistinction = [["go", measured.accentDistances], ["reference", referenceMetrics.accentDistances]];
+          const distinctionFailures = allDistinction.flatMap(([engine, rows]) => rows.filter(r => r.gateEligible && !r.passes).map(r => ({ engine, ...r })));
+          const distinctionExcluded = allDistinction.flatMap(([engine, rows]) => rows.filter(r => !r.gateEligible).map(r => ({ engine, ...r })));
           const result = { id: caseId, sample: sample.id, config: config.id, mode, variant, parity: fields.length ? "failed" : "passed",
-            readability: readabilityFailures.length ? "failed" : "passed", readabilityFailures, readabilityExcluded, referenceReadability, metrics: measured };
+            readability: readabilityFailures.length ? "failed" : "passed", readabilityFailures, readabilityExcluded, referenceReadability,
+            distinction: colorPolicy !== "readable-ui" ? "not-applicable" : distinctionFailures.length ? "failed" : "passed",
+            distinctionFailures, distinctionExcluded, referenceAccentDistances: referenceMetrics.accentDistances, metrics: measured };
           report.cases.push(result); sample.cases++;
           sample.readabilityExcludedTokens += readabilityExcluded.length;
+          sample.distinctionExcludedPairs += distinctionExcluded.length;
+          if (distinctionFailures.length) {
+            sample.distinctionFailureCases++;
+            if (requireDistinct) console.error("FAIL " + caseId + ": " + distinctionFailures.length + " final accent distinction failures across both engines");
+          }
           if (readabilityFailures.length) {
             sample.readabilityFailureCases++;
             if (requireReadable) console.error(`FAIL ${caseId}: ${readabilityFailures.length} generated core contrast failures across both engines`);
@@ -307,7 +337,7 @@ async function runSample(sample, files, matrix) {
         }
       }
     }
-    console.log(`${sample.mismatches || requireReadable && sample.readabilityFailureCases ? "FAIL" : "PASS"} ${sample.id}: ${sample.cases} exact comparisons; ${sample.readabilityFailureCases} generated-readability failures; ${sample.readabilityExcludedTokens} token exclusions; diagnostic flags ${JSON.stringify(sample.qualityFlags)}`);
+    console.log(`${sample.mismatches || requireReadable && sample.readabilityFailureCases || requireDistinct && sample.distinctionFailureCases ? "FAIL" : "PASS"} ${sample.id}: ${sample.cases} exact comparisons; ${sample.readabilityFailureCases} generated-readability failures; ${sample.readabilityExcludedTokens} token exclusions; ${sample.distinctionFailureCases} final distinction failures; diagnostic flags ${JSON.stringify(sample.qualityFlags)}`);
   } catch (error) {
     sample.error = error.stack || String(error);
     report.errors.push({ sample: sample.id, error: sample.error });
@@ -321,14 +351,14 @@ function card(sample) {
   const esc = escapeHTML, m = sample.defaultMetrics;
   const swatches = (sample.defaultCore || []).map(t => `<div class="token"><i style="background:${esc(t.hex)}"></i><b>${esc(t.role)}${t.derived ? " *" : ""}</b><code>${esc(t.hex)}</code></div>`).join("");
   const flags = m?.flags.map(f => `<li>${esc(f.kind)}: ${esc((f.roles || f.pairs || []).join(", "))}</li>`).join("") || "<li>No default diagnostic flags.</li>";
-  return `<article><header><h2>${esc(sample.label || sample.id)}</h2><span>${esc(sample.corpus || "pooled")} · ${sample.mismatches || sample.error || requireReadable && sample.readabilityFailureCases ? "CHECK FAILURES" : "required checks pass"}</span></header>
+  return `<article><header><h2>${esc(sample.label || sample.id)}</h2><span>${esc(sample.corpus || "pooled")} · ${sample.mismatches || sample.error || requireReadable && sample.readabilityFailureCases || requireDistinct && sample.distinctionFailureCases ? "CHECK FAILURES" : "required checks pass"}</span></header>
     <p>${esc(sample.category || (sample.tags || []).join(" · "))}</p>
     ${sample.thumbnail ? `<img src="${sample.thumbnail}" alt="Input: ${esc(sample.thumbnailSource || sample.label || sample.id)}">` : ""}
     ${sample.corpus === "pooled" ? `<p>Thumbnail shows the first pooled source: ${esc(sample.thumbnailSource)}. Extraction uses both sources.</p>` : ""}
     <div class="swatches">${swatches}</div>
     ${m ? `<p><b>${esc(m.actualPolarity)}</b> auto plate · ${m.variantCount} variants · ${m.derivedCount}/4 derived accents · ${m.foundCount} found inks</p>
       <p>Closest accent ΔE ${m.minimumAccentDeltaE.toFixed(4)} · ${m.readability.filter(x => x.passes).length}/6 core inks meet both surfaces</p>` : ""}
-    <ul>${flags}</ul><details><summary>Evidence and all-case diagnostic counts</summary><pre>${esc(JSON.stringify({ source: sample.source, metadata: sample.metadata, inputSha256: sample.sha256, cases: sample.cases, readabilityFailureCases: sample.readabilityFailureCases, readabilityExcludedTokens: sample.readabilityExcludedTokens, qualityFlags: sample.qualityFlags, defaultMetrics: m, error: sample.error }, null, 2))}</pre></details>
+    <ul>${flags}</ul><details><summary>Evidence and all-case diagnostic counts</summary><pre>${esc(JSON.stringify({ source: sample.source, metadata: sample.metadata, inputSha256: sample.sha256, cases: sample.cases, readabilityFailureCases: sample.readabilityFailureCases, readabilityExcludedTokens: sample.readabilityExcludedTokens, distinctionFailureCases: sample.distinctionFailureCases, distinctionExcludedPairs: sample.distinctionExcludedPairs, qualityFlags: sample.qualityFlags, defaultMetrics: m, error: sample.error }, null, 2))}</pre></details>
     ${sample.palette ? `<p><a href="${sample.palette}">Default palette JSON</a></p>` : ""}</article>`;
 }
 async function finish() {
@@ -346,11 +376,16 @@ async function finish() {
     contrastFailureCases: report.cases.filter(c => c.metrics.readability.some(r => !r.passes)).length,
     generatedReadabilityFailureCases: report.cases.filter(c => c.readability === "failed").length,
     readabilityExcludedTokens: report.cases.reduce((n, c) => n + c.readabilityExcluded.length, 0),
+    distinctionFailureCases: report.cases.filter(c => c.distinction === "failed").length,
+    distinctionExcludedPairs: report.cases.reduce((n, c) => n + c.distinctionExcluded.length, 0),
+    nearExcludedPairs: report.cases.reduce((n, c) => n + c.distinctionExcluded.filter(r => !r.passes).length, 0),
     unreadableExcludedTokens: report.cases.reduce((n, c) => n + c.readabilityExcluded.filter(r => !r.passes).length, 0)
   };
   report.parityStatus = report.errors.length || report.differences.length ? "failed" : "passed";
   report.readabilityStatus = report.errors.length ? "incomplete" : report.totals.generatedReadabilityFailureCases ? "failed" : "passed";
-  report.status = report.parityStatus === "failed" || requireReadable && report.readabilityStatus !== "passed" ? "failed" : "passed";
+  report.distinctionStatus = report.errors.length ? "incomplete" : colorPolicy !== "readable-ui" ? "not-applicable" : report.totals.distinctionFailureCases ? "failed" : "passed";
+  report.status = report.parityStatus === "failed" || requireReadable && report.readabilityStatus !== "passed" ||
+    requireDistinct && colorPolicy === "readable-ui" && report.distinctionStatus !== "passed" ? "failed" : "passed";
   await writeJSON("cases.json", report.cases);
   await writeJSON("differences.json", report.differences);
   const { cases, differences, ...summary } = report;
@@ -362,12 +397,13 @@ async function finish() {
     <div class="overview"><p>${report.totals.comparisons} comparisons · ${report.totals.mismatchingComparisons} mismatches · ${report.totals.errors} execution errors.</p>
     <p>${report.totals.freshImages} fresh images · ${report.totals.regressionImages} retained regression images · ${report.totals.uniqueImages} unique input hashes. Fresh-source coverage needs its own diverse manifest; retained examples are not a substitute.</p>
     <p>Generated-core readability: <b>${escapeHTML(report.readabilityStatus)}</b> · required gate ${requireReadable ? "enabled" : "disabled"} · ${report.totals.generatedReadabilityFailureCases} failing cases · ${report.totals.readabilityExcludedTokens} locked/manual token exclusions (${report.totals.unreadableExcludedTokens} below target). Excluded tokens do not inherit a generated-readability pass. Observed extraction versions: Go ${escapeHTML(report.extractionVersions.go.join(", "))}; standalone ${escapeHTML(report.extractionVersions.reference.join(", "))}.</p>
-    <p>Cards show the default auto palette. * marks a derived accent. Contrast is checked without rounding: body ink 4.5:1 and other core inks 3:1 on both ground and panel. Found inks are unmodified source colors. Close accents (&lt;0.07 OKLab ΔE), derived accents, and large source adjustments (&gt;0.10 ΔE) are diagnostics for review, not automatic aesthetic failures. Adjustments to real signal accents are recorded separately from derived colors and structural repairs.</p>
+    <p>Colour policy: <b>${escapeHTML(colorPolicy)}</b>. Final accent distinction: <b>${escapeHTML(report.distinctionStatus)}</b> · required gate ${requireDistinct ? "enabled" : "disabled"} · ${report.totals.distinctionFailureCases} failing cases · ${report.totals.distinctionExcludedPairs} excluded pairs (${report.totals.nearExcludedPairs} close pairs). Source-hues exclusions are a declared tradeoff, not a distinction pass.</p>
+    <p>Cards show the default auto palette. * marks a derived accent. Contrast is checked without rounding: body ink 4.5:1 and other core inks 3:1 on both ground and panel. Found inks are unmodified source colors. Close accents (&lt;0.07 OKLab ΔE) are a required check only when the readable-ui distinction gate is enabled. Derived accents and large source adjustments (&gt;0.10 ΔE) are diagnostics for review, not automatic aesthetic failures. Adjustments to real signal accents are recorded separately from derived colors and structural repairs.</p>
     <p>Both engines use a fresh browser profile for each sample; the standalone HTML runs with network access disabled. This is automated fresh-profile testing with a contact sheet for separate visual inspection, not a recruited-human usability study.</p>
     <p>All variants are tested at baseline auto/dark/light; auto also varies budgets 45k/140k/400k, signal floors .04/.085/.16 and found limits 0/6/10. This bounded matrix does not claim every combination. Cached builds call actual production handlers after UI file uploads and Forge.</p>
     <p><a href="summary.json">Summary and provenance</a> · <a href="cases.json">Every case and metric</a> · <a href="differences.json">Exact differences</a></p></div>
     <div class="grid">${allSamples.map(card).join("\n")}</div></main></html>`);
-  console.log(`${report.status.toUpperCase()}: ${report.totals.comparisons} comparisons, ${report.totals.differences} mismatches, ${report.errors.length} errors, ${report.totals.generatedReadabilityFailureCases} generated-readability failures (gate ${requireReadable ? "enabled" : "disabled"}), ${report.totals.readabilityExcludedTokens} token exclusions; report ${path.join(output, "report.html")}`);
+  console.log(`${report.status.toUpperCase()}: ${report.totals.comparisons} comparisons, ${report.totals.differences} mismatches, ${report.errors.length} errors, ${report.totals.generatedReadabilityFailureCases} generated-readability failures (gate ${requireReadable ? "enabled" : "disabled"}), ${report.totals.readabilityExcludedTokens} token exclusions, ${report.totals.distinctionFailureCases} distinction failures (gate ${requireDistinct ? "enabled" : "disabled"}, policy ${colorPolicy}); report ${path.join(output, "report.html")}`);
   if (report.status !== "passed") process.exitCode = 1;
 }
 
@@ -394,7 +430,7 @@ try {
     const corpus = explicitManifest ? entry.corpus || "fresh" : "regression";
     assert.ok(["fresh", "regression"].includes(corpus), `Unknown corpus classification: ${corpus}`);
     report.images.push({ id, label: entry.label || id, file, category: entry.category || null, tags: entry.tags || [], corpus,
-      source: entry.source || (explicitManifest ? null : "Retained user-supplied reference fixture"), sha256: hash, bytes: bytes.length, metadata: entry });
+      source: entry.source || (explicitManifest ? null : "Generated procedural reference fixture"), sha256: hash, bytes: bytes.length, metadata: entry });
     inputs.push(absolute);
   }
   assert.ok(inputs.length, "Manifest did not select any image files");

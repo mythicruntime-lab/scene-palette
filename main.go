@@ -374,6 +374,7 @@ func runForge(args []string, stdout, stderr io.Writer) error {
 	foundInks := flags.Int("found", 6, "number of found inks (0-10)")
 	polarity := flags.String("polarity", "auto", "plate polarity: auto, dark, or light")
 	variant := flags.Int("variant", 1, "one-based plate variant")
+	colorPolicy := flags.String("color-policy", "readable-ui", "accent policy: readable-ui or source-hues")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -389,13 +390,14 @@ func runForge(args []string, stdout, stderr io.Writer) error {
 
 	createdAt := time.Now().UTC().Truncate(time.Millisecond).Format("2006-01-02T15:04:05.000Z")
 	snapshot, err := forge.Build(flags.Args(), forge.Options{
-		Name:      *name,
-		CreatedAt: createdAt,
-		Budget:    *budget,
-		ChromaMin: *chromaMin,
-		FoundInks: *foundInks,
-		Polarity:  extract.Polarity(*polarity),
-		Variant:   *variant - 1,
+		ColorPolicy: extract.ColorPolicy(*colorPolicy),
+		Name:        *name,
+		CreatedAt:   createdAt,
+		Budget:      *budget,
+		ChromaMin:   *chromaMin,
+		FoundInks:   *foundInks,
+		Polarity:    extract.Polarity(*polarity),
+		Variant:     *variant - 1,
 	})
 	if err != nil {
 		return err

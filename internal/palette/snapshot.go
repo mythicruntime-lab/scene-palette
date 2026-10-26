@@ -42,12 +42,13 @@ type Snapshot struct {
 }
 
 type SnapshotParams struct {
-	Budget       int     `json:"budget"`
-	ChromaMin    float64 `json:"chromaMin"`
-	FoundInks    int     `json:"foundInks"`
-	PolarityMode string  `json:"polarityMode"`
-	Variant      int     `json:"variant"`
-	VariantCount int     `json:"variantCount"`
+	ColorPolicy  extract.ColorPolicy `json:"colorPolicy"`
+	Budget       int                 `json:"budget"`
+	ChromaMin    float64             `json:"chromaMin"`
+	FoundInks    int                 `json:"foundInks"`
+	PolarityMode string              `json:"polarityMode"`
+	Variant      int                 `json:"variant"`
+	VariantCount int                 `json:"variantCount"`
 }
 
 // SnapshotSource is source metadata captured during ingestion. BuildSnapshot
@@ -122,9 +123,10 @@ type SnapshotSignatureRole struct {
 }
 
 type SnapshotParamsInput struct {
-	Budget    int
-	ChromaMin float64
-	FoundInks int
+	ColorPolicy extract.ColorPolicy
+	Budget      int
+	ChromaMin   float64
+	FoundInks   int
 }
 
 // SnapshotInput keeps environment-owned values explicit. Extraction owns the
@@ -221,6 +223,7 @@ func BuildSnapshot(input SnapshotInput) (Snapshot, error) {
 		LightScene: input.Structure.LightScene,
 		MedianL:    &medianL,
 		Params: SnapshotParams{
+			ColorPolicy:  extract.NormalizeColorPolicy(input.Params.ColorPolicy),
 			Budget:       input.Params.Budget,
 			ChromaMin:    input.Params.ChromaMin,
 			FoundInks:    input.Params.FoundInks,
@@ -243,7 +246,7 @@ func BuildSnapshot(input SnapshotInput) (Snapshot, error) {
 
 func packSnapshotToken(token extract.PlateToken, key string, ground, panel colorx.RGB) (SnapshotToken, error) {
 	lch := colorx.RGBToLCH(token.RGB)
-	origin, err := marshalSnapshotOrigin(token.Origin)
+	origin, err := MarshalSnapshotOrigin(token.Origin)
 	if err != nil {
 		return SnapshotToken{}, fmt.Errorf("encode %s origin: %w", key, err)
 	}
@@ -268,7 +271,7 @@ func packSnapshotToken(token extract.PlateToken, key string, ground, panel color
 	}, nil
 }
 
-func marshalSnapshotOrigin(origin extract.TokenOrigin) (json.RawMessage, error) {
+func MarshalSnapshotOrigin(origin extract.TokenOrigin) (json.RawMessage, error) {
 	value := make(map[string]any)
 	kind := origin.Kind
 	if kind == "" {

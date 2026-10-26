@@ -23,9 +23,10 @@ const (
 )
 
 type Params struct {
-	Budget    int     `json:"budget"`
-	ChromaMin float64 `json:"chromaMin"`
-	FoundInks int     `json:"foundInks"`
+	ColorPolicy extract.ColorPolicy `json:"colorPolicy"`
+	Budget      int                 `json:"budget"`
+	ChromaMin   float64             `json:"chromaMin"`
+	FoundInks   int                 `json:"foundInks"`
 }
 
 // Request carries all state needed to reproduce a build. A first build supplies
@@ -69,8 +70,8 @@ func Build(images []image.Image, request Request) (Response, error) {
 		pooled = extract.Pool(histograms)
 	}
 	structure := extract.BuildStructure(pooled, request.Polarity)
-	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, 6)
-	assembly := extract.BuildPlateAssembly(structure, accents, request.Params.FoundInks)
+	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, 6, request.Params.ColorPolicy)
+	assembly := extract.BuildPlateAssembly(structure, accents, request.Params.FoundInks, true)
 	result := Response{
 		Histogram: pooled,
 		Variants:  make([]palette.Snapshot, 0, len(assembly.Variants)),
@@ -85,7 +86,8 @@ func Build(images []image.Image, request Request) (Response, error) {
 			Variant:      variant,
 			VariantCount: len(assembly.Variants),
 			Params: palette.SnapshotParamsInput{
-				Budget: request.Params.Budget, ChromaMin: request.Params.ChromaMin,
+				ColorPolicy: request.Params.ColorPolicy,
+				Budget:      request.Params.Budget, ChromaMin: request.Params.ChromaMin,
 				FoundInks: request.Params.FoundInks,
 			},
 			Sources: request.Sources,
@@ -93,13 +95,13 @@ func Build(images []image.Image, request Request) (Response, error) {
 		if err != nil {
 			return Response{}, err
 		}
-		applyHumanState(&plate, request, accents.Filtered, structure.Notes)
+		applyHumanState(&plate, request, accents.Filtered, accents.RoleCandidates, structure.Notes)
 		result.Variants = append(result.Variants, plate)
 	}
 	return result, nil
 }
 
-func applyHumanState(plate *palette.Snapshot, request Request, candidates []extract.Candidate, baseNotes []string) {
+func applyHumanState(plate *palette.Snapshot, request Request, candidates []extract.Candidate, observed []extract.AccentColor, baseNotes []string) {
 	locked := make(map[string]palette.SnapshotToken)
 	used := make(map[string]bool)
 	for _, token := range request.Core {
@@ -148,7 +150,68 @@ func applyHumanState(plate *palette.Snapshot, request Request, candidates []extr
 			derived++
 		}
 	}
+	inputs := make([]extract.AccentInput, 4)
+	for i, token := range plate.Core[4:] {
+		var origin struct {
+			Raw string `json:"raw"`
+		}
+		_ = json.Unmarshal(token.Origin, &origin)
+		raw, ok := extract.ParseHex(origin.Raw)
+		inputs[i] = extract.AccentInput{RGB: rgb(token), Raw: raw, HasRaw: ok, Derived: token.Derived, Locked: token.Locked}
+	}
+	final := extract.FinalizeAccents(inputs, observed, ground, panel, request.Params.ColorPolicy)
+	for i, color := range final.Colors {
+		token := &plate.Core[i+4]
+		if token.Locked {
+			continue
+		}
+		if replacement, ok := final.Replacements[i]; ok {
+			token.Origin, _ = palette.MarshalSnapshotOrigin(extract.AccentPlateOrigin(replacement, nil))
+			token.Derived = replacement.Derived
+		}
+		for _, repair := range final.Repairs[i] {
+			appendAccentRepair(token, repair)
+		}
+		token.R, token.G, token.B, token.Hex = color.R, color.G, color.B, colorx.Hex(color)
+	}
+	used = make(map[string]bool)
+	for _, token := range plate.Core {
+		if token.Locked {
+			used[token.Name] = true
+		}
+	}
+	derived = 0
+	for i := range plate.Core {
+		if !plate.Core[i].Locked {
+			plate.Core[i].Name = extract.NameColorUnique(rgb(plate.Core[i]), used)
+		}
+		if plate.Core[i].Derived {
+			derived++
+		}
+	}
 	plate.Notes = append([]string{}, baseNotes...)
+	plate.Notes = append(plate.Notes, final.Notes...)
+	if extract.NormalizeColorPolicy(request.Params.ColorPolicy) == extract.SourceHues {
+		departures := []string{}
+		for _, token := range plate.Core[2:] {
+			if token.Locked {
+				continue
+			}
+			var origin struct {
+				Raw      string  `json:"raw"`
+				Method   string  `json:"method"`
+				IdealHue float64 `json:"idealHue"`
+				MedianC  float64 `json:"medianC"`
+			}
+			_ = json.Unmarshal(token.Origin, &origin)
+			if extract.SourceHueDeparture(rgb(token), origin.Raw, origin.Method, origin.IdealHue, origin.MedianC) {
+				departures = append(departures, token.ID)
+			}
+		}
+		if len(departures) > 0 {
+			plate.Notes = append(plate.Notes, "source hues shifted for readability — "+strings.Join(departures, ", "))
+		}
+	}
 	if unreadableLockedSurfaces {
 		plate.Notes = append(plate.Notes, "locked surfaces cannot share readable ink — unlock or adjust a surface")
 	}
@@ -205,6 +268,19 @@ func applyHumanState(plate *palette.Snapshot, request Request, candidates []extr
 	plate.Signature = palette.PlateSignature(*plate)
 }
 
+func appendAccentRepair(token *palette.SnapshotToken, item extract.Repair) {
+	var origin map[string]json.RawMessage
+	_ = json.Unmarshal(token.Origin, &origin)
+	if origin == nil {
+		origin = map[string]json.RawMessage{"kind": json.RawMessage(`"unknown"`)}
+	}
+	var repairs []json.RawMessage
+	_ = json.Unmarshal(origin["repairs"], &repairs)
+	repair, _ := json.Marshal(map[string]any{"op": item.Operation, "against": item.Against, "target": item.Target, "from": item.From, "to": item.To})
+	origin["repairs"], _ = json.Marshal(append(repairs, repair))
+	token.Origin, _ = json.Marshal(origin)
+}
+
 func appendPairRepair(token *palette.SnapshotToken, next colorx.RGB, target float64) {
 	var origin map[string]json.RawMessage
 	_ = json.Unmarshal(token.Origin, &origin)
@@ -255,6 +331,9 @@ func repack(token *palette.SnapshotToken, key string, ground, panel colorx.RGB) 
 }
 
 func validate(images []image.Image, request Request) error {
+	if !extract.ValidColorPolicy(request.Params.ColorPolicy) {
+		return fmt.Errorf("live color policy must be readable-ui or source-hues")
+	}
 	if request.Params.Budget < 1 || request.Params.Budget > 400000 {
 		return fmt.Errorf("live budget must be between 1 and 400000")
 	}

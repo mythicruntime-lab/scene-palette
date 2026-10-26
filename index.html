@@ -254,6 +254,14 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .why-panel { margin:10px 13px; padding:11px 12px; border:1px solid var(--line2); border-radius:4px;
     background:var(--bg); color:var(--dim); font:11.5px/1.5 var(--sans); }
   .why-panel[hidden] { display:none; }
+  .source-comparison { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0; }
+  .source-paint { display:grid; grid-template-columns:32px auto; align-items:center; gap:7px; font:11px var(--mono); }
+  .source-paint i { display:block; width:32px; height:32px; border:1px solid var(--line2); border-radius:3px; }
+  .source-paint span { display:grid; gap:3px; }
+  .source-paint small { color:var(--muted); font:11px var(--sans); }
+  .colour-diagnostics { margin:10px 13px; padding:11px 12px; border:1px solid var(--line2); border-radius:4px; font:12px/1.5 var(--sans); }
+  .colour-diagnostics p { margin:6px 0 0; color:var(--muted); }
+  .colour-diagnostics .tiny { margin:2px; }
   .why-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px; }
   .why-head strong { color:var(--ink); font:650 12.5px var(--sans); }
   .why-kind { color:var(--gold); font:700 9px var(--sans); letter-spacing:.1em; text-transform:uppercase; }
@@ -536,6 +544,14 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <input type="range" id="chroma" min="40" max="180" value="85" aria-valuetext=".085" />
     </div>
     <div class="ctl">
+      <label class="row" for="colorPolicy"><span>Colour policy</span></label>
+      <select id="colorPolicy" style="width:100%" aria-describedby="colorPolicyHelp">
+        <option value="readable-ui" selected>Readable UI</option>
+        <option value="source-hues">Source hues</option>
+      </select>
+      <p class="hint" id="colorPolicyHelp">Readable UI separates accent roles. Source hues favours the image's hue range; some roles may look similar. Both check readability.</p>
+    </div>
+    <div class="ctl">
       <label class="row" for="quality"><span>Quality</span></label>
       <select id="quality" style="width:100%">
         <option value="45000">Fast</option>
@@ -594,6 +610,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         <div class="review-history" id="reviewHistory" role="region" aria-label="Prior human seals" hidden></div>
         <div class="chips" id="chips"></div>
         <div class="why-panel" id="whyPanel" role="region" aria-label="Color origin" hidden></div>
+        <div class="colour-diagnostics" id="colourDiagnostics" role="region" aria-label="Palette colour diagnostics"></div>
         <div class="found-wrap" id="foundWrap">
           <label class="row" style="margin-bottom:8px"><span>Found inks — not roles, just paint the still refused to hide</span></label>
           <div class="found" id="found"></div>
@@ -733,11 +750,52 @@ function referenceAtan2(y, x) {
   return (angle - piLow) - pi;
 }
 
+// Use the same fdlibm cube root as Go and the original Node fixtures.
+// Native browser cbrt can differ by one ULP, changing near-neutral hue and
+// otherwise tied role assignments. Keep full precision and comparison rules.
+// Adapted from fdlibm; Copyright (C) 1993 Sun Microsystems, Inc.
+// Permission to use, copy, modify, and distribute this software is freely
+// granted, provided that this notice is preserved.
+const referenceCbrtBits = new DataView(new ArrayBuffer(8));
+function referenceCbrt(value) {
+  const bits = referenceCbrtBits;
+  bits.setFloat64(0, value);
+  const sign = bits.getUint32(0) & 0x80000000;
+  let high = bits.getUint32(0) & 0x7fffffff;
+  const low = bits.getUint32(4);
+  if (high >= 0x7ff00000) return value + value;
+  if ((high | low) === 0) return value;
+  let estimate;
+  if (high < 0x00100000) {
+    bits.setUint32(0, 0x43500000); bits.setUint32(4, 0);
+    const scaled = bits.getFloat64(0) * value;
+    bits.setFloat64(0, scaled);
+    high = bits.getUint32(0) & 0x7fffffff;
+    bits.setUint32(0, sign | (Math.floor(high / 3) + 696219795));
+  } else {
+    bits.setUint32(0, sign | (Math.floor(high / 3) + 715094163));
+  }
+  bits.setUint32(4, 0);
+  estimate = bits.getFloat64(0);
+  let ratio = estimate * estimate * (estimate / value);
+  estimate *= (1.87595182427177009643 + ratio * (-1.88497979543377169875 + ratio * 1.621429720105354466140)) +
+    ratio * ratio * ratio * (-0.758397934778766047437 + ratio * 0.145996192886612446982);
+  bits.setFloat64(0, estimate);
+  const roundedLow = bits.getUint32(4) + 0x80000000;
+  bits.setUint32(0, bits.getUint32(0) + (roundedLow >= 0x100000000 ? 1 : 0));
+  bits.setUint32(4, roundedLow & 0xc0000000);
+  estimate = bits.getFloat64(0);
+  const square = estimate * estimate, double = estimate + estimate;
+  ratio = value / square;
+  ratio = (ratio - estimate) / (double + ratio);
+  return estimate + estimate * ratio;
+}
+
 function rgbToOklab(r, g, b) {
   const R = toLin(r), G = toLin(g), B = toLin(b);
-  const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B);
-  const m = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B);
-  const s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
+  const l = referenceCbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B);
+  const m = referenceCbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B);
+  const s = referenceCbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
   return {
     L: 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
     a: 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
@@ -959,7 +1017,7 @@ const ROLES = [
 ];
 const state = { stills:[], sel:0, core:[], found:[], fmt:"css", arm:null, seq:1, notes:[],
                 struct:null, cands:[], sets:[], variant:0, baseNotes:[], lightScene:false,
-                hist:null, polarity:"auto", autoLight:false, backend:null, goHistogram:null,
+                hist:null, polarity:"auto", colorPolicy:"readable-ui", roleCands:[], autoLight:false, backend:null, goHistogram:null,
                 plateSources:null, plateMeta:{createdAt:null,generator:null,tags:[],family:null},
                 shelf:[], activeShelfId:null, abA:null, abB:null, shelfImport:false, storageWarned:false,
                 surface:"harness", theme:null, themeFmt:"css", keyPick:null, whyRole:null,
@@ -1021,6 +1079,8 @@ function captureWorkspace() {
       hist: state.hist,
       goHistogram: state.goHistogram,
       polarity: state.polarity,
+      colorPolicy: state.colorPolicy,
+      roleCands: state.roleCands,
       structOrigin: state.structOrigin,
       params: state.params,
       medianL: state.medianL,
@@ -1040,6 +1100,7 @@ function captureWorkspace() {
 function restoreWorkspace(saved) {
   invalidateGoRequest();
   Object.assign(state, saved.values);
+  if ($("colorPolicy")) $("colorPolicy").value = normalizeColorPolicy(state.colorPolicy);
   $("plateName").value = saved.plateName;
   $("polarity").querySelectorAll("[data-pol]").forEach(button => {
     const on = button.dataset.pol === state.polarity;
@@ -1071,8 +1132,8 @@ function restoreWorkspace(saved) {
    changes output, and a content hash of every source byte.
    ============================================================ */
 const SCHEMA_VERSION  = 1;         // the palette.json contract
-const TOOL_VERSION    = "2.0.0";   // this application
-const EXTRACT_VERSION = 4;         // joint contrast repair on both surfaces
+const TOOL_VERSION    = "2.1.0";   // this application
+const EXTRACT_VERSION = 5;         // joint contrast repair on both surfaces
 
 const bytesToHex = u8 => {
   let s = "";
@@ -1701,7 +1762,7 @@ async function checkedResponse(response) {
 function liveGoRequest(polarity, fresh) {
   return {
     histogram:fresh ? null : state.goHistogram,
-    params:{ budget:fresh ? +$("quality").value : state.params.budget,
+    params:{ colorPolicy:normalizeColorPolicy(state.colorPolicy), budget:fresh ? +$("quality").value : state.params.budget,
       chromaMin:fresh ? +$("chroma").value / 1000 : state.params.chromaMin,
       foundInks:+$("extra").value },
     polarity, name:$("plateName").value.trim() || "Plate",
@@ -1761,7 +1822,8 @@ function applyGoExtraction(result, index) {
   state.lightScene = plate.lightScene;
   state.autoLight = result.autoLight;
   state.medianL = result.medianL;
-  state.params = { budget:plate.params.budget, chromaMin:plate.params.chromaMin, foundInks:plate.params.foundInks };
+  state.params = { budget:plate.params.budget, chromaMin:plate.params.chromaMin, foundInks:plate.params.foundInks, colorPolicy:normalizeColorPolicy(plate.params.colorPolicy) };
+  state.colorPolicy = state.params.colorPolicy;
   state.polarity = plate.params.polarityMode;
   state.notes = plate.notes.slice();
   state.baseNotes = [];
@@ -2012,6 +2074,134 @@ function assignRoles(accents, roles) {
   return best.map(i => accents[i]);
 }
 
+function normalizeColorPolicy(value) {
+  return value === "source-hues" ? "source-hues" : "readable-ui";
+}
+function sourceRGB(value) {
+  if (typeof value !== "string" || !/^#[a-f\d]{6}$/i.test(value)) return null;
+  return { r:parseInt(value.slice(1,3),16), g:parseInt(value.slice(3,5),16), b:parseInt(value.slice(5,7),16) };
+}
+
+// A bounded source-distance search; the existing passing result is retained.
+function closerContrastPair(raw, current, ground, panel, target, others = [], minimumDistance = 0.07) {
+  if (contrast(current, ground) < target || contrast(current, panel) < target || deltaE(raw, current) <= 0.10) return current;
+  let best = current, bestDistance = deltaE(raw, current);
+  const accept = candidate => {
+    if (contrast(candidate, ground) < target || contrast(candidate, panel) < target) return;
+    for (const other of others) {
+      if (deltaE(candidate, other) < Math.min(minimumDistance, deltaE(current, other))) return;
+    }
+    const distance = deltaE(raw, candidate);
+    if (distance < bestDistance) { best = candidate; bestDistance = distance; }
+  };
+  accept(raw);
+  const lch = rgbToLch(raw);
+  for (const scale of [1, 0.9, 0.75, 0.5, 0.25, 0]) {
+    for (let lightness = 0; lightness <= 100; lightness++) accept(lchToRgb(lightness / 100, lch.C * scale, lch.H));
+  }
+  return best;
+}
+
+// Final RGB values are evaluated after contrast and human locks are applied.
+function finalizeAccents(input, observed, ground, panel, policy) {
+  const result = { colors:input.map(t => ({r:t.r,g:t.g,b:t.b})), repairs:input.map(() => []), replacements:{}, notes:[] };
+  const readable = color => contrast(color, ground) >= 3 && contrast(color, panel) >= 3;
+  const others = index => result.colors.filter((_, i) => i !== index);
+  const change = (index, next, op) => {
+    const before = result.colors[index];
+    if (hex(before) !== hex(next)) {
+      result.repairs[index].push({op, against:"ground+panel", target:3, from:hex(before), to:hex(next)});
+      result.colors[index] = next;
+    }
+  };
+  input.forEach((token, i) => {
+    const raw = sourceRGB(token.origin && token.origin.raw);
+    if (token.locked || !raw || token.derived) return;
+    const minimum = normalizeColorPolicy(policy) === "source-hues" ? 0 : 0.07;
+    change(i, closerContrastPair(raw, result.colors[i], ground, panel, 3, others(i), minimum), "source-distance");
+  });
+  const closeToAnother = index => result.colors.some((color,i) => i !== index && deltaE(result.colors[index],color) < .07);
+  if (normalizeColorPolicy(policy) === "readable-ui") {
+    const order = [];
+    for (const derived of [true,false]) input.forEach((token,i) => { if (!token.locked && !!token.derived === derived) order.push(i); });
+    for (const index of order) {
+      if (!closeToAnother(index)) continue;
+      const current = result.colors[index];
+      const valid = candidate => readable(candidate) && others(index).every(other => deltaE(candidate,other) >= .07);
+      let best = current, bestDistance = Infinity, found = false, replacement = null;
+      for (const candidate of observed) {
+        const repaired = forceContrastPair(candidate,ground,panel,3), color = repaired.color;
+        if (!repaired.readable || !valid(color)) continue;
+        const distance = deltaE(current,color);
+        if (distance < bestDistance) {
+          const repairs = (candidate.repairs || []).slice();
+          if (hex(color) !== hex(candidate)) repairs.push({op:"contrast",against:"ground+panel",target:3,from:hex(candidate),to:hex(color)});
+          best = color; bestDistance = distance; found = true;
+          replacement = {...candidate,...color,...rgbToLch(color),repairs};
+        }
+      }
+      if (found) {
+        result.colors[index] = best;
+        result.replacements[index] = replacement;
+        result.repairs[index] = [];
+        continue;
+      }
+      const lch = rgbToLch(current);
+      const offsets = input[index].derived ? [0,15,-15,30,-30,60,-60,90,-90,120,-120,180] : [0];
+      for (const offset of offsets) for (const chroma of [lch.C,lch.C*.75,lch.C*.5,.08,.16,.24]) {
+        for (let lightness = 5; lightness <= 95; lightness += 2) {
+          const candidate = lchToRgb(lightness/100,chroma,lch.H+offset);
+          if (!valid(candidate)) continue;
+          const distance = deltaE(current,candidate);
+          if (distance < bestDistance) { best = candidate; bestDistance = distance; found = true; }
+        }
+      }
+      if (found) change(index,best,"distinctness");
+    }
+  }
+  const pairs = [], roles = ["observed","attention","rupture","gold"];
+  result.colors.forEach((first,i) => {
+    for (let j = i+1; j < result.colors.length; j++) {
+      if (deltaE(first,result.colors[j]) < .07) pairs.push(roles[i]+"/"+roles[j]);
+    }
+  });
+  if (pairs.length) result.notes.push((normalizeColorPolicy(policy) === "source-hues"
+    ? "source hues share similar accents" : "accent distinction remains limited after bounded search") + " — " + pairs.join(", "));
+  return result;
+}
+
+function sourceHueSets(candidates, struct, origins, maxSets = 6) {
+  const pool = rankedPool(candidates,4);
+  if (pool.length >= 4) return accentSets(candidates, ROLES.filter(role => role.kind === "chroma"), maxSets);
+  const seeds = pool.slice();
+  if (!seeds.length) {
+    for (const role of ["muted","ink","panel","ground"]) {
+      const raw = sourceRGB(origins[role].raw) || struct[role], lch = rgbToLch(raw);
+      const color = lchToRgb(lch.L,lch.C,lch.H);
+      seeds.push({...color,...rgbToLch(color),area:0,salience:0,derived:true,repairs:[],
+        derivedFrom:{method:"source-tonal-reuse",idealHue:lch.H,medianC:+lch.C.toFixed(4),medianL:+lch.L.toFixed(4)}});
+    }
+  }
+  while (pool.length < 4) {
+    const seed = seeds[pool.length % seeds.length], lch = rgbToLch(seed);
+    const lightness = clamp(lch.L + [0,.08,-.08,.16][pool.length],0,1);
+    const color = lchToRgb(lightness,lch.C,lch.H);
+    pool.push({...color,...rgbToLch(color),area:0,salience:0,derived:true,repairs:[],
+      derivedFrom:{method:"source-tonal-reuse",idealHue:lch.H,medianC:+lch.C.toFixed(4),medianL:+lch.L.toFixed(4)}});
+  }
+  return [pool];
+}
+
+function sourceHueDeparture(token) {
+  const origin = token.origin || {}, raw = sourceRGB(origin.raw);
+  let hue = origin.idealHue, chroma = origin.medianC;
+  if (raw) { const source = rgbToLch(raw); hue = source.H; chroma = source.C; }
+  else if (origin.method !== "source-tonal-reuse") return false;
+  const final = rgbToLch(token);
+  if (chroma <= .000001) return token.r !== token.g || token.r !== token.b;
+  return chroma <= .01 ? final.C > .01 : final.C > .01 && hueGap(hue,final.H) > 15;
+}
+
 /** Scan pixels once and cache the pooled histogram, then build from it.
  *  Flipping polarity re-runs only the build, so it is instant. */
 async function extract() {
@@ -2043,7 +2233,7 @@ async function extract() {
         sig[i].n += b.n*norm; sig[i].wsum += b.wsum*norm; sig[i].L += b.L*norm; sig[i].a += b.a*norm; sig[i].b += b.b*norm;
       });
     });
-    state.params = { budget, chromaMin: +chromaMin.toFixed(4), foundInks: +$("extra").value };
+    state.params = { budget, chromaMin: +chromaMin.toFixed(4), foundInks: +$("extra").value, colorPolicy:normalizeColorPolicy(state.colorPolicy) };
     state.hist = { lum, sig, LB, HB, BANDS, binStills,
                    totalN: lum.reduce((t, b) => t + b.n, 0) || 1 };
     buildPlate(true);
@@ -2060,6 +2250,7 @@ function buildPlate(reset) {
   if (state.goHistogram) return rebuildGoPlate(reset ? 0 : state.variant);
   if (!state.hist) return;
   const { lum, sig, LB, HB, BANDS, totalN, binStills } = state.hist;
+  state.params = { ...(state.params || {}), colorPolicy:normalizeColorPolicy(state.colorPolicy) };
   state.notes = [];
   try {
     // --- scene polarity: read from the frame unless you have overridden it ---
@@ -2144,7 +2335,8 @@ function buildPlate(reset) {
     // --- signal slots: every plate this still can support, best first ---
     const chromaRoles = ROLES.filter(r => r.kind === "chroma");
     const cands = signalCandidates(sig, HB, BANDS, totalN, binStills)
-      .filter(c => deltaE(c, struct.ground) > 0.10 && deltaE(c, struct.ink) > 0.10);
+      .filter(c => normalizeColorPolicy(state.colorPolicy) === "source-hues" ||
+        (deltaE(c, struct.ground) > 0.10 && deltaE(c, struct.ink) > 0.10));
 
     // Lift candidates to 3:1 on ground BEFORE choosing between them. Repairing
     // afterwards can shove two distinct hits onto the same lightness and quietly
@@ -2176,7 +2368,9 @@ function buildPlate(reset) {
 
     state.struct    = struct;
     state.cands     = cands;                          // raw paint, for found inks
-    state.sets      = accentSets(roleCands, chromaRoles, 6);
+    state.roleCands = roleCands;
+    state.sets      = normalizeColorPolicy(state.colorPolicy) === "source-hues"
+      ? sourceHueSets(roleCands, struct, sOrigin) : accentSets(roleCands, chromaRoles, 6);
     state.baseNotes = state.notes.slice();            // structural notes survive a remix
     applyVariant(reset ? 0 : state.variant);
   } catch (err) {
@@ -2202,6 +2396,38 @@ async function setPolarity(mode) {
   if (!state.goHistogram) buildPlate(false);           // keep the chosen variant
   toast(mode === "auto" ? `Auto · reads ${state.autoLight ? "light" : "dark"}`
                         : `Forced ${mode} plate`);
+}
+
+/** Changing policy rebuilds from the same pixels; imported files stay intact until a new Forge. */
+async function setColorPolicy(value) {
+  if (!["readable-ui","source-hues"].includes(value)) return false;
+  const previous = normalizeColorPolicy(state.colorPolicy);
+  if (previous === value) {
+    invalidateGoRequest();
+    if ($("colorPolicy")) $("colorPolicy").value = previous;
+    return true;
+  }
+  if (state.goHistogram) {
+    try {
+      const request = liveGoRequest(state.polarity,false);
+      request.params.colorPolicy = value;
+      const result = await requestGoExtraction(request,false);
+      if (!result) { if ($("colorPolicy")) $("colorPolicy").value = normalizeColorPolicy(state.colorPolicy); return false; }
+      applyGoExtraction(result,state.variant);
+    } catch (error) {
+      if ($("colorPolicy")) $("colorPolicy").value = previous;
+      toast("Build failed: " + error.message,true);
+      return false;
+    }
+  } else {
+    invalidateGoRequest();
+    state.colorPolicy = value;
+    if (state.hist) buildPlate(false);
+  }
+  if ($("colorPolicy")) $("colorPolicy").value = normalizeColorPolicy(state.colorPolicy);
+  const label = value === "source-hues" ? "Source hues · role colours may share a hue" : "Readable UI · distinct semantic accents";
+  toast(state.hist ? label : label + " · applies to the next Forge");
+  return true;
 }
 
 /** Build and show one of the variants. Locked slots and pinned inks ignore it. */
@@ -2238,7 +2464,9 @@ function applyVariant(i) {
         ? [{ op: "contrast", against: "ground+panel", target: 3.0, from: hex(before), to: hex(col) }] : [];
       origin = !a ? { kind: "fallback", reason: "no candidate for this slot" }
         : derived ? { kind: "derived", ...(a.derivedFrom || {}),
-                      reason: "the still offered no distinct hue for this slot",
+                      reason: a.derivedFrom && a.derivedFrom.method === "source-tonal-reuse"
+                        ? "source hue or neutral paint reused to keep the palette within its source"
+                        : "the still offered no distinct hue for this slot",
                       repairs: late }
         : { ...(a.src || { kind: "signal" }), repairs: (a.repairs || []).concat(late) };
     }
@@ -2261,6 +2489,26 @@ function applyVariant(i) {
     };
   });
 
+  const final = finalizeAccents(state.core.slice(4), state.roleCands || [], ground, panel, state.colorPolicy);
+  final.colors.forEach((color, index) => {
+    const token = state.core[index + 4];
+    if (token.locked) return;
+    const replacement = final.replacements[index];
+    if (replacement) {
+      token.origin = {...(replacement.src || {kind:"signal"}), repairs:(replacement.repairs || []).slice()};
+      token.derived = !!replacement.derived;
+    }
+    token.origin = {...token.origin, repairs:(token.origin.repairs || []).concat(final.repairs[index])};
+    Object.assign(token,color,{hex:hex(color)});
+  });
+  used.clear();
+  state.core.filter(token => token.locked).forEach(token => used.add(token.name));
+  state.core.forEach(token => { if (!token.locked) token.name = nameOf(token,used); });
+  state.notes.push(...final.notes);
+  if (normalizeColorPolicy(state.colorPolicy) === "source-hues") {
+    const departures = state.core.slice(2).filter(token => !token.locked && sourceHueDeparture(token)).map(token => token.id);
+    if (departures.length) state.notes.push("source hues shifted for readability — " + departures.join(", "));
+  }
   if (unreadableLocks) state.notes.push("locked surfaces cannot share readable ink — unlock or adjust a surface");
   const nDerived = state.core.filter(t => t.derived).length;
   if (nDerived) state.notes.push(`${nDerived} signal slot${nDerived > 1 ? "s" : ""} derived — the still ran out of distinct paint`);
@@ -2636,6 +2884,63 @@ function renderReview() {
   renderReviewHistory(history);
 }
 
+// Display-only diagnostics never rewrite saved origins or review fingerprints.
+function recordedSourcePaint(token) {
+  const raw = token && token.origin && token.origin.raw;
+  if (typeof raw !== "string" || !/^#[0-9a-f]{6}$/i.test(raw)) return null;
+  const color = { r:parseInt(raw.slice(1, 3), 16), g:parseInt(raw.slice(3, 5), 16), b:parseInt(raw.slice(5, 7), 16) };
+  return { ...color, hex:hex(color) };
+}
+function paletteColourDiagnostics(core) {
+  const changes = (core || []).flatMap(token => {
+    const raw = recordedSourcePaint(token), final = reviewRGB(token);
+    return raw && final ? [{ role:token.id, raw:raw.hex, final:hex(final), distance:deltaE(raw, final) }] : [];
+  });
+  const accents = (core || []).filter(token => ["observed", "attention", "rupture", "gold"].includes(token.id));
+  const pairs = accents.flatMap((a, i) => accents.slice(i + 1).flatMap(b => {
+    const first = reviewRGB(a), second = reviewRGB(b);
+    if (!first || !second) return [];
+    const distance = deltaE(first, second);
+    return distance < .07 ? [{ first:a.id, second:b.id, distance }] : [];
+  }));
+  return { changes, pairs, derived:accents.filter(token => token.derived).map(token => token.id) };
+}
+function renderColourDiagnostics() {
+  const box = $("colourDiagnostics");
+  const diagnostic = paletteColourDiagnostics(state.core);
+  const changed = diagnostic.changes.filter(change => change.distance > .10);
+  const sourceMode = state.params && state.params.colorPolicy === "source-hues";
+  const parts = [sourceMode ? "Source hues" : "Readable UI"];
+  parts.push(`${diagnostic.derived.length} derived accent${diagnostic.derived.length === 1 ? "" : "s"}`);
+  parts.push(`${changed.length} large colour change${changed.length === 1 ? "" : "s"}`);
+  parts.push(`${diagnostic.pairs.length} close accent pair${diagnostic.pairs.length === 1 ? "" : "s"}`);
+  box.innerHTML = `<strong>${esc(parts.join(" · "))}</strong>` +
+    (changed.length ? `<p>Source adjustments above 0.10 OKLab distance: ${changed.map(change =>
+      `<button type="button" class="tiny" data-colour-why="${esc(change.role)}">${esc(change.role)}</button>`).join(" ")}. Open a role to compare its paint.</p>` : "") +
+    (diagnostic.pairs.length ? `<p>Close pairs: ${esc(diagnostic.pairs.map(pair => `${pair.first}/${pair.second} (${pair.distance.toFixed(3)})`).join(", "))}. ${sourceMode ? "Keeping source hues can limit role distinction; use labels and shapes as well as colour." : "Check these roles in context, especially when colours are locked."}</p>` : "") +
+    (diagnostic.derived.length ? `<p>${sourceMode ? "Derived roles are generated tonal paint. Check their origins and any hue-change warnings." : "Derived roles use generated paint where the source did not supply enough distinct accents."}</p>` : "");
+  box.querySelectorAll("[data-colour-why]").forEach(button => button.onclick = () => {
+    state.whyRole = "core:" + button.dataset.colourWhy;
+    renderWhy();
+    $("whyPanel").scrollIntoView({ block:"nearest" });
+  });
+}
+function useRecordedSourcePaint(reference) {
+  if (typeof reference !== "string" || !reference.startsWith("core:")) return;
+  const index = state.core.findIndex(token => token.id === reference.slice(5));
+  const token = state.core[index], raw = recordedSourcePaint(token);
+  if (!token || !raw || raw.hex === token.hex) return;
+  const prior = captureWorkspace();
+  const origin = clonePlain(token.origin);
+  origin.repairs = [...(Array.isArray(origin.repairs) ? origin.repairs : []),
+    { op:"restore-source", from:token.hex, to:raw.hex, by:"human" }];
+  state.core[index] = { ...token, ...raw, rgb:[raw.r, raw.g, raw.b], locked:true, origin };
+  markHumanEdited(`${token.id} source colour restored and locked by human`);
+  render();
+  undoToast(`Restored ${token.id} source colour · locked · check readability`, () => restoreWorkspace(prior), "Source colour change undone");
+}
+
+
 function originNarrative(t) {
   const o = t && t.origin && typeof t.origin === "object" ? t.origin : { kind:"unknown" };
   const kind = String(o.kind || "unknown");
@@ -2698,12 +3003,21 @@ function renderWhy() {
     return;
   }
   const why = originNarrative(t);
+  const raw = recordedSourcePaint(t), final = reviewRGB(t);
+  const comparison = raw && final ? '<div class="source-comparison">' +
+    '<div class="source-paint"><i style="background:' + raw.hex + '"></i><span><small>Before adjustment</small>' + raw.hex + '</span></div>' +
+    '<div class="source-paint"><i style="background:' + hex(final) + '"></i><span><small>Current</small>' + hex(final) + '</span></div>' +
+    '<span>Colour change: ' + deltaE(raw, final).toFixed(3) + ' OKLab</span>' +
+    (state.whyRole.startsWith("core:") && raw.hex !== hex(final)
+      ? '<button type="button" class="tiny" id="useSourcePaint">Use source colour</button>' : '') + '</div>' : '';
   box.hidden = false;
   box.innerHTML = `<div class="why-head"><div><span class="why-kind">${esc(why.kind)}</span><br>
       <strong>Why ${esc(t.id || t.name)} is ${esc(t.hex)}</strong></div>
       <button type="button" class="tiny" id="closeWhy" aria-label="Close color origin">close</button></div>
-    <div>${esc(why.lead)}</div>${why.facts.length ? `<ul>${why.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
+    <div>${esc(why.lead)}</div>${comparison}${raw ? `<p>Source paint can fail contrast checks. Using it locks the role and changes the human review state.</p>` : ""}${why.facts.length ? `<ul>${why.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
   $("closeWhy").onclick = () => { state.whyRole = null; renderWhy(); };
+  const restore = $("useSourcePaint");
+  if (restore) restore.onclick = () => useRecordedSourcePaint(state.whyRole);
 }
 
 function render() {
@@ -2811,6 +3125,7 @@ function render() {
     };
   });
   renderWhy();
+  renderColourDiagnostics();
 
   renderVariants();
   renderMatrix();
@@ -3190,12 +3505,17 @@ function applyPlate(plate, options) {
   invalidateExtraction();
   const o = options || {};
   state.core = plate.core.map(t => ({ ...t }));
-  state.found = plate.found.map(t => ({ ...t }));
+  // Found-ink UIDs are editor-only handles, excluded from snapshots and seals.
+  // Never trust persisted extension values: absent/duplicate IDs misroute Why,
+  // and an object with no primitive coercion can throw while rendering.
+  state.found = plate.found.map(t => ({ ...t, uid:state.seq++ }));
   state.lightScene = plate.lightScene;
   state.activeShelfId = o.shelfId || null;
   state.plateMeta = plateMetadata(plate);
   state.plateSources = clonePlain(Array.isArray(plate.sources) ? plate.sources : []);
   state.params = plate.params && typeof plate.params === "object" ? clonePlain(plate.params) : null;
+  state.colorPolicy = normalizeColorPolicy(state.params && state.params.colorPolicy);
+  if ($("colorPolicy")) $("colorPolicy").value = state.colorPolicy;
   state.variant = state.params && Number.isFinite(+state.params.variant)
     ? Math.max(0, Math.trunc(+state.params.variant)) : 0;
   state.medianL = Number.isFinite(+plate.medianL) ? +plate.medianL : null;
@@ -3329,7 +3649,7 @@ function validateShelfMetadata(plate) {
   };
   list(plate.sources, "sources").forEach(source);
   const params = object(plate.params, "parameters");
-  strings(params, ["polarityMode"]); numbers(params, ["budget", "chromaMin", "foundInks", "variant", "variantCount"]);
+  strings(params, ["polarityMode", "colorPolicy"]); numbers(params, ["budget", "chromaMin", "foundInks", "variant", "variantCount"]);
   const generator = object(plate.generator, "generator");
   strings(generator, ["name", "version"]);
   if (generator.extraction != null && !(typeof generator.extraction === "number" && Number.isFinite(generator.extraction)) &&
@@ -3576,7 +3896,8 @@ function renderShelf() {
   $("shelfN").textContent = state.shelf.length ? `${state.shelf.length}` : "";
   head.hidden = false; box.hidden = false;
   if (!state.shelf.length) {
-    box.innerHTML = `<div class="empty-note">Nothing saved yet. <b>Save</b> keeps the current plate here so you can come back to it or compare it against another.</div>`;
+    box.innerHTML = `<div class="empty-note">Nothing saved yet. <b>Save</b> keeps the current plate here so you can come back to it or compare it against another.<p><button type="button" class="tiny" id="shelfImport">Import shelf</button> restores an exported shelf.</p></div>`;
+    $("shelfImport").onclick = () => { state.shelfImport = true; $("plateFile").click(); };
     renderCompare();
     return;
   }
@@ -4582,6 +4903,7 @@ $("chroma").oninput = () => {
   $("chromaLabel").textContent = value;
   $("chroma").setAttribute("aria-valuetext", value);
 };
+$("colorPolicy").onchange = () => setColorPolicy($("colorPolicy").value);
 $("extractBtn").onclick = extract;
 $("clearAll").onclick = () => clearAll();
 $("remixBtn").onclick = remix;

@@ -131,6 +131,7 @@ func TestBuildRejectsInvalidInputs(t *testing.T) {
 		{"negative budget", func(r *Request) { r.Params.Budget = -1 }, []image.Image{img}},
 		{"excessive budget", func(r *Request) { r.Params.Budget = 400001 }, []image.Image{img}},
 		{"negative found", func(r *Request) { r.Params.FoundInks = -1 }, []image.Image{img}},
+		{"invalid color policy", func(r *Request) { r.Params.ColorPolicy = "other" }, []image.Image{img}},
 		{"invalid polarity", func(r *Request) { r.Polarity = "other" }, []image.Image{img}},
 		{"invalid time", func(r *Request) { r.CreatedAt = "today" }, []image.Image{img}},
 		{"no images", func(r *Request) {}, nil},
@@ -265,7 +266,7 @@ func defaultRequest() Request {
 	return Request{Params: Params{Budget: 140000, ChromaMin: 0.085, FoundInks: 6}, Polarity: extract.PolarityAuto, Name: "Live study", CreatedAt: "2026-08-28T00:00:00.000Z"}
 }
 func requestFrom(plate palette.Snapshot) Request {
-	return Request{Params: Params{Budget: plate.Params.Budget, ChromaMin: plate.Params.ChromaMin, FoundInks: plate.Params.FoundInks}, Polarity: extract.Polarity(plate.Params.PolarityMode), Name: plate.Name, CreatedAt: plate.CreatedAt, Sources: plate.Sources}
+	return Request{Params: Params{ColorPolicy: plate.Params.ColorPolicy, Budget: plate.Params.Budget, ChromaMin: plate.Params.ChromaMin, FoundInks: plate.Params.FoundInks}, Polarity: extract.Polarity(plate.Params.PolarityMode), Name: plate.Name, CreatedAt: plate.CreatedAt, Sources: plate.Sources}
 }
 func loadImage(t *testing.T, name string) image.Image {
 	t.Helper()
@@ -314,6 +315,7 @@ vm.createContext(context);
 const parts=[slice('const clamp =','/* ============================================================\n   3. state'),slice('const QUANTILES =','const $ ='),slice('function histogram(still','/** Scan pixels once'),slice('async function extract()','/** Build structure'),slice('function buildPlate(reset)','/** Auto / Dark / Light'),slice('function applyVariant(i)','\nasync function remix()')];
 vm.runInContext(parts.join('\n')+'\nglobalThis.engine={state,extract,buildPlate,applyVariant};',context);
 const engine=context.engine;
+engine.state.colorPolicy=input.request.params.colorPolicy || "readable-ui";
 engine.state.stills=[{w:input.width,h:input.height,_img:new Uint8ClampedArray(Buffer.from(input.pixels,'base64'))}];
 function tokens(values,found){return values.map(t=>({...(!found?{id:t.id}:{}),name:t.name,job:t.job,r:t.r,g:t.g,b:t.b,hex:t.hex,locked:!!t.locked,derived:!!t.derived,origin:t.origin}));}
 (async()=>{
@@ -321,12 +323,12 @@ function tokens(values,found){return values.map(t=>({...(!found?{id:t.id}:{}),na
  const results={};
  for(const mode of ['auto','dark','light']){
   engine.state.polarity=mode;
-  engine.state.core=structuredClone(input.request.core);
-  engine.state.found=structuredClone(input.request.found);
+  engine.state.core=structuredClone(input.request.core || []);
+  engine.state.found=structuredClone(input.request.found || []);
   engine.buildPlate(true);
   results[mode]=engine.state.sets.map((_,i)=>{
-   engine.state.core=structuredClone(input.request.core);
-   engine.state.found=structuredClone(input.request.found);
+   engine.state.core=structuredClone(input.request.core || []);
+   engine.state.found=structuredClone(input.request.found || []);
    engine.applyVariant(i);
    return {core:tokens(engine.state.core,false),found:tokens(engine.state.found,true),notes:engine.state.notes.slice()};
   });
