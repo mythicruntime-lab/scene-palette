@@ -30,10 +30,9 @@ seal was authored by a particular person.
 
 ## Reporting a vulnerability
 
-When available, use **Security → Report a vulnerability** on the repository's
-[security advisories page](https://github.com/mythicruntime-lab/scene-palette/security/advisories).
-GitHub provides this reporting feature for public repositories; enabling it remains
-a [publication step](docs/PRE_PUBLICATION_PLAN.md#github-publication-checklist).
+Use **Security → Report a vulnerability**, or open the
+[private vulnerability report form](https://github.com/mythicruntime-lab/scene-palette/security/advisories/new).
+Private vulnerability reporting is enabled. GitHub may ask you to sign in.
 If the action is unavailable,
 ask the maintainer for a private reporting channel without posting exploit
 details, secrets, private images, or personal data in a public issue. No response

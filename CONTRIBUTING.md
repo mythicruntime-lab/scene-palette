@@ -97,13 +97,12 @@ Submit changes to `main` through a pull request and wait for all six checks in t
 - `Secrets (history and source)`
 
 Keep the branch up to date with `main` and resolve review conversations before merging.
-The intended protection applies to administrators too, prohibits force pushes and deletion,
-and requires no second-person approval so a solo maintainer can merge their own passing PR.
-As verified on 2026-10-27, GitHub blocks branch protection for this private repository on
-its current plan. These are contribution requirements, **not currently enforced merge gates**.
+Protection is enabled on `main` and applies to administrators too. It prohibits force
+pushes and branch deletion and requires no second-person approval, so a solo maintainer can
+merge their own passing PR. These are enforced merge gates, verified on 2026-10-27.
 See the [publication checklist](docs/PRE_PUBLICATION_PLAN.md#github-publication-checklist)
-for enabling and independently verifying enforcement when available. If CI job names change,
-update the required checks in GitHub as well as this list.
+for verification details. If CI job names change, update the required checks in GitHub
+as well as this list.
 
 ## Windows packages
 

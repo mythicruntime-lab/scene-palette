@@ -50,6 +50,11 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   }
   .eyebrow { font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin:0 0 5px; }
   h1 { font-family:var(--serif); font-size:25px; font-weight:600; margin:0; letter-spacing:.01em; }
+  .title-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .beta-badge { color:var(--gold); border:1px solid var(--gold); border-radius:3px;
+    padding:2px 5px; font:700 10px var(--sans); letter-spacing:.08em; }
+  .bug-report { color:var(--ink); font-size:12px; padding:6px 2px; text-underline-offset:3px; }
+  .bug-report:hover { color:var(--gold); }
   .sub { color:var(--dim); font-size:12.5px; margin:6px 0 0; max-width:62ch; line-height:1.5; }
   .head-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
@@ -59,7 +64,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   }
   button:hover:not(:disabled) { border-color:var(--muted); }
   button:disabled { opacity:.4; cursor:not-allowed; }
-  button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible,
+  a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible,
   [tabindex]:focus-visible {
     outline:2px solid var(--gold); outline-offset:2px;
   }
@@ -504,7 +509,11 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 <header>
   <div>
     <p class="eyebrow">Plate extractor</p>
-    <h1>Scene Palette</h1>
+    <div class="title-row">
+      <h1>Scene Palette</h1>
+      <span class="beta-badge">BETA</span>
+      <a class="bug-report" href="https://github.com/mythicruntime-lab/scene-palette/issues" target="_blank" rel="noopener noreferrer" aria-label="Report a bug on GitHub (opens in a new tab)">Report a bug</a>
+    </div>
     <p class="sub">Eight reserved words for the theme. Every slot keeps a name, a job, and a hex. Arm a slot, click the still, and that pixel becomes law.</p>
   </div>
   <div class="head-right">
