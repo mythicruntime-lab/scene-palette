@@ -6,6 +6,8 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Added a small BETA indicator and GitHub bug-report link to the shared app header.
+
 - Published the repository and existing Windows beta downloads on 2026-10-27 after
   all six CI checks passed on `379ec89`. Updated the documentation and release wording.
 - Added repository topics, enabled all six required CI checks on `main`, and enabled
