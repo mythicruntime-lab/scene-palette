@@ -69,7 +69,16 @@ Var InstallPathOverride
 ; processes or schedule a reboot replacement of the user's running application.
 !macro DEFINE_PREFLIGHT PREFIX
 Function ${PREFIX}CheckInstallPath
-  GetFullPathName $INSTDIR "$INSTDIR"
+  ; NSIS GetFullPathName requires the target path to exist. The Win32 API also
+  ; normalizes a new installation directory before it has been created.
+  System::Call 'kernel32::GetFullPathNameW(w "$INSTDIR", i ${NSIS_MAX_STRLEN}, w.r3, p 0) i.r2'
+  ${If} $2 == 0
+  ${OrIf} $2 >= ${NSIS_MAX_STRLEN}
+    MessageBox MB_ICONSTOP "The installation path could not be resolved or is too long." /SD IDOK
+    SetErrorLevel 2
+    Abort
+  ${EndIf}
+  StrCpy $INSTDIR "$3"
   ${GetRoot} "$INSTDIR" $0
   StrCpy $2 "$0\"
   ${If} $INSTDIR == $0

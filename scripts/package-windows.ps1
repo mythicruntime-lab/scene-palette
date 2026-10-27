@@ -188,6 +188,8 @@ Your default browser opens the local app. Keep its console window open while
 using it; close the console or press Ctrl+C to stop the local server.
 No Go installation, installer, account, or network connection is required.
 The server listens on 127.0.0.1:8765, or another local port if that port is busy.
+Close other running copies before launching to reuse the same local address
+and browser shelf. Use Export shelf to back up saved palettes.
 
 For the zero-install browser version, open index.html directly. Keep using the
 same browser/profile to retain its local shelf. The standalone HTML contains
