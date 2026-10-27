@@ -6,10 +6,12 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
-- Updated download and release wording for publication without changing repository visibility.
-- Added repository topics and documented the six verified CI checks required for contributions.
-  GitHub plan/visibility restrictions currently block enforcement and private vulnerability
-  reporting; the publication checklist records the remaining setup and verification steps.
+- Published the repository and existing Windows beta downloads on 2026-10-27 after
+  all six CI checks passed on `379ec89`. Updated the documentation and release wording.
+- Added repository topics, enabled all six required CI checks on `main`, and enabled
+  private vulnerability reporting. Branch protection applies to administrators, requires
+  up-to-date pull requests and resolved conversations, and blocks force pushes and deletion.
+- Verified anonymous access to all three release assets and their SHA-256 hashes.
 
 ## 2.1.0-beta.1 — 2026-10-27
 

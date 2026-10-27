@@ -51,4 +51,4 @@ Local verification includes source/history secret scans, extracted-package smoke
 and installer lifecycle checks. GitHub Actions runs on source pushes; consult its run
 results for remote verification. Repository About text and topics are updated.
 See the [publication checklist](PRE_PUBLICATION_PLAN.md#github-publication-checklist)
-for the remaining protection/reporting setup, current GitHub restrictions, and verification steps.
+for the verified public launch, enabled CI protection and vulnerability reporting, and download checks.
