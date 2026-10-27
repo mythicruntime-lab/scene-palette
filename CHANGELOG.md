@@ -6,6 +6,14 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+### Added
+
+- A per-user Windows installer built from the verified portable package, with Start
+  Menu shortcuts, an optional desktop shortcut, upgrade handling, and an uninstaller
+  that preserves user exports and browser storage.
+- Installer packaging verifies payload hashes and clean source identity, records
+  compiler provenance, and keeps generated artifacts in ignored local output.
+
 ## 2.1.0 — 2026-10-26
 
 Application 2.1.0 uses extraction v5. Schema 1 and the eight named roles remain unchanged.

@@ -49,6 +49,10 @@ separate historical evaluation and its limits.
   source changes, and emits package checksums under ignored `bin/releases/`.
   Optional `-RequireClean`, `-ExpectedGoVersion`, and `-ReleaseTag` checks validate
   a local release build without publishing or creating tags. See [Contributing](../CONTRIBUTING.md).
+- `scripts/package-installer.ps1` validates a clean portable package and compiles
+  its exact payload with NSIS. The per-user installer adds shortcuts and HKCU
+  uninstall registration; upgrades and uninstall leave browser storage and user
+  exports alone. It does not change the executable's browser/console lifecycle.
 - `go run . rebuild-index <vault-folder>` validates every `palette.json` and
   writes a deterministic `index.json`.
 - `go run . forge [options] <image> [image ...]` reads up to eight PNG, JPEG,

@@ -68,6 +68,16 @@ If you have a portable Windows ZIP, extract it and double-click **`scene-palette
 while you work; close it to stop the server. The package needs no Go installation and includes
 the standalone HTML file.
 
+If you have the Windows **Setup.exe**, run it to install Scene Palette for your user
+account, then launch it from the Start Menu. The desktop shortcut is optional. Close
+Scene Palette's console before upgrading or uninstalling. Uninstall through Windows
+Apps; exported palettes and browser storage are preserved.
+Back up important work with **Export shelf**. Portable and installed copies share the
+same browser shelf only when you use the same browser profile and local address.
+
+Both Windows packages are unsigned. The installer and ZIP are separate from GitHub's
+source download.
+
 **GitHub's Code → Download ZIP contains source files, not a Windows executable.** A hosted
 Windows Release is not provided by that download. Use the HTML file or build the ZIP below.
 
@@ -83,7 +93,8 @@ powershell -NoProfile -File scripts/package-windows.ps1
 
 The unsigned ZIP and checksums appear in `bin/releases/`. The package includes the executable,
 HTML, launcher, usage notes, licenses, and build information. See
-[Contributing](CONTRIBUTING.md) for toolchain verification and clean release-build checks.
+[Contributing](CONTRIBUTING.md) for toolchain verification, clean release-build checks,
+and creating the installer from the same verified portable folder.
 
 ## Run from source
 

@@ -118,6 +118,47 @@ Ordinary development packages retain inherited Go settings and are marked
 The script neither creates tags nor publishes releases. Verify the ZIP/checksums and smoke-test
 the extracted app without Go or Node on PATH before distributing it. All packages remain unsigned.
 
+### Build the installer
+
+Use the portable Windows compiler from the [official NSIS download](https://nsis.sourceforge.io/Download).
+No global compiler installation is required. NSIS 3.13 was used for the local Windows
+beta packages. Verify its archive against the upstream checksum before building.
+
+First build the clean portable package as above. Then pass its extracted package
+directory (not the ZIP) to the installer wrapper:
+
+```powershell
+powershell -NoProfile -File scripts/package-installer.ps1 -PortableDirectory "bin/releases/scene-palette-VERSION-windows-amd64-BUILD-COMMIT" -ExpectedGoVersion go1.27.3 -NSISCompiler "path/to/nsis/makensis.exe"
+```
+
+The wrapper validates the portable file allowlist, checksums, version, clean source
+identity, and source-tree hashes before compiling. It packages those same bytes;
+the application is not recompiled. The Setup executable, checksum, and installer
+build information remain under ignored `bin/releases/`. Neither packaging script
+publishes, pushes, tags, or changes repository visibility.
+
+The installer uses the current user's LocalAppData Programs folder, HKCU uninstall
+registration, Start Menu shortcuts, and an optional desktop shortcut. It requests
+no administrator rights. A stable application identity supports upgrades. Running
+application files must be closed before replacement or removal. The uninstaller
+removes only known installed files and its own registration/shortcuts; it does not
+clear browser storage or delete user exports.
+
+Before distribution, test first install, a previous-version upgrade, same-version
+reinstall, rejection while the app is running, and uninstall. Check installed file
+hashes and shortcut targets, and run the packaged app without Go or Node on PATH.
+Use an isolated writable test directory and check for an existing install before
+touching per-user registration. Preserve all unrelated files and processes. Both
+installer and portable builds are unsigned beta artifacts until separately signed.
+
+`scripts/verify-windows-installer.ps1` automates these lifecycle checks with
+`-SetupFile`, `-PortableDirectory`, and `-PreviousSetupFile`. Add `-RunBrowserChecks`
+to run the existing served/standalone workflow suite against the installed files.
+It refuses existing product registration or shortcuts, uses an isolated `bin/checks/`
+application directory, and cleans up its own registration and shortcuts afterward.
+The previous-version input may be a test-only installer built from a known older
+portable payload; record it as a fixture, not as a previously published release.
+
 ## Changes and reports
 
 Keep changes focused and explain the observed problem, resulting behavior, and
