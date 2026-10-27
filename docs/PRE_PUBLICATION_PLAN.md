@@ -1,7 +1,7 @@
 # Pre-publication audit and colour improvement plan
 
 Reviewed 2026-10-26 against `d14165b53af1272690618a19781d4cd5cadd973b`.
-Status: **implementation and local verification complete; owner authorized the private source push on 2026-10-26**. Version tags, hosted releases, and repository settings remain separate follow-up work. Keep the repository private.
+Status: **private beta published on 2026-10-27**. [Release `v2.1.0-beta.1`](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) includes the tested Windows installer, portable ZIP, and checksums from exact source `73161b1`. Repository administration remains separate follow-up work. Keep the repository private.
 
 ## Implementation outcome
 
@@ -11,7 +11,7 @@ Status: **implementation and local verification complete; owner authorized the p
 - All twenty original public examples pass both policies: 503 and 509 exact comparisons, zero generated readability failures. The three prior default collisions are resolved. See [current results and limitations](QUALITY_REPORT.md).
 - Exact reference cube-root arithmetic closes an Edge/Go parity gap without tolerance or score rounding. Legacy vault documents and frozen math fixtures remain unchanged.
 - Added actual README screenshots and generated before/after examples. Clean review packaging verifies Go 1.27.3 and source provenance; ZIP checksums and packaged-app smoke checks accompany the local handoff.
-- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. The owner subsequently authorized pushing the reviewed source and changelog. No version tag, GitHub Release, branch-rule change, About edit, topic update, or visibility change is part of that authorization.
+- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. The owner subsequently approved the Windows packages, source push, and private beta release. Tag `v2.1.0-beta.1` and its installer/ZIP/checksums are published; branch rules, About/topics, and visibility are unchanged.
 
 The sections below retain the original review and approved acceptance criteria. Their old file line numbers and initial-state observations refer to the reviewed commit. The release patch was refreshed from 1.27.2 to 1.27.3 before building.
 

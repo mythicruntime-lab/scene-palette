@@ -1,9 +1,10 @@
-# Scene Palette 2.1.0 — source update
+# Scene Palette 2.1.0 Beta 1
 
-This candidate contains extraction v5, with schema 1 and the same eight palette roles.
-The source update is approved for the private repository. The Windows review ZIP
-remains a separate local artifact; no GitHub Release or version tag is created by
-pushing these source changes. See the [changelog](../CHANGELOG.md) for version history.
+Application 2.1.0 uses extraction v5, schema 1, and the same eight palette roles.
+The [private Windows beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) provides the tested installer,
+portable ZIP, and `SHA256SUMS.txt`. Tag `v2.1.0-beta.1` identifies exact artifact
+source commit `73161b1`; later main-branch commits record documentation and results.
+See the [changelog](../CHANGELOG.md) for version history.
 
 ## Changes
 
@@ -45,8 +46,9 @@ Pale source colours can still require large adjustments. Source hues can repeat
 colours between roles; exact locks can fail contrast. Neither a contrast ratio nor
 an OKLab distance is a complete accessibility assessment.
 
-The final local handoff includes source/history secret-scan results and an extracted
-ZIP smoke report. GitHub Actions runs on source pushes; consult its run results for
-remote verification. A version tag, hosted ZIP/checksum, repository About/topics, and
-repository protection/reporting settings remain separate follow-up work. The repository
-must remain private unless the owner explicitly authorizes a visibility change.
+The published beta includes the Windows installer, portable ZIP, and their checksums.
+Local verification includes source/history secret scans, extracted-package smoke tests,
+and installer lifecycle checks. GitHub Actions runs on source pushes; consult its run
+results for remote verification. Repository About/topics and protection/reporting
+settings remain separate follow-up work. Keep the repository private unless the
+owner explicitly authorizes a visibility change.

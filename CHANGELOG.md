@@ -6,6 +6,12 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+## 2.1.0-beta.1 — 2026-10-27
+
+[Windows beta downloads](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1): installer, portable ZIP, and SHA-256 checksums.
+Application 2.1.0 / extraction v5; tested artifact source `73161b1`. The repository
+remains private.
+
 ### Added
 
 - A per-user Windows installer built from the verified portable package, with Start
