@@ -36,6 +36,37 @@ compatibility job. These are **local verification results**, not evidence of suc
 GitHub Actions, Linux, or minimum-Go jobs. Consult the repository's Actions runs for
 remote CI status after a push.
 
+## Windows packaging validation — 2026-10-27
+
+The per-user NSIS installer and rebuilt portable ZIP use the same application
+2.1.0/extraction-v5 executable, built with Go 1.27.3. The tested packaging source
+revision is `73161b1`; later documentation commits do not change those artifacts.
+NSIS 3.13 builds the installer from the verified portable payload without recompiling
+the application. Both packages are unsigned, with checksums and provenance retained
+locally. Generated binaries, downloaded tools, and detailed reports remain ignored.
+
+Automated lifecycle checks covered first install into a nonexistent directory, an
+older-version upgrade fixture, same-version reinstall, registered-path reuse, optional
+desktop preference, downgrade/conflicting-path rejection, running-app upgrade and
+uninstall rejection, and final cleanup. Installed file hashes matched the portable
+payload. Exports and unrelated files survived upgrade and uninstall; application
+files, shortcuts, and product registration were removed. The upgrade fixture used
+the known 2.0.0 portable payload with the current installer recipe; it was not a
+previously published installer.
+
+The installed app passed all 43 browser workflow checks with zero unexpected errors.
+The final installer was checked again after the last shortcut error-path fix, and
+its application binary matched the full browser run byte for byte. The rebuilt
+portable ZIP also passed its extracted-package checks without Go or Node on the
+application's PATH. Five build checks rejected tampered/unexpected payloads, a wrong
+recorded toolchain, an older source commit, and dirty source. The full Go suite/vet,
+JavaScript/fixture checks, source scan, and complete reachable-history scan passed.
+
+The maintainer then installed the normal per-user package and launched the installed
+app successfully. Automated checks used an isolated directory on this Windows user
+account; they were not a clean virtual-machine study. Interactive desktop-checkbox
+deselection and broader machine/browser coverage remain useful beta tests.
+
 ## What changed in the colour output
 
 The comparison below uses the default Auto plate for each of the same twenty images,

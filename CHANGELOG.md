@@ -14,6 +14,34 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 - Installer packaging verifies payload hashes and clean source identity, records
   compiler provenance, and keeps generated artifacts in ignored local output.
 
+### Changed
+
+- Portable-package instructions explain closing other running copies to reuse the
+  same local address and browser shelf, and backing up work with Export shelf.
+
+### Fixed
+
+- Installer preflight now resolves destination folders before they exist, while
+  retaining drive-root and junction/symlink checks.
+- Desktop shortcut ownership is updated only after creation or removal succeeds.
+  Upgrades retain the registered installation path and optional shortcut preference.
+
+### Verified — 2026-10-27
+
+- Automated checks passed for fresh installation, an older-payload upgrade fixture,
+  reinstall, running-app protection, downgrade/relocation rejection, and uninstall.
+  Test exports and unrelated files survived upgrades and uninstall.
+- The installed application passed 43 served/standalone browser checks. The rebuilt
+  portable ZIP passed checksum, launch/Forge without Go or Node, save/reload, and
+  download checks. Both packages contain the same application executable.
+- Five packaging checks rejected tampered files, unexpected payload entries, a wrong
+  toolchain, an older source revision, and dirty source. Secret scans found no secrets.
+- The maintainer manually confirmed that the installer and installed app work.
+  Windows packages remain unsigned, with generated binaries kept outside Git history.
+
+See the [Windows packaging validation](docs/QUALITY_REPORT.md#windows-packaging-validation--2026-10-27)
+for the automated test scope and remaining coverage limits.
+
 ## 2.1.0 — 2026-10-26
 
 Application 2.1.0 uses extraction v5. Schema 1 and the eight named roles remain unchanged.
