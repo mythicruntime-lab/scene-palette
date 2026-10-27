@@ -192,9 +192,14 @@ SectionEnd
 Section /o "Desktop shortcut" SEC_DESKTOP
   ClearErrors
   CreateShortCut "$DESKTOP\Scene Palette.lnk" "$INSTDIR\scene-palette.exe" "" "$INSTDIR\scene-palette.exe" 0 SW_SHOWNORMAL "" "Open Scene Palette; close its console to stop the server"
-  WriteRegDWORD HKCU "${APP_KEY}" "DesktopShortcut" 1
   ${If} ${Errors}
     MessageBox MB_ICONSTOP "The desktop shortcut could not be created. Run the installer again to retry." /SD IDOK
+    SetErrorLevel 2
+    Abort
+  ${EndIf}
+  WriteRegDWORD HKCU "${APP_KEY}" "DesktopShortcut" 1
+  ${If} ${Errors}
+    MessageBox MB_ICONSTOP "The desktop shortcut setting could not be saved. Run the installer again to retry." /SD IDOK
     SetErrorLevel 2
     Abort
   ${EndIf}
