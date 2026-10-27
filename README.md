@@ -64,8 +64,7 @@ re-forge uses the current extraction algorithm.
 ## Windows app
 
 Download the [Windows x64 beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) and choose the installer or
-portable ZIP. SHA-256 checksums are provided on the release page. The beta is
-currently available to people with access to this private repository.
+portable ZIP. SHA-256 checksums are provided on the release page.
 
 If you have a portable Windows ZIP, extract it and double-click **`scene-palette.exe`** or
 **`Run Scene Palette.cmd`**. It opens in your default browser. Keep its console window open
@@ -83,7 +82,8 @@ Both Windows packages are unsigned. The installer and ZIP are separate from GitH
 source download.
 
 **GitHub's Code → Download ZIP contains source files, not a Windows executable.** A hosted
-Windows Release is not provided by that download. Use the HTML file or build the ZIP below.
+Windows Release is not provided by that download. Use the release link above, open the HTML
+file, or build the ZIP below.
 
 ### Build the Windows ZIP
 

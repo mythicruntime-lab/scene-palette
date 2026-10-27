@@ -1,19 +1,59 @@
 # Pre-publication audit and colour improvement plan
 
 Reviewed 2026-10-26 against `d14165b53af1272690618a19781d4cd5cadd973b`.
-Status: **private beta published on 2026-10-27**. [Release `v2.1.0-beta.1`](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) includes the tested Windows installer, portable ZIP, and checksums from exact source `73161b1`. Repository administration remains separate follow-up work. Keep the repository private.
+Status: **Windows beta published on 2026-10-27**. [Release `v2.1.0-beta.1`](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) includes the tested Windows installer, portable ZIP, and checksums from exact source `73161b1`. Presentation is updated; protection/reporting setup is blocked by GitHub plan and visibility restrictions. See the [current publication checklist](#github-publication-checklist).
 
 ## Implementation outcome
 
 - Shelf imports/restores now share strict validation and independent safe rendering; imported found-ink IDs are transient editor state. Served and standalone hostile-input regressions pass.
-- Added pinned, read-only CI and reproducible development dependencies. The Windows commands pass locally; actual GitHub and Linux results must be checked in Actions after the source push.
+- Added pinned, read-only CI and reproducible development dependencies. All six GitHub checks passed on `4c8bd11` in [Verify run 40593549616](https://github.com/mythicruntime-lab/scene-palette/actions/runs/40593549616), including Windows/Linux contracts and browser checks plus source/history secret scanning. Later commits require their own successful runs.
 - Implemented app 2.1.0/extraction v5 locally with Readable UI final distinction, bounded source-distance refinement, optional Source hues, safe source/current diagnostics, and source-paint restore with lock/Undo.
 - All twenty original public examples pass both policies: 503 and 509 exact comparisons, zero generated readability failures. The three prior default collisions are resolved. See [current results and limitations](QUALITY_REPORT.md).
 - Exact reference cube-root arithmetic closes an Edge/Go parity gap without tolerance or score rounding. Legacy vault documents and frozen math fixtures remain unchanged.
 - Added actual README screenshots and generated before/after examples. Clean review packaging verifies Go 1.27.3 and source provenance; ZIP checksums and packaged-app smoke checks accompany the local handoff.
-- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. The owner subsequently approved the Windows packages, source push, and private beta release. Tag `v2.1.0-beta.1` and its installer/ZIP/checksums are published; branch rules, About/topics, and visibility are unchanged.
+- Final source/history secret scans and extracted-ZIP smoke verification are required before handoff; their reports accompany the local artifact. The owner subsequently approved the Windows packages, source push, and beta release. Tag `v2.1.0-beta.1` and its installer/ZIP/checksums are published. About/topics are updated; visibility is unchanged. The checklist below records the remaining settings.
 
 The sections below retain the original review and approved acceptance criteria. Their old file line numbers and initial-state observations refer to the reviewed commit. The release patch was refreshed from 1.27.2 to 1.27.3 before building.
+
+## GitHub publication checklist
+
+Verified with repository-admin API access on **2026-10-27**:
+
+- About now says **readable, contrast-aware UI color palettes**.
+- Topics: `color-palette`, `godot`, `go`, `ui-design`, `color-extraction`,
+  `contrast`, `offline`, and `windows`.
+- README, release notes, changelog, and the hosted beta description use wording that
+  remains accurate after publication. Beta assets and their tested source tag are unchanged.
+- The repository is still private. No visibility change was requested as part of this cleanup.
+- Reading and configuring `main` protection returned HTTP 403:
+  **Upgrade to GitHub Pro or make this repository public to enable this feature.**
+  Ruleset inspection returned the same restriction. Required checks are not configured.
+- Reading and enabling private vulnerability reporting returned HTTP 404. GitHub documents
+  the feature for public repositories. It is not enabled.
+
+When the owner authorizes public visibility (or upgrades the plan for private branch protection):
+
+1. Configure protection for `main` under **Settings → Branches**. Require pull requests,
+   up-to-date branches, all six exact [contribution check names](../CONTRIBUTING.md#contribution-checks),
+   and resolved conversations. Select **GitHub Actions** as each check's expected source
+   (app ID `15368`). Apply the rule to administrators; prohibit force pushes and deletion.
+   Keep required approving reviews at zero for solo-maintainer work.
+2. After public visibility is enabled, enable **Settings → Advanced Security → Private
+   vulnerability reporting**. Confirm **Report a vulnerability** appears under
+   **Security → Advisories**, then update SECURITY.md to make that the primary reporting path.
+3. Verify settings through the API: `GET /repos/mythicruntime-lab/scene-palette/branches/main/protection`
+   must show all six checks with `strict: true` and administrator enforcement;
+   `GET /repos/mythicruntime-lab/scene-palette/private-vulnerability-reporting`
+   must return `enabled: true`. Confirm a normal contribution PR shows these checks as required.
+4. Check the README, release notes, changelog, hosted release description, and this current
+   status section again for stale access restrictions. Verify release downloads from a signed-out
+   session after publication and record the date/settings evidence here. Do not retag or rebuild
+   the tested beta merely to update its hosted description.
+
+The passing CI run proves the jobs executed; it does not prove merge protection is enabled.
+[GitHub branch-protection availability](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+and [private-reporting setup](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository)
+describe the current feature restrictions.
 
 ## Original assessment
 

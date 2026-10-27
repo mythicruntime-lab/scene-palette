@@ -6,11 +6,15 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Updated download and release wording for publication without changing repository visibility.
+- Added repository topics and documented the six verified CI checks required for contributions.
+  GitHub plan/visibility restrictions currently block enforcement and private vulnerability
+  reporting; the publication checklist records the remaining setup and verification steps.
+
 ## 2.1.0-beta.1 — 2026-10-27
 
 [Windows beta downloads](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1): installer, portable ZIP, and SHA-256 checksums.
-Application 2.1.0 / extraction v5; tested artifact source `73161b1`. The repository
-remains private.
+Application 2.1.0 / extraction v5; tested artifact source `73161b1`.
 
 ### Added
 

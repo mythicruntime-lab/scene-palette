@@ -84,6 +84,27 @@ the relevant checks. Failure artifacts contain generated-fixture browser diagnos
 do not add private screenshots or source media to them. A local workflow edit is not
 evidence of a successful GitHub Actions run; confirm the real run after an authorized push.
 
+### Contribution checks
+
+Submit changes to `main` through a pull request and wait for all six checks in the
+`Verify` workflow to pass on the current revision:
+
+- `Contracts (ubuntu-latest, Go 1.26.x)`
+- `Contracts (windows-latest, Go 1.27.x)`
+- `Contracts (ubuntu-latest, Go 1.23.x)`
+- `Browsers (ubuntu-latest)`
+- `Browsers (windows-latest)`
+- `Secrets (history and source)`
+
+Keep the branch up to date with `main` and resolve review conversations before merging.
+The intended protection applies to administrators too, prohibits force pushes and deletion,
+and requires no second-person approval so a solo maintainer can merge their own passing PR.
+As verified on 2026-10-27, GitHub blocks branch protection for this private repository on
+its current plan. These are contribution requirements, **not currently enforced merge gates**.
+See the [publication checklist](docs/PRE_PUBLICATION_PLAN.md#github-publication-checklist)
+for enabling and independently verifying enforcement when available. If CI job names change,
+update the required checks in GitHub as well as this list.
+
 ## Windows packages
 
 Ordinary local packaging remains available:
