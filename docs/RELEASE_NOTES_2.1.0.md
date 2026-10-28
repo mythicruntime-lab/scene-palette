@@ -1,12 +1,16 @@
-# Scene Palette 2.1.0 Beta 1
+# Scene Palette 2.1.0 Beta 2
 
 Application 2.1.0 uses extraction v5, schema 1, and the same eight palette roles.
-The [Windows beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) provides the tested installer,
-portable ZIP, and `SHA256SUMS.txt`. Tag `v2.1.0-beta.1` identifies exact artifact
-source commit `73161b1`; later main-branch commits record documentation and results.
+The [Windows beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.2) provides the tested installer,
+portable ZIP, and `SHA256SUMS.txt`. Tag `v2.1.0-beta.2` identifies exact artifact
+source commit `0475fdb`; later main-branch commits record documentation and results.
 See the [changelog](../CHANGELOG.md) for version history.
 
 ## Changes
+
+Beta 2 rebuilds the installer and portable ZIP with a small **BETA** indicator and a
+**Report a bug** link in the shared app header. The application version, extraction
+algorithm, saved data, and installer behavior are unchanged from beta 1.
 
 - Shelf imports and stored shelves now pass complete validation before use. Rendering
   also escapes metadata and accepts only valid colour values. Hostile shelf colours,
@@ -27,6 +31,16 @@ See the [changelog](../CHANGELOG.md) for version history.
   clean-build/toolchain checks for Windows packaging.
 
 ## Verification
+
+Beta 2 passed full Go tests/vet, JavaScript fixtures, all six GitHub CI checks, and
+portable smoke tests on exact source `0475fdb`. The new installer passed archive
+integrity testing; its eight payload files matched the portable package, and its
+extracted app passed 43 served/standalone browser workflows plus the header checks.
+Desktop/narrow layouts, keyboard focus, and public download hashes were verified.
+The existing installed copy was preserved: beta 2 did not rerun installer lifecycle
+tests. The installer recipe and packaging scripts are unchanged from beta 1.
+
+The earlier colour/security evaluation remains applicable to the unchanged engine:
 
 Local checks passed: 1,488 exact Go/HTML corpus comparisons, 43 browser workflows,
 the full Go suite and vet, actual-HTML goldens, math/contracts, and generated-image

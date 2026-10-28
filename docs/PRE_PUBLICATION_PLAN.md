@@ -1,7 +1,7 @@
 # Pre-publication audit and colour improvement plan
 
 Reviewed 2026-10-26 against `d14165b53af1272690618a19781d4cd5cadd973b`.
-Status: **Windows beta published on 2026-10-27**. [Release `v2.1.0-beta.1`](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) includes the tested Windows installer, portable ZIP, and checksums from exact source `73161b1`. The repository and beta downloads are public; required CI checks and private vulnerability reporting are enabled. See the [current publication checklist](#github-publication-checklist).
+Status: **Windows beta 2 published on 2026-10-27**. [Release `v2.1.0-beta.2`](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.2) includes the rebuilt Windows installer, portable ZIP, and checksums from exact source `0475fdb`, with the BETA label and bug-report link. See the [changelog](../CHANGELOG.md) for beta 2 validation and installer-lifecycle scope. The repository and beta downloads are public; required CI checks and private vulnerability reporting are enabled. See the [current publication checklist](#github-publication-checklist).
 
 ## Implementation outcome
 
