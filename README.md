@@ -1,5 +1,9 @@
 # Scene Palette
 
+**[Try Scene Palette Online (Beta)](https://mythicruntime-lab.github.io/scene-palette/)**
+
+Extract color palettes from images, preview them in an interface, and export them. Free, offline-capable, and no installation required.
+
 Turn an image into a readable colour palette for interfaces, websites, and Godot projects.
 Drop in a photograph, illustration, or screenshot, then preview and export the result.
 
