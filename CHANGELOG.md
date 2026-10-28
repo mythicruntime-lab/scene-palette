@@ -6,6 +6,10 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+## 2.1.0-beta.2 — 2026-10-27
+
+[Windows beta downloads](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.2): rebuilt installer, portable ZIP, and SHA-256 checksums from exact source `0475fdb`. Application version 2.1.0 and extraction v5 are unchanged.
+
 - Added a small BETA indicator and GitHub bug-report link to the shared app header.
 
 - Published the repository and existing Windows beta downloads on 2026-10-27 after
@@ -14,6 +18,19 @@ hosted Windows download. Add future changes under Unreleased before the next ver
   private vulnerability reporting. Branch protection applies to administrators, requires
   up-to-date pull requests and resolved conversations, and blocks force pushes and deletion.
 - Verified anonymous access to all three release assets and their SHA-256 hashes.
+
+### Verification
+
+- Full Go tests/vet, JavaScript fixtures, and all six GitHub CI checks passed on the
+  release source. Portable smoke tests covered hashes, runtime-free CLI/Forge, exact
+  Go/HTML parity for both colour policies, save/reload/export, and the new header.
+- Installer archive integrity passed, all eight payload files matched the portable
+  package, and its extracted app passed 43 served/standalone browser workflows.
+- Both packages passed desktop/narrow-header and keyboard-focus checks. Published
+  asset downloads matched the local SHA-256 hashes.
+- Installation-lifecycle tests were not rerun for beta 2; the existing user installation
+  was preserved. Installer and packaging code is unchanged from lifecycle-tested beta 1.
+  Packages remain unsigned.
 
 ## 2.1.0-beta.1 — 2026-10-27
 

@@ -63,7 +63,7 @@ re-forge uses the current extraction algorithm.
 
 ## Windows app
 
-Download the [Windows x64 beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.1) and choose the installer or
+Download the [Windows x64 beta](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.2) and choose the installer or
 portable ZIP. SHA-256 checksums are provided on the release page.
 
 If you have a portable Windows ZIP, extract it and double-click **`scene-palette.exe`** or
