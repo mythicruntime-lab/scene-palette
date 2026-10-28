@@ -4,7 +4,7 @@ On an empty workspace, **Try a sample** generates a palette from the supplied bl
 The three sample thumbnails stay available beside image upload so you can switch to violet
 or amber, or choose your own images. Samples replace the current workspace and run the same
 image-analysis and export workflow as uploads; Clear/Undo can restore prior work.
-The artwork, including its original text, is bundled inside the HTML and works offline.
+The text-free sample artwork is bundled inside the HTML and works offline.
 The blue example starts in Light polarity; violet and amber start in Dark. These are
 normal generation settings, and you can change polarity or colour policy afterward.
 **Try the plate on this app** starts enabled, so generating a palette also previews it

@@ -6,6 +6,9 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Removed lettering and decorative overlays from all three bundled sample images
+  and their thumbnails; blue remains the default sample.
+
 - Enabled **Try the plate on this app** by default; the toggle still restores the
   standard app colours when switched off.
 
