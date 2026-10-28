@@ -6,6 +6,9 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Enabled **Try the plate on this app** by default; the toggle still restores the
+  standard app colours when switched off.
+
 - Added a blue-first sample experience with three locally bundled images, selectable
   thumbnails, and the same upload, generation, preview, and export pipeline in the
   standalone browser app and Go-served interface.

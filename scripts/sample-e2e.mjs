@@ -34,6 +34,7 @@ try{
   await page.goto(target);await page.waitForFunction(()=>typeof state!=="undefined");
   assert.deepEqual(await page.evaluate(()=>({stills:state.stills.length,core:state.core.length})),{stills:0,core:0});
   assert.ok(await page.locator("#trySample").isVisible());
+  assert.ok(await page.locator("#tryOn").isChecked());
   assert.equal(await page.locator('#samplePicker [data-sample="blue"]').count(),1);
   assert.equal(await page.locator("#samplePicker [data-sample]").count(),3);
   await page.screenshot({path:path.join(output,label+"-empty.png"),fullPage:true});
@@ -45,6 +46,8 @@ try{
    await page.locator(id==="blue"?"#trySample":`#samplePicker [data-sample="${id}"]`).click();
    await page.waitForFunction(id=>state.sampleId===id&&state.stills.length===1&&state.core.length===8&&!document.getElementById("extractBtn").disabled,id);
    const sample=await snapshot(page);enginePalettes[label][id]=canonical(sample);
+   assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue("--bg")),sample.core.find(t=>t.id==="ground").hex);
+   await page.locator("#tryOn").uncheck();assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue("--bg")),"");await page.locator("#tryOn").check();
    assert.equal(sample.core.length,8);assert.ok(await page.locator("#results").isVisible());
    const polarity=id==="blue"?"light":"dark";assert.equal(sample.polarity,polarity);assert.equal(await page.locator(`[data-pol="${polarity}"]`).getAttribute("aria-pressed"),"true");
    assert.equal(await page.locator(`#samplePicker [data-sample="${id}"]`).getAttribute("aria-pressed"),"true");

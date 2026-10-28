@@ -7,6 +7,8 @@ image-analysis and export workflow as uploads; Clear/Undo can restore prior work
 The artwork, including its original text, is bundled inside the HTML and works offline.
 The blue example starts in Light polarity; violet and amber start in Dark. These are
 normal generation settings, and you can change polarity or colour policy afterward.
+**Try the plate on this app** starts enabled, so generating a palette also previews it
+on the app itself. Uncheck it to return to the standard app colours.
 
 Start with the [README](../README.md#quick-start--no-installation) for setup and your first palette.
 This guide explains the controls, file formats, and advanced workflows.
