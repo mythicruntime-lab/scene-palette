@@ -105,6 +105,8 @@ try {
   const node = process.execPath;
   await run("Browser workflows (Go and standalone)", node,
     ["scripts/browser-e2e.mjs", "--url", baseURL, "--output", `bin/e2e/${runID}`], 300000);
+  await run("Sample image workflows (Go and offline HTML)", node,
+    ["scripts/sample-e2e.mjs", "--url", baseURL, "--output", `bin/e2e/${runID}-samples`], 300000);
   await run("Readable UI corpus: exact parity, readability, and accent distinction", node,
     ["scripts/parity-corpus.mjs", "--url", baseURL, "--output", `bin/corpus/${runID}-readable-ui`,
       "--color-policy", "readable-ui", "--require-readable", "--require-distinct"], 300000);

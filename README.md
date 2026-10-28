@@ -17,7 +17,7 @@ palette format and have exact parity checks for identical working pixels.
 
 1. On this repository's GitHub page, choose **Code → Download ZIP**.
 2. Extract the ZIP, then open **`index.html`** in a current desktop browser.
-3. Drop an image onto the image area and click **Forge plate**.
+3. Click **Try a sample** for the blue example, select another sample thumbnail, or drop your own image and click **Forge plate**.
 
 The standalone app works offline and needs no Go, Node.js, or web server. Images are processed
 on your device.

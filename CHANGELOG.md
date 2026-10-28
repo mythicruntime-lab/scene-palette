@@ -6,6 +6,10 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Added a blue-first sample experience with three locally bundled images, selectable
+  thumbnails, and the same upload, generation, preview, and export pipeline in the
+  standalone browser app and Go-served interface.
+
 ## 2.1.0-beta.2 — 2026-10-27
 
 [Windows beta downloads](https://github.com/mythicruntime-lab/scene-palette/releases/tag/v2.1.0-beta.2): rebuilt installer, portable ZIP, and SHA-256 checksums from exact source `0475fdb`. Application version 2.1.0 and extraction v5 are unchanged.
