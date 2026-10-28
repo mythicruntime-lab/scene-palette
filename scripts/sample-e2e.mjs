@@ -47,6 +47,7 @@ try{
    await page.waitForFunction(id=>state.sampleId===id&&state.stills.length===1&&state.core.length===8&&!document.getElementById("extractBtn").disabled,id);
    const sample=await snapshot(page);enginePalettes[label][id]=canonical(sample);
    assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue("--bg")),sample.core.find(t=>t.id==="ground").hex);
+   assert.ok(await page.locator("#extractBtn").evaluate(e=>{const c=getComputedStyle(e);const rgb=s=>{const a=s.match(/[\d.]+/g).map(Number);return {r:a[0],g:a[1],b:a[2]}};return contrast(rgb(c.color),rgb(c.backgroundColor))>=4.5;}),"Primary controls stay readable in the generated theme");
    await page.locator("#tryOn").uncheck();assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue("--bg")),"");await page.locator("#tryOn").check();
    assert.equal(sample.core.length,8);assert.ok(await page.locator("#results").isVisible());
    const polarity=id==="blue"?"light":"dark";assert.equal(sample.polarity,polarity);assert.equal(await page.locator(`[data-pol="${polarity}"]`).getAttribute("aria-pressed"),"true");
