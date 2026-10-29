@@ -507,6 +507,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .toast.on { opacity:1; transform:none; pointer-events:auto; }
   .toast.err { border-color:var(--bad); color:var(--bad); }
   .toast button { padding:4px 8px; border-color:currentColor; background:transparent; color:inherit; }
+  .toast { max-width:calc(100vw - 32px); overflow-wrap:anywhere; bottom:max(16px, env(safe-area-inset-bottom)); }
   .diag { margin-top:10px; font:11.5px/1.6 var(--mono); color:var(--muted); }
   .diag b { color:var(--dim); font-weight:600; }
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
@@ -519,7 +520,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     header .eyebrow, header .sub { display:none; }
     .mobile-only { display:block; }
     .mobile-intro { margin:6px 0 0; color:var(--dim); line-height:1.45; }
-    aside { padding:10px 12px; }
+    aside { padding:10px 12px; min-width:0; }
     main { padding:8px 12px 40px; }
     h2 { margin:12px 0 8px; }
     .mobile-section { display:block; margin:8px 0; border:1px solid var(--line2); border-radius:3px; }
@@ -553,12 +554,15 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     .plate-head { padding:8px 10px; gap:4px; }
     .plate-head > span:last-child { display:none; }
     .role-label { display:block; font:600 12px var(--sans); margin-bottom:2px; }
-    .cellbar { opacity:1; top:4px; right:4px; gap:2px; }
+    .sw { height:48px; }
+    .sw:hover::before { display:none; }
+    .cellbar { position:static; opacity:1; padding:4px; gap:2px; justify-content:flex-end; }
     .cellbar button { padding:3px 5px; font-size:11px; }
     .info { padding:5px 8px 6px; }
     .info input.name, .info input.job { font-size:16px; min-height:44px; }
     .hexline { margin:0; flex-wrap:wrap; gap:0 4px; }
     .hex { font-size:12px; }
+    .hex::after { content:" · copy"; font:11px var(--sans); }
     button, button.tiny, .seg button, select, input[type=text], input[type=range], .toggle, .bug-report { min-height:44px; }
     button, button.tiny { min-width:44px; }
     select, input[type=text], textarea { font-size:16px; }
@@ -620,8 +624,8 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       </div>
     </section>
 
-    <div class="mobile-only" id="mobileForge"></div>
-    <div class="mobile-only" id="mobileSetup"></div>
+    <div id="mobileForge"></div>
+    <div id="mobileSetup"></div>
     <details class="mobile-section" id="mobileSettings" open>
     <summary>Extraction settings · <span id="policySummary">Readable UI</span></summary>
     <div class="ctl">
@@ -699,7 +703,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
           <span>core eight · every hue a reserved word</span>
         </div>
         <details class="mobile-section" id="mobileReview" open>
-        <summary id="reviewSummary">Review checks and sealing</summary>
+        <summary id="reviewSummary" aria-live="polite" aria-atomic="true">Review checks and sealing</summary>
         <div class="reviewbar" id="reviewBar" aria-live="polite" aria-atomic="true"></div>
         <div class="review-focus" id="reviewFocus" role="region" aria-label="Review readiness"></div>
         <div class="review-diff" id="reviewDiff" role="region" aria-label="Changes from proposal" hidden></div>
@@ -2572,6 +2576,7 @@ async function setColorPolicy(value) {
     if (state.hist) buildPlate(false);
   }
   if ($("colorPolicy")) $("colorPolicy").value = normalizeColorPolicy(state.colorPolicy);
+  syncMobileLayout();
   const label = value === "source-hues" ? "Source hues · role colours may share a hue" : "Readable UI · distinct semantic accents";
   toast(state.hist ? label : label + " · applies to the next Forge");
   return true;
@@ -2744,7 +2749,7 @@ function renderArmbar() {
     bar.innerHTML = `<span class="tag">arming ${esc(state.arm)}</span>
       <span id="pickerHelp">Click the still, or focus it and use the arrow keys. Enter makes that pixel <b>${esc(t ? t.name : state.arm)}</b>, locked.</span>
       <button type="button" class="tiny" id="disarm">cancel</button>`;
-    $("disarm").onclick = () => { state.arm = null; renderArmbar(); };
+    $("disarm").onclick = cancelPick;
     stage.classList.add("armed");
   } else {
     bar.innerHTML = `<span id="pickerHelp">Click the still to pin a <b>found ink</b>. Keyboard: focus the still, move with arrow keys, then press Enter. To overwrite a role, press <b>pick</b> first.</span>`;
@@ -2762,6 +2767,7 @@ function onStageClick(ev) {
 }
 
 function applyStagePick(still, p) {
+  const pickedRole = state.arm;
   const col = { r: p.r, g: p.g, b: p.b };
   const pickOrigin = () => {
     const src = still.source || {};
@@ -2795,6 +2801,7 @@ function applyStagePick(still, p) {
   state.plateSources = mergePlateSources(currentPlateSources(), plateSourcesFromStills([still]));
   markHumanEdited("exact pixel picked by human");
   render();
+  returnToRole(pickedRole);
 }
 
 function paintLoupe(still, p) {
@@ -2979,6 +2986,7 @@ function renderReviewFocus(assessment) {
 }
 
 function renderReview() {
+  const focus = rememberFocus();
   const box = $("reviewBar"), review = validatedReview();
   const sealed = review.status === "sealed" && review.agentEligible === true;
   const status = sealed ? "sealed" : review.status === "edited" ? "edited" : "proposed";
@@ -3030,6 +3038,7 @@ function renderReview() {
   renderReviewFocus(assessment);
   renderReviewDiff(decision, proposal);
   renderReviewHistory(history);
+  restoreFocus(focus);
 }
 
 // Display-only diagnostics never rewrite saved origins or review fingerprints.
@@ -3068,9 +3077,7 @@ function renderColourDiagnostics() {
     (diagnostic.pairs.length ? `<p>Close pairs: ${esc(diagnostic.pairs.map(pair => `${pair.first}/${pair.second} (${pair.distance.toFixed(3)})`).join(", "))}. ${sourceMode ? "Keeping source hues can limit role distinction; use labels and shapes as well as colour." : "Check these roles in context, especially when colours are locked."}</p>` : "") +
     (diagnostic.derived.length ? `<p>${sourceMode ? "Derived roles are generated tonal paint. Check their origins and any hue-change warnings." : "Derived roles use generated paint where the source did not supply enough distinct accents."}</p>` : "");
   box.querySelectorAll("[data-colour-why]").forEach(button => button.onclick = () => {
-    state.whyRole = "core:" + button.dataset.colourWhy;
-    renderWhy();
-    $("whyPanel").scrollIntoView({ block:"nearest" });
+    showWhy("core:" + button.dataset.colourWhy, button, false);
   });
 }
 function useRecordedSourcePaint(reference) {
@@ -3133,6 +3140,7 @@ function originNarrative(t) {
 }
 
 function renderWhy() {
+  const focus = rememberFocus();
   const box = $("whyPanel");
   let t = null;
   if (state.whyRole && state.whyRole.startsWith("core:"))
@@ -3163,12 +3171,18 @@ function renderWhy() {
       <strong>Why ${esc(t.id || t.name)} is ${esc(t.hex)}</strong></div>
       <button type="button" class="tiny" id="closeWhy" aria-label="Close color origin">close</button></div>
     <div>${esc(why.lead)}</div>${comparison}${raw ? `<p>Source paint can fail contrast checks. Using it locks the role and changes the human review state.</p>` : ""}${why.facts.length ? `<ul>${why.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
-  $("closeWhy").onclick = () => { state.whyRole = null; renderWhy(); };
+  $("closeWhy").onclick = () => {
+    state.whyRole = null; renderWhy();
+    const trigger = (whyTrigger && document.querySelector(whyTrigger)) || (whyRoleTrigger && document.querySelector(whyRoleTrigger)) || $("paletteHeading");
+    if (trigger) { trigger.focus({ preventScroll:true }); trigger.scrollIntoView({ behavior:scrollBehavior(), block:"nearest" }); }
+  };
   const restore = $("useSourcePaint");
   if (restore) restore.onclick = () => useRecordedSourcePaint(state.whyRole);
+  restoreFocus(focus, $("closeWhy"));
 }
 
 function render() {
+  const focus = rememberFocus();
   $("empty").hidden = true;
   $("results").hidden = false;
   const name = $("plateName").value.trim() || "Plate";
@@ -3216,21 +3230,19 @@ function render() {
   $("chips").querySelectorAll("[data-name]").forEach(el => el.onchange = () => {
     const t = state.core[+el.dataset.name], next = el.value.trim() || "unnamed";
     if (t.name === next) return;
-    t.name = next; markHumanEdited(`${t.id} renamed by human`); render();
+    t.name = next; markHumanEdited(`${t.id} renamed by human`); renderAfterEdit();
   });
   $("chips").querySelectorAll("[data-job]").forEach(el => el.onchange = () => {
     const t = state.core[+el.dataset.job];
     if (t.job === el.value) return;
-    t.job = el.value; markHumanEdited(`${t.id} purpose edited by human`); render();
+    t.job = el.value; markHumanEdited(`${t.id} purpose edited by human`); renderAfterEdit();
   });
   $("chips").querySelectorAll("[data-lock]").forEach(el => el.onclick = () => {
     const t = state.core[+el.dataset.lock]; t.locked = !t.locked;
     markHumanEdited(`${t.id} ${t.locked ? "locked" : "unlocked"} by human`); render();
   });
   $("chips").querySelectorAll("[data-why]").forEach(el => el.onclick = () => {
-    const ref = "core:" + el.dataset.why;
-    state.whyRole = state.whyRole === ref ? null : ref;
-    renderWhy();
+    showWhy("core:" + el.dataset.why, el);
   });
   $("chips").querySelectorAll("[data-pick]").forEach(el => el.onclick = () => {
     state.arm = el.dataset.pick;
@@ -3257,8 +3269,7 @@ function render() {
   $("found").querySelectorAll("[data-f-why]").forEach(el => el.onclick = () => {
     const t = state.found[+el.dataset.fWhy];
     const ref = t ? "found:" + t.uid : null;
-    state.whyRole = ref && state.whyRole === ref ? null : ref;
-    renderWhy();
+    showWhy(ref, el);
   });
   $("found").querySelectorAll("[data-f-remove]").forEach(el => {
     el.onclick = () => {
@@ -3322,6 +3333,7 @@ function render() {
 
   writeExport();
   syncMobileLayout();
+  restoreFocus(focus, state.whyRole ? $("closeWhy") : null);
 }
 
 /* ============================================================
@@ -4455,18 +4467,36 @@ function applyTryOn() {
   r.setProperty("--app-on-gold", onC(token("gold")));
 }
 
-function copy(text) {
-  const done = () => toast(text);
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
-  } else fallbackCopy(text, done);
+async function copy(text) {
+  const done = () => toast(/^#[0-9a-f]{6}$/i.test(text) ? `Copied ${text}` : "Copied palette text");
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      done(); return true;
+    }
+  } catch { /* Permission denied: try the browser's legacy copy path. */ }
+  return fallbackCopy(text, done);
 }
 function fallbackCopy(text, done) {                  // file:// often has no async clipboard
+  const active = document.activeElement;
+  const selection = typeof active?.selectionStart === "number"
+    ? [active.selectionStart, active.selectionEnd, active.selectionDirection] : null;
   const ta = document.createElement("textarea");
   ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  ta.setAttribute("aria-label", "Text to copy");
   document.body.appendChild(ta); ta.select();
-  try { document.execCommand("copy"); done(); } catch { toast("Copy blocked — select the text", true); }
-  document.body.removeChild(ta);
+  let copied = false;
+  try { copied = document.execCommand("copy") === true; } catch { /* Report failure below. */ }
+  finally {
+    ta.remove();
+    if (active?.isConnected) {
+      active.focus({ preventScroll:true });
+      if (selection) active.setSelectionRange(...selection);
+    }
+  }
+  if (copied) done();
+  else toast("Copy blocked — select text in Export to copy manually", true);
+  return copied;
 }
 
 /* ============================================================
@@ -5037,6 +5067,66 @@ function clearAll(options) {
 /* ============================================================
    9. wiring
    ============================================================ */
+// Renders replace controls, but the user's keyboard position is not palette data.
+function rememberFocus(element = document.activeElement) {
+  if (!element || element === document.body) return null;
+  let selector = element.id ? "#" + CSS.escape(element.id) : null;
+  if (!selector) {
+    for (const attribute of ["data-name", "data-job", "data-lock", "data-pick", "data-why", "data-colour-why", "data-f-why", "data-f-remove", "data-open", "data-del", "data-copy"]) {
+      if (!element.hasAttribute(attribute)) continue;
+      selector = `[${attribute}="${CSS.escape(element.getAttribute(attribute))}"]`;
+      if (attribute === "data-copy") selector += element.classList.contains("hex") ? ".hex" : ".sw";
+      break;
+    }
+  }
+  return selector ? { element, selector, start:element.selectionStart, end:element.selectionEnd, direction:element.selectionDirection } : null;
+}
+function restoreFocus(saved, fallback = null) {
+  if (!saved || saved.element.isConnected || document.activeElement !== document.body) return;
+  let target = document.querySelector(saved.selector);
+  if (target?.disabled) target = null;
+  target ||= fallback || $("reviewBar");
+  if (!target) return;
+  if (!target.matches("button, input, select, textarea, [tabindex]")) target.tabIndex = -1;
+  target.focus({ preventScroll:true });
+  if (typeof saved.start === "number" && target.setSelectionRange) target.setSelectionRange(saved.start, saved.end, saved.direction);
+}
+let pendingEdit = null, editPointerDown = false;
+function flushEditRender() {
+  if (editPointerDown || !pendingEdit) return;
+  const core = pendingEdit;
+  pendingEdit = null;
+  requestAnimationFrame(() => {
+    if (editPointerDown) { pendingEdit ||= core; return; }
+    if (state.core === core) render();
+  });
+}
+function renderAfterEdit() {
+  // Let the browser finish Tab/Shift+Tab or a pointer focus change before
+  // replacing the inputs. A held tap must reach pointerup/click on the same node.
+  // Copy/Download can activate before that redraw; their text must already
+  // reflect the edit and invalidated seal when the blur event completes.
+  writeExport();
+  pendingEdit = state.core;
+  flushEditRender();
+}
+document.addEventListener("pointerdown", () => { editPointerDown = true; }, true);
+for (const event of ["pointerup", "pointercancel"]) document.addEventListener(event, () => {
+  editPointerDown = false; flushEditRender();
+}, true);
+window.addEventListener("blur", () => { editPointerDown = false; flushEditRender(); });
+let whyTrigger = null, whyRoleTrigger = null;
+function showWhy(reference, trigger, toggle = true) {
+  whyTrigger = rememberFocus(trigger)?.selector || null;
+  whyRoleTrigger = reference?.startsWith("core:") ? `[data-why="${CSS.escape(reference.slice(5))}"]` : null;
+  state.whyRole = toggle && state.whyRole === reference ? null : reference;
+  renderWhy();
+  if (!$("whyPanel").hidden) {
+    $("whyPanel").tabIndex = -1;
+    $("whyPanel").focus({ preventScroll:true });
+    $("whyPanel").scrollIntoView({ behavior:scrollBehavior(), block:"start" });
+  }
+}
 // Presentation state stays outside palette snapshots, seals and persistence.
 // Move the same elements only when their destination changes; desktop anchors
 // restore the original reading/tab order without re-running render/extraction.
@@ -5076,7 +5166,8 @@ function syncMobileLayout() {
   $("policySummary").textContent = $("colorPolicy").selectedOptions[0].textContent;
   if (active && active !== document.body && active.isConnected) {
     // Moving a focused control must not strand focus in a closed disclosure.
-    for (const section of active.closest("details") ? [active.closest("details")] : []) section.open = true;
+    const section = active.closest("details");
+    if (section && active !== section.querySelector(":scope > summary")) section.open = true;
     if (active.matches(".mobile-section > summary") && !compact)
       active.parentElement.querySelector("button, input, select, textarea, [tabindex]")?.focus({ preventScroll:true });
     else if (document.activeElement !== active) active.focus({ preventScroll:true });
@@ -5089,6 +5180,20 @@ function revealPalette() {
   if (!compactViewport.matches || !state.core.length) return;
   $("paletteHeading").focus({ preventScroll:true });
   $("paletteHeading").scrollIntoView({ behavior:scrollBehavior(), block:"start" });
+}
+function returnToRole(role) {
+  if (!role || !compactViewport.matches) return;
+  const button = $("chips").querySelector(`[data-pick="${CSS.escape(role)}"]`);
+  if (!button) return;
+  $("mobileSource").open = false;
+  button.focus({ preventScroll:true });
+  button.scrollIntoView({ behavior:scrollBehavior(), block:"center" });
+}
+function cancelPick() {
+  const role = state.arm;
+  state.arm = null; renderArmbar();
+  if (compactViewport.matches) returnToRole(role);
+  else $("stageCanvas").focus({ preventScroll:true });
 }
 compactViewport.addEventListener("change", syncMobileLayout);
 syncMobileLayout();
@@ -5197,7 +5302,8 @@ renderShelf();
 if (state.shelfRestoreMessage) toast(state.shelfRestoreMessage, true);
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && state.arm) { state.arm = null; renderArmbar(); }
+  if (e.key === "Escape" && state.arm) cancelPick();
+  else if (e.key === "Escape" && state.whyRole && $("whyPanel").contains(document.activeElement)) $("closeWhy").click();
 });
 </script>
 </body>
