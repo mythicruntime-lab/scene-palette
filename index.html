@@ -511,6 +511,62 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .diag b { color:var(--dim); font-weight:600; }
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
              clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  /* One set of controls: disclosures are transparent in the desktop layout. */
+  .mobile-section { display:contents; }
+  .mobile-section > summary, .mobile-only, .role-label { display:none; }
+  @media (max-width:1000px) {
+    header { padding:12px; gap:8px; }
+    header .eyebrow, header .sub { display:none; }
+    .mobile-only { display:block; }
+    .mobile-intro { margin:6px 0 0; color:var(--dim); line-height:1.45; }
+    aside { padding:10px 12px; }
+    main { padding:8px 12px 40px; }
+    h2 { margin:12px 0 8px; }
+    .mobile-section { display:block; margin:8px 0; border:1px solid var(--line2); border-radius:3px; }
+    .mobile-section > summary { display:list-item; padding:10px 12px; min-height:44px; cursor:pointer; font-weight:600; }
+    .mobile-section[open] { padding:0 10px 10px; }
+    .mobile-section[open] > summary { margin:0 -10px 8px; border-bottom:1px solid var(--line); }
+    .mobile-section > summary:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+    #mobileTools .head-right { gap:8px; }
+    #mobileSettings .ctl:first-of-type { margin-top:0; }
+    #mobileSource > h2 { margin-top:0; }
+    #mobileReview { margin:0; border-width:0 0 1px; border-radius:0; }
+    #mobileReview > summary { font-size:12px; }
+    #mobileExport { margin:10px; }
+    #mobileExport > h2 { display:none; }
+    #mobileExtras .mobile-section { margin:8px 10px; }
+    #mobileForge { margin-top:8px; }
+    #mobileForge > button { width:100%; }
+    .drop { padding:9px 12px; font-size:12px; }
+    .drop span { margin-top:3px; }
+    .sample-picker { margin:8px 0; }
+    .sample-picker > p { margin-bottom:4px; }
+    .sample-option { display:grid; grid-template-columns:30px 1fr; gap:5px; align-items:center; padding:4px; }
+    .sample-option img { width:30px; height:38px; margin:0; }
+    .sample-option span { font-size:11px; }
+    .thumbs { display:flex; gap:8px; overflow-x:auto; padding:2px; margin-top:6px; }
+    .thumbs:empty { display:none; }
+    .thumb { flex:0 0 108px; }
+    .thumb canvas { height:54px; }
+    .thumb .x { top:0; right:0; }
+    .thumb-open { padding-right:44px; }
+    .plate-head { padding:8px 10px; gap:4px; }
+    .plate-head > span:last-child { display:none; }
+    .role-label { display:block; font:600 12px var(--sans); margin-bottom:2px; }
+    .cellbar { opacity:1; top:4px; right:4px; gap:2px; }
+    .cellbar button { padding:3px 5px; font-size:11px; }
+    .info { padding:5px 8px 6px; }
+    .info input.name, .info input.job { font-size:16px; min-height:44px; }
+    .hexline { margin:0; flex-wrap:wrap; gap:0 4px; }
+    .hex { font-size:12px; }
+    button, button.tiny, .seg button, select, input[type=text], input[type=range], .toggle, .bug-report { min-height:44px; }
+    button, button.tiny { min-width:44px; }
+    select, input[type=text], textarea { font-size:16px; }
+    .toggle { display:flex; align-items:center; }
+    .bug-report { display:inline-flex; align-items:center; }
+    .empty { padding-top:12px; }
+    #export { min-height:140px; }
+  }
 </style>
 </head>
 <body>
@@ -523,7 +579,10 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <a class="bug-report" href="https://github.com/mythicruntime-lab/scene-palette/issues" target="_blank" rel="noopener noreferrer" aria-label="Report a bug on GitHub (opens in a new tab)">Report a bug</a>
     </div>
     <p class="sub">Eight reserved words for the theme. Every slot keeps a name, a job, and a hex. Arm a slot, click the still, and that pixel becomes law.</p>
+    <p class="mobile-only mobile-intro">Turn an image into eight role colours. Choose a still or try a sample, then review and export.</p>
   </div>
+  <details class="mobile-section" id="mobileTools" open>
+  <summary>Plate tools · name, save, import</summary>
   <div class="head-right">
     <input type="text" id="plateName" value="Night bay" style="width:150px" aria-label="Plate name" />
     <div class="seg" id="polarity" role="group" aria-label="Plate polarity">
@@ -539,6 +598,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     <button type="button" id="remixBtn" disabled title="Next plate this still supports">Remix</button>
     <button type="button" class="primary" id="extractBtn">Forge plate</button>
   </div>
+  </details>
 </header>
 
 <div class="wrap">
@@ -560,6 +620,10 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       </div>
     </section>
 
+    <div class="mobile-only" id="mobileForge"></div>
+    <div class="mobile-only" id="mobileSetup"></div>
+    <details class="mobile-section" id="mobileSettings" open>
+    <summary>Extraction settings · <span id="policySummary">Readable UI</span></summary>
     <div class="ctl">
       <label class="row" for="extra"><span>Found inks</span><b id="extraLabel">6</b></label>
       <input type="range" id="extra" min="0" max="10" value="6" aria-valuetext="6" />
@@ -592,6 +656,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     </p>
     <label class="toggle"><input type="checkbox" id="tryOn" checked /> Try the plate on this app</label>
     <div class="diag" id="diag"></div>
+    </details>
   </aside>
 
   <main id="mainContent">
@@ -613,6 +678,8 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     </section>
 
     <div id="results" hidden>
+      <details class="mobile-section" id="mobileSource" open>
+      <summary>Inspect source · pixel picker</summary>
       <h2>Still <span class="n" id="stillN"></span></h2>
       <div class="stage" id="stage">
         <canvas class="still" id="stageCanvas" tabindex="0" role="img"
@@ -623,19 +690,24 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       </div>
       <div class="armbar" id="armbar"></div>
       <div class="sr-only" id="pickerStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+      </details>
 
-      <h2>Plate</h2>
+      <h2 id="paletteHeading" tabindex="-1">Plate <span class="mobile-only">· eight colour roles</span></h2>
       <div class="plate" id="plate">
         <div class="plate-head">
           <span id="plateId">Plate</span>
           <span>core eight · every hue a reserved word</span>
         </div>
+        <details class="mobile-section" id="mobileReview" open>
+        <summary id="reviewSummary">Review checks and sealing</summary>
         <div class="reviewbar" id="reviewBar" aria-live="polite" aria-atomic="true"></div>
         <div class="review-focus" id="reviewFocus" role="region" aria-label="Review readiness"></div>
         <div class="review-diff" id="reviewDiff" role="region" aria-label="Changes from proposal" hidden></div>
         <div class="review-history" id="reviewHistory" role="region" aria-label="Prior human seals" hidden></div>
+        </details>
         <div class="chips" id="chips"></div>
         <div class="why-panel" id="whyPanel" role="region" aria-label="Color origin" hidden></div>
+        <div id="mobileExtras"></div>
         <div class="colour-diagnostics" id="colourDiagnostics" role="region" aria-label="Palette colour diagnostics"></div>
         <div class="found-wrap" id="foundWrap">
           <label class="row" style="margin-bottom:8px"><span>Found inks — not roles, just paint the still refused to hide</span></label>
@@ -667,6 +739,8 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       </div>
       <div id="harnessHost"></div>
 
+      <details class="mobile-section" id="mobileExport" open>
+      <summary>Export · copy or download</summary>
       <h2>Export</h2>
       <div class="tabs" id="tabs" role="group" aria-label="Export format">
         <button type="button" data-fmt="css" class="primary" aria-pressed="true">CSS tokens</button>
@@ -675,11 +749,12 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         <button type="button" data-fmt="gpl" aria-pressed="false">GPL</button>
         <button type="button" data-fmt="hex" aria-pressed="false">HEX</button>
       </div>
-      <textarea id="export" readonly spellcheck="false"></textarea>
+      <textarea id="export" readonly spellcheck="false" aria-label="Exported palette text"></textarea>
       <div class="tabs" style="margin-top:8px">
         <button class="primary" id="copyBtn">Copy</button>
         <button id="downloadBtn">Download</button>
       </div>
+      </details>
     </div>
 
     <h2 id="shelfHead">Shelf <span class="n" id="shelfN"></span></h2>
@@ -1724,7 +1799,7 @@ async function trySample(id = "blue") {
     const sampleEpoch = goEpoch;
     await polarityChange;
     if (sampleEpoch !== goEpoch || state.stills[0] !== added[0]) return;
-    await extract();
+    if (await extract()) revealPalette();
     if (before && state.stills[0] === added[0] && state.core.length)
       undoToast("Sample loaded", () => restoreWorkspace(before), "Previous work restored");
   } catch (error) {
@@ -1793,6 +1868,7 @@ function renderThumbs() {
     renderThumbs();
     renderStage();
   });
+  syncMobileLayout();
 }
 
 /* The local server owns extraction. A file:// copy keeps the reference JS
@@ -2283,7 +2359,7 @@ async function extract() {
     if (useGo) {
       const result = await requestGoExtraction(liveGoRequest(state.polarity, true), true);
       if (result) applyGoExtraction(result, 0);
-      return;
+      return !!result;
     }
     const budget    = +$("quality").value;
     const chromaMin = +$("chroma").value / 1000;
@@ -2305,7 +2381,9 @@ async function extract() {
     state.params = { budget, chromaMin: +chromaMin.toFixed(4), foundInks: +$("extra").value, colorPolicy:normalizeColorPolicy(state.colorPolicy) };
     state.hist = { lum, sig, LB, HB, BANDS, binStills,
                    totalN: lum.reduce((t, b) => t + b.n, 0) || 1 };
+    const previousReview = state.review;
     buildPlate(true);
+    return state.review !== previousReview;
   } catch (err) {
     console.error(err);
     toast("Extraction failed: " + (err && err.message ? err.message : err), true);
@@ -2939,6 +3017,7 @@ function renderReview() {
         title="${sealed ? "Any plate edit automatically invalidates this seal" : assessment.attentionCount ? "Record human approval after judging the advisory review checks" : "Record explicit human approval for agent use"}">
         ${sealed ? "Sealed" : assessment.attentionCount ? `Seal with ${assessment.attentionCount} note${assessment.attentionCount === 1 ? "" : "s"}` : "Seal for agents"}</button>
     </div>`;
+  $("reviewSummary").textContent = `${status === "sealed" ? "Human-sealed" : status === "edited" ? "Edited · not sealed" : "Proposed · not sealed"} · ${assessment.attentionCount ? assessment.attentionCount + " checks need attention" : "checks clear"} · review`;
   $("reviewChanges").onclick = () => {
     state.reviewDiffOpen = !state.reviewDiffOpen;
     renderReview();
@@ -3122,6 +3201,7 @@ function render() {
           title="Hold through a re-forge">${t.locked ? "locked" : "lock"}</button>
       </div>
       <div class="info">
+        <span class="role-label">${esc(t.id)}</span>
         <input class="name" data-name="${i}" value="${esc(t.name)}" aria-label="${esc(t.id)} token name" />
         <div class="hexline"><button type="button" class="hex" data-copy="${i}" aria-label="Copy ${esc(t.hex)}">${safeHex(t.hex)}</button>${badge}</div>
         <input class="job" data-job="${i}" value="${esc(t.job)}" aria-label="${esc(t.id)} token purpose" />
@@ -3154,8 +3234,9 @@ function render() {
   });
   $("chips").querySelectorAll("[data-pick]").forEach(el => el.onclick = () => {
     state.arm = el.dataset.pick;
+    $("mobileSource").open = true;
     renderArmbar();
-    $("stage").scrollIntoView({ behavior: "smooth", block: "center" });
+    $("stage").scrollIntoView({ behavior: scrollBehavior(), block: "center" });
     requestAnimationFrame(() => $("stageCanvas").focus({ preventScroll:true }));
   });
 
@@ -3240,6 +3321,7 @@ function render() {
     state.notes.map(n => "· " + esc(n)).join("<br>");
 
   writeExport();
+  syncMobileLayout();
 }
 
 /* ============================================================
@@ -4955,6 +5037,62 @@ function clearAll(options) {
 /* ============================================================
    9. wiring
    ============================================================ */
+// Presentation state stays outside palette snapshots, seals and persistence.
+// Move the same elements only when their destination changes; desktop anchors
+// restore the original reading/tab order without re-running render/extraction.
+const compactViewport = window.matchMedia("(max-width:1000px)");
+const mobileSections = ["mobileTools", "mobileSettings", "mobileSource", "mobileReview", "mobileExport"];
+const mobileOpen = new Map(mobileSections.map(id => [id, false]));
+const desktopAnchors = new Map();
+let compactLayout = null;
+for (const id of ["mobileTools", "mobileSettings", "extractBtn", "mobileExport"]) {
+  const element = $(id), anchor = document.createComment(id + " desktop position");
+  element.before(anchor);
+  desktopAnchors.set(id, anchor);
+}
+function syncMobileLayout() {
+  const compact = compactViewport.matches;
+  const active = document.activeElement;
+  if (compact !== compactLayout) {
+    for (const id of mobileSections) {
+      const section = $(id);
+      if (compactLayout === true) mobileOpen.set(id, section.open);
+      section.open = compact ? mobileOpen.get(id) : true;
+    }
+    compactLayout = compact;
+  }
+  if (compact) {
+    const destination = state.core.length ? $("mobileExtras") : $("mobileSetup");
+    if ($("extractBtn").parentElement !== $("mobileForge")) $("mobileForge").append($("extractBtn"));
+    for (const id of ["mobileExport", "mobileTools", "mobileSettings"]) {
+      const parent = id === "mobileExport" ? $("mobileExtras") : destination;
+      if ($(id).parentElement !== parent) parent.append($(id));
+    }
+  } else {
+    for (const [id, anchor] of desktopAnchors) {
+      if (anchor.nextSibling !== $(id)) anchor.after($(id));
+    }
+  }
+  $("policySummary").textContent = $("colorPolicy").selectedOptions[0].textContent;
+  if (active && active !== document.body && active.isConnected) {
+    // Moving a focused control must not strand focus in a closed disclosure.
+    for (const section of active.closest("details") ? [active.closest("details")] : []) section.open = true;
+    if (active.matches(".mobile-section > summary") && !compact)
+      active.parentElement.querySelector("button, input, select, textarea, [tabindex]")?.focus({ preventScroll:true });
+    else if (document.activeElement !== active) active.focus({ preventScroll:true });
+  }
+}
+function scrollBehavior() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth";
+}
+function revealPalette() {
+  if (!compactViewport.matches || !state.core.length) return;
+  $("paletteHeading").focus({ preventScroll:true });
+  $("paletteHeading").scrollIntoView({ behavior:scrollBehavior(), block:"start" });
+}
+compactViewport.addEventListener("change", syncMobileLayout);
+syncMobileLayout();
+
 $("drop").onclick = () => $("file").click();
 $("startBtn").onclick = () => $("file").click();
 $("trySample").onclick = () => trySample("blue");
@@ -4978,7 +5116,7 @@ $("chroma").oninput = () => {
   $("chroma").setAttribute("aria-valuetext", value);
 };
 $("colorPolicy").onchange = () => setColorPolicy($("colorPolicy").value);
-$("extractBtn").onclick = extract;
+$("extractBtn").onclick = async () => { if (await extract()) revealPalette(); };
 $("clearAll").onclick = () => clearAll();
 $("remixBtn").onclick = remix;
 $("polarity").querySelectorAll("[data-pol]").forEach(b => b.onclick = () => setPolarity(b.dataset.pol));
