@@ -13,6 +13,34 @@ on the app itself. Uncheck it to return to the standard app colours.
 Start with the [README](../README.md#quick-start--no-installation) for setup and your first palette.
 This guide explains the controls, file formats, and advanced workflows.
 
+## Using a phone or narrow window
+
+At widths up to 1000 CSS pixels, image selection, the three samples, and **Forge plate**
+come first. Uploaded images still wait for Forge; samples generate immediately.
+After a successful Forge, keyboard focus and the view move to the palette. The eight
+role cards keep their role labels, editable names and purposes, HEX copy buttons,
+**why**, **pick**, and **lock** controls.
+
+The compact source thumbnails scroll horizontally when several images are loaded.
+**Inspect source · pixel picker** opens the full image; **pick** opens it automatically.
+After a role pick or cancellation, focus returns to that role. **why** brings the
+origin explanation into view; closing it returns to the originating control.
+
+The review summary shows whether the palette is proposed, edited, or human-sealed,
+and how many checks need attention. Expand it for the complete checks, proposal
+changes, seal history, and explicit sealing action. These checks and sealing rules
+are the same as on desktop.
+
+Immediately below the role cards, **Export** contains the existing formats, Copy,
+and Download. **Plate tools** contains name, polarity, Save, Import, Bundle, Clear,
+and Remix. **Extraction settings** contains Colour policy, Found inks, Signal floor,
+Quality, Try On, and diagnostics. Before generation, these last two sections sit
+below Forge. Opening sections or resizing the window does not edit the palette,
+invalidate a seal, or change saved data. Desktop keeps the expanded workflow.
+
+Copy reports success only when the browser accepts the operation. If both clipboard
+methods are blocked, select the text in Export and use the browser's copy action.
+
 ## How it picks
 
 **Structure** (ground, panel, ink, muted) comes from luminance quantiles over the whole frame, so the
