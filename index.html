@@ -5091,7 +5091,7 @@ function restoreFocus(saved, fallback = null) {
   target.focus({ preventScroll:true });
   if (typeof saved.start === "number" && target.setSelectionRange) target.setSelectionRange(saved.start, saved.end, saved.direction);
 }
-let pendingEdit = null, editPointerDown = false;
+let pendingEdit = null, editPointerDown = false, focusedMobileSummary = null;
 function flushEditRender() {
   if (editPointerDown || !pendingEdit) return;
   const core = pendingEdit;
@@ -5110,7 +5110,13 @@ function renderAfterEdit() {
   pendingEdit = state.core;
   flushEditRender();
 }
-document.addEventListener("pointerdown", () => { editPointerDown = true; }, true);
+document.addEventListener("focusin", event => {
+  focusedMobileSummary = event.target.matches(".mobile-section > summary") ? event.target : null;
+});
+document.addEventListener("pointerdown", event => {
+  editPointerDown = true;
+  if (!focusedMobileSummary?.contains(event.target)) focusedMobileSummary = null;
+}, true);
 for (const event of ["pointerup", "pointercancel"]) document.addEventListener(event, () => {
   editPointerDown = false; flushEditRender();
 }, true);
@@ -5142,7 +5148,10 @@ for (const id of ["mobileTools", "mobileSettings", "extractBtn", "mobileExport"]
 }
 function syncMobileLayout() {
   const compact = compactViewport.matches;
-  const active = document.activeElement;
+  // CSS hides desktop summaries before the media-query callback. Retain that
+  // specific focus destination; a deliberate click/Tab away clears it above.
+  const active = document.activeElement === document.body && !compact && compactLayout === true
+    ? focusedMobileSummary : document.activeElement;
   if (compact !== compactLayout) {
     for (const id of mobileSections) {
       const section = $(id);
@@ -5168,8 +5177,11 @@ function syncMobileLayout() {
     // Moving a focused control must not strand focus in a closed disclosure.
     const section = active.closest("details");
     if (section && active !== section.querySelector(":scope > summary")) section.open = true;
-    if (active.matches(".mobile-section > summary") && !compact)
-      active.parentElement.querySelector("button, input, select, textarea, [tabindex]")?.focus({ preventScroll:true });
+    if (active.matches(".mobile-section > summary") && !compact) {
+      const target = [...active.parentElement.querySelectorAll("button, input, select, textarea, [tabindex]")]
+        .find(element => !element.disabled && element.getClientRects().length);
+      (target || $("paletteHeading")).focus({ preventScroll:true });
+    }
     else if (document.activeElement !== active) active.focus({ preventScroll:true });
   }
 }
