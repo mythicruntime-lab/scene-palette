@@ -6,6 +6,10 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Clarified the image-to-palette workflow, color role labels, previews, saved
+  collections, and optional human approval for agent use. Technical role keys,
+  exports, extraction, saved data, and review seals remain compatible.
+
 - Selecting a bundled sample now sets its plate name to Blue lake, Neon city,
   or Amber dusk, keeping previews, saved plates, and exports named correctly.
 

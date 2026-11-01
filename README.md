@@ -11,13 +11,13 @@ Scene Palette runs locally. Open the standalone HTML file with **no installation
 the Go app for a local browser interface and command-line tools. Both engines use the same
 palette format and have exact parity checks for identical working pixels.
 
-![Scene Palette interface with palette controls, colour diagnostics, and readability checks](docs/images/interface.png)
+![Scene Palette start screen with image upload, samples, and the generate, refine, preview, and export workflow](docs/images/interface.png)
 
 ## Quick start — no installation
 
 1. On this repository's GitHub page, choose **Code → Download ZIP**.
 2. Extract the ZIP, then open **`index.html`** in a current desktop browser.
-3. Click **Try a sample** for the blue example, select another sample thumbnail, or drop your own image and click **Forge plate**.
+3. Click **Try a sample** for Blue lake, select Neon city or Amber dusk, or drop your own image and click **Generate palette**.
 
 The standalone app works offline and needs no Go, Node.js, or web server. Images are processed
 on your device.
@@ -25,28 +25,28 @@ on your device.
 ## Make your first palette
 
 1. Add one image, or up to eight images to combine their colours. PNG and JPEG are good starting points.
-2. Leave polarity on **Auto** and colour policy on **Readable UI**, then click **Forge plate**.
-   A *plate* has eight roles: `ground`, `panel`, `ink`, `muted`, `observed`, `attention`, `rupture`, and `gold`.
+2. Leave the background mode on **Auto** and **Color style** on **Readable UI**, then click **Generate palette**.
+   The palette includes background, surface, text, and accent colours, with eight stable role keys for exports.
 3. Check the previews and **Readability** matrix. Try **Dark** or **Light** for another background
    style, or **Remix** for another available accent combination.
-4. Open a role's **why** details to compare its recorded source and current paint. **Use source colour**
-   restores that paint and locks the role; **pick** lets you sample a colour from the image instead.
-5. Click **Save** to keep the plate on the shelf. Choose an **Export** format, then **Download**.
+4. Open a colour's **Why** details to compare its original and adjusted colour. **Use source colour**
+   restores the original and locks the role; **Pick** lets you choose a colour from the image instead.
+5. Click **Save** to add it to **Saved palettes**. Choose an **Export** format, then **Download**.
 
-Use **Export shelf** to back up saved plates. Browser storage can be cleared or unavailable,
+Use **Export collection** to back up saved palettes. Browser storage can be cleared or unavailable,
 especially for local files; retain an exported copy of work you care about.
 
 ![Generated source image and its eight-role palette](docs/images/source-to-palette.png)
 
 ## Choose how colours are adapted
 
-| Colour policy | Best fit |
+| Color style | Best fit |
 | --- | --- |
 | **Readable UI** (default) | Readable semantic roles with distinct accents. It can derive colours when the source lacks enough distinct paint, then rechecks distinction after repairs and locks. |
 | **Source hues** | A palette closer to the image's hue range. It keeps all eight roles and reuses source hues or neutral tones on sparse images instead of adding arbitrary accent hues. Some roles may look similar. |
 
-Both modes target **4.5:1 contrast** for generated body ink and **3:1** for muted text and accents
-on both surfaces. Locks remain exact, even when they fail. Raw **found inks** retain source paint.
+Both modes target **4.5:1 contrast** for generated primary text and **3:1** for secondary text and accents
+on both surfaces. Locked colours remain exact, even when they fail. **Extracted colors** retain the original image colours.
 Read the warnings for similar accents, large adjustments, or source hues shifted for readability.
 Forcing the opposite polarity can change colours substantially; the final interface still needs review.
 
@@ -59,11 +59,12 @@ Forcing the opposite polarity can change colours substantially; the final interf
 | **JSON** | Reopening a palette with roles, metadata, and colour origins intact. |
 | **GPL** | A palette for compatible art tools such as GIMP, Aseprite, or Krita. |
 | **HEX** | A plain list of colour values. |
-| **Bundle** | A ZIP with the palette, exports, swatch preview, and available source images. |
+| **Bundle ZIP** | A ZIP with the palette, exports, swatch preview, and available source images. |
 
-The [user guide](docs/USER_GUIDE.md) covers comparison, theme pairs, shelves, and vault exports.
+The [user guide](docs/USER_GUIDE.md) covers comparison, theme pairs, saved collections, and vault exports.
 Older valid palettes keep their recorded metadata and seals when opened; only an explicit
-re-forge uses the current extraction algorithm.
+generation uses the current extraction algorithm. Human approval is an optional advanced workflow for
+tools that require it; it is not required to edit, save, or export a palette.
 
 ## Windows app
 
@@ -79,8 +80,8 @@ If you have the Windows **Setup.exe**, run it to install Scene Palette for your 
 account, then launch it from the Start Menu. The desktop shortcut is optional. Close
 Scene Palette's console before upgrading or uninstalling. Uninstall through Windows
 Apps; exported palettes and browser storage are preserved.
-Back up important work with **Export shelf**. Portable and installed copies share the
-same browser shelf only when you use the same browser profile and local address.
+Back up important work with **Export collection**. Portable and installed copies share the
+same saved collection only when you use the same browser profile and local address.
 
 Both Windows packages are unsigned. The installer and ZIP are separate from GitHub's
 source download.
@@ -131,7 +132,7 @@ and palette verification.
 | Document | Contents |
 | --- | --- |
 | [Changelog](CHANGELOG.md) | Version history and notable changes. |
-| [User guide](docs/USER_GUIDE.md) | Controls, extraction, themes, shelves, bundles, and the CLI. |
+| [User guide](docs/USER_GUIDE.md) | Controls, extraction, themes, saved palettes, bundles, and the CLI. |
 | [Contributing](CONTRIBUTING.md) | Development setup and Go, JavaScript, parity, and browser tests. |
 | [Quality report](docs/QUALITY_REPORT.md) | Test results, coverage, and known limitations. |
 | [Go architecture](docs/GO_MIGRATION.md) | Engine boundaries, local API, and durable file contract. |

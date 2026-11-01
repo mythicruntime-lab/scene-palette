@@ -76,7 +76,7 @@ async function checkExports(page,name,prefix){
 }
 async function settled(page){await page.waitForFunction(()=>state.core.length===8&&!document.getElementById("extractBtn").disabled);}
 async function forge(page){await page.locator("#extractBtn").click();await settled(page);}
-async function sampleSettled(page,id){await page.waitForFunction(id=>state.sampleId===id&&state.stills.length===1&&state.stills[0].name===`sample-${id}.jpg`&&state.core.length===8&&!document.getElementById("extractBtn").disabled,id);}
+async function sampleSettled(page,id){await page.waitForFunction(id=>state.sampleId===id&&state.stills.length===1&&state.stills[0].name===`sample-${id}.jpg`&&state.core.length===8&&!document.getElementById("extractBtn").disabled,id);assert.equal(await page.locator("#extractBtn").textContent(),"Generate palette");}
 async function gateNextDecode(page){await page.evaluate(()=>{const original=window.createImageBitmap;let first=true;let release,finished;const pending=new Promise(r=>release=r),completed=new Promise(r=>finished=r);window.__sampleDecodeGate={release,original,started:false,completed};window.createImageBitmap=async(...args)=>{if(first){first=false;window.__sampleDecodeGate.started=true;await pending;try{return await original(...args);}finally{finished();}}return original(...args);};});}
 async function releaseDecode(page){await page.evaluate(async()=>{const gate=window.__sampleDecodeGate;window.createImageBitmap=gate.original;gate.release();await gate.completed;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));delete window.__sampleDecodeGate;});}
 let browser;
