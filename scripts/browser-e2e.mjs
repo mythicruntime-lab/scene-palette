@@ -653,6 +653,13 @@ try {
   const fallback = await context.newPage(); watch(fallback, "standalone");
   await fallback.goto(pathToFileURL(standaloneHTML).href);
   await fallback.locator("#extractBtn").waitFor();
+  for (const [target, label] of [[page, "Go"], [fallback, "standalone"]]) {
+    assert.equal(await target.getByRole("textbox", { name: "Palette name", exact: true }).count(), 1);
+    assert.equal(await target.getByRole("button", { name: "Generate palette", exact: true }).count(), 1);
+    assert.equal(await target.locator("#drop").getAttribute("aria-describedby"), "dropHelp");
+    assert.ok((await target.locator("#dropHelp").textContent()).trim(), `${label}: image upload needs a screen-reader description`);
+    passed("Plain-language entry controls retain accessible names and upload help: " + label);
+  }
   // Native Chromium/Edge cube roots have differed from the reference arithmetic
   // by one ULP. Near-neutral hues expose that drift before palette rounding.
   for (const [target, label] of [[page, "Go"], [fallback, "standalone"]]) {
@@ -682,6 +689,12 @@ try {
     await loadImages(fallback, images, name);
     const actual = await forge(page);
     const expected = await forge(fallback, false);
+    if (label === "dark") for (const target of [page, fallback]) {
+      assert.equal(await target.getByRole("button", { name: "UI preview", exact: true }).count(), 1);
+      assert.equal(await target.getByRole("button", { name: "JSON palette", exact: true }).count(), 1);
+      assert.equal(await target.locator('[data-surf="harness"]').getAttribute("aria-pressed"), "true");
+      assert.equal(await target.locator('[data-fmt="json"]').count(), 1, "The visible JSON label must retain its format identifier");
+    }
     for (let sourceIndex = 0; sourceIndex < images.length; sourceIndex++) {
       const png = await fs.readFile(images[sourceIndex]);
       const natural = [png.readUInt32BE(16), png.readUInt32BE(20)];
@@ -709,7 +722,7 @@ try {
       assert.deepEqual(semantic(forcedActual), semantic(forcedExpected), `${label}: forced ${mode} Go / standalone parity`);
       await assertGeneratedReadable(page, forcedActual, `${label}: Go forced ${mode}`);
       await assertGeneratedReadable(fallback, forcedExpected, `${label}: standalone forced ${mode}`);
-      assert.match(await page.locator("#matrix .mnote").innerText(), /Every token clears its target on both surfaces/);
+      assert.match(await page.locator("#matrix .mnote").innerText(), /Every color clears its target on both backgrounds/);
     }
     for (const target of [page, fallback]) {
       await target.evaluate(async () => { await setPolarity("auto"); });
@@ -746,7 +759,7 @@ try {
       inks.every(t => contrast(t, token("panel")) >= (t.id === "ink" ? 4.5 : 3));
   });
   assert.ok(groundOnlyFailure, "Intentional manual fixture must preserve exactly the ground-only ink failure");
-  assert.match(await page.locator("#matrix .mnote").innerText(), /below target on ground or panel/);
+  assert.match(await page.locator("#matrix .mnote").innerText(), /below target on background or surface/);
   await page.locator("#matrix").screenshot({ path: path.join(output, "manual-ground-contrast-warning.png") });
   passed("Intentional locked manual ink is preserved and warns when only ground contrast fails");
 
@@ -755,7 +768,7 @@ try {
   const initial = await forge(page);
   assert.ok(initial.params.variantCount > 1, "Fixture needs multiple variants for Remix regression");
   await assertGeneratedReadable(page, initial, "Clean generated fixture after manual warning test");
-  assert.match(await page.locator("#matrix .mnote").innerText(), /Every token clears its target on both surfaces/);
+  assert.match(await page.locator("#matrix .mnote").innerText(), /Every color clears its target on both backgrounds/);
   await page.locator('[data-pick="observed"]').click();
   await clickImage(page, 0.25, 0.25);
   await page.waitForFunction(() => !state.arm && state.core[4].origin.kind === "picked");

@@ -28,7 +28,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Scene Palette — still → reserved plate</title>
+  <title>Scene Palette — image to color palette</title>
 <style>
   /* ---- app chrome. fixed. the plate never repaints this. ---- */
   :root {
@@ -514,7 +514,8 @@ Adapted fdlibm notices are retained beside the arithmetic below.
              clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   /* One set of controls: disclosures are transparent in the desktop layout. */
   .mobile-section { display:contents; }
-  .mobile-section > summary, .mobile-only, .role-label { display:none; }
+  .mobile-section > summary, .mobile-only { display:none; }
+  .role-label { display:block; font:600 11px var(--sans); margin-bottom:2px; overflow-wrap:anywhere; }
   @media (max-width:1000px) {
     header { padding:12px; gap:8px; }
     header .eyebrow, header .sub { display:none; }
@@ -576,31 +577,31 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 <body>
 <header>
   <div>
-    <p class="eyebrow">Plate extractor</p>
+    <p class="eyebrow">Image to palette</p>
     <div class="title-row">
       <h1>Scene Palette</h1>
       <span class="beta-badge">BETA</span>
       <a class="bug-report" href="https://github.com/mythicruntime-lab/scene-palette/issues" target="_blank" rel="noopener noreferrer" aria-label="Report a bug on GitHub (opens in a new tab)">Report a bug</a>
     </div>
-    <p class="sub">Eight reserved words for the theme. Every slot keeps a name, a job, and a hex. Arm a slot, click the still, and that pixel becomes law.</p>
-    <p class="mobile-only mobile-intro">Turn an image into eight role colours. Choose a still or try a sample, then review and export.</p>
+    <p class="sub">Turn images into color palettes. Refine eight color roles, preview them in a UI, and export for your project.</p>
+    <p class="mobile-only mobile-intro">Choose an image or sample. Generate a palette, refine the colors, preview and export.</p>
   </div>
   <details class="mobile-section" id="mobileTools" open>
-  <summary>Plate tools · name, save, import</summary>
+  <summary>Palette tools · name, save, import</summary>
   <div class="head-right">
-    <input type="text" id="plateName" value="Night bay" style="width:150px" aria-label="Plate name" />
-    <div class="seg" id="polarity" role="group" aria-label="Plate polarity">
-      <button type="button" data-pol="auto" class="on" aria-pressed="true" title="Read polarity from the still">Auto</button>
-      <button type="button" data-pol="dark" aria-pressed="false" title="Force a dark plate">Dark</button>
-      <button type="button" data-pol="light" aria-pressed="false" title="Force a light plate">Light</button>
+    <input type="text" id="plateName" value="Night bay" style="width:150px" aria-label="Palette name" />
+    <div class="seg" id="polarity" role="group" aria-label="Palette brightness">
+      <button type="button" data-pol="auto" class="on" aria-pressed="true" title="Choose a light or dark palette from the image">Auto</button>
+      <button type="button" data-pol="dark" aria-pressed="false" title="Generate a dark palette">Dark</button>
+      <button type="button" data-pol="light" aria-pressed="false" title="Generate a light palette">Light</button>
     </div>
-    <button type="button" class="ghost" id="saveBtn" title="Save this plate to the shelf">Save</button>
-    <button type="button" class="ghost" id="importBtn" title="Load a JSON plate">Import</button>
-    <button type="button" class="ghost" id="bundleBtn" title="Write this plate as a vault bundle: palette.json, sources, preview, tokens">Bundle</button>
+    <button type="button" class="ghost" id="saveBtn" title="Save this palette in this browser">Save</button>
+    <button type="button" class="ghost" id="importBtn" title="Load a JSON palette">Import</button>
+    <button type="button" class="ghost" id="bundleBtn" title="Download a ZIP with palette.json, source images, a preview, and color files">Bundle ZIP</button>
     <input type="file" id="plateFile" accept="application/json,.json" hidden />
     <button type="button" class="ghost" id="clearAll" title="Clear the current work; an Undo action will be offered">Clear work</button>
-    <button type="button" id="remixBtn" disabled title="Next plate this still supports">Remix</button>
-    <button type="button" class="primary" id="extractBtn">Forge plate</button>
+    <button type="button" id="remixBtn" disabled title="Try the next palette variation from these images">Remix</button>
+    <button type="button" class="primary" id="extractBtn">Generate palette</button>
   </div>
   </details>
 </header>
@@ -608,15 +609,15 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 <div class="wrap">
   <aside>
     <button type="button" class="drop" id="drop" aria-describedby="dropHelp">
-      <strong>Choose or drop stills</strong>
-      Day facade and night bay can be separate plates or one merged set.
-      <span id="dropHelp">Images and JSON plates stay on this device.</span>
+      <strong>Choose or drop images</strong>
+      Add up to eight images, then select Generate palette.
+      <span id="dropHelp">Images and JSON palettes stay on this device.</span>
     </button>
     <input type="file" id="file" accept="image/*,application/json,.json" multiple hidden />
     <input type="file" id="vaultDir" webkitdirectory directory multiple hidden />
     <div class="thumbs" id="thumbs"></div>
     <section class="sample-picker" id="samplePicker" aria-label="Try a sample image">
-      <p>Try a sample · blue is a good first look</p>
+      <p>Try a sample · generates a palette for you</p>
       <div class="sample-options">
         <button type="button" class="sample-option" data-sample="blue" aria-label="Try Blue lake sample — light UI" aria-pressed="false"><img src="data:image/jpeg;base64,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" alt="" width="128" height="72" decoding="async" /><span>Blue lake<small>Light UI</small></span></button>
         <button type="button" class="sample-option" data-sample="violet" aria-label="Try Neon city sample — dark UI" aria-pressed="false"><img src="data:image/jpeg;base64,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" alt="" width="128" height="72" decoding="async" /><span>Neon city<small>Dark UI</small></span></button>
@@ -629,15 +630,15 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     <details class="mobile-section" id="mobileSettings" open>
     <summary>Extraction settings · <span id="policySummary">Readable UI</span></summary>
     <div class="ctl">
-      <label class="row" for="extra"><span>Found inks</span><b id="extraLabel">6</b></label>
+      <label class="row" for="extra"><span>Extracted colors</span><b id="extraLabel">6</b></label>
       <input type="range" id="extra" min="0" max="10" value="6" aria-valuetext="6" />
     </div>
     <div class="ctl">
-      <label class="row" for="chroma"><span>Signal floor</span><b id="chromaLabel">.085</b></label>
+      <label class="row" for="chroma"><span>Color intensity</span><b id="chromaLabel">.085</b></label>
       <input type="range" id="chroma" min="40" max="180" value="85" aria-valuetext=".085" />
     </div>
     <div class="ctl">
-      <label class="row" for="colorPolicy"><span>Colour policy</span></label>
+      <label class="row" for="colorPolicy"><span>Color style</span></label>
       <select id="colorPolicy" style="width:100%" aria-describedby="colorPolicyHelp">
         <option value="readable-ui" selected>Readable UI</option>
         <option value="source-hues">Source hues</option>
@@ -654,11 +655,11 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     </div>
 
     <p class="hint">
-      <b>Core eight</b> hold the role slots — ground → gold. They carry the still's own cast, capped so structure never turns neon.<br><br>
-      <b>Found inks</b> are the rare high-chroma hits — lime cuff, cyan sign, magenta テル — kept even when they own almost no pixels.<br><br>
-      Lower the <b>signal floor</b> to catch fainter neon. Lock a slot to hold it through a re-forge.
+      <b>Eight color roles</b> provide backgrounds, text, and accents, adjusted for readability.<br><br>
+      <b>Extracted colors</b> keep extra vivid colors from the images. Lower <b>color intensity</b> to include less vivid colors.<br><br>
+      Use <b>Pick</b> to select a color from an image. <b>Lock</b> keeps a role color when you generate again.
     </p>
-    <label class="toggle"><input type="checkbox" id="tryOn" checked /> Try the plate on this app</label>
+    <label class="toggle"><input type="checkbox" id="tryOn" checked /> Preview on this app</label>
     <div class="diag" id="diag"></div>
     </details>
   </aside>
@@ -669,13 +670,13 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         <h3 class="empty-title" id="emptyTitle">Turn a scene into a working color system</h3>
         <p class="empty-copy">Scene Palette proposes eight readable role colors. You keep the final say: rename them, lock them, or pick an exact pixel from the source.</p>
         <ol class="empty-steps">
-          <li><b>Choose</b> one or more reference stills.</li>
-          <li><b>Forge</b> a plate and inspect its readability.</li>
-          <li><b>Review and seal</b> the result, then export it for your project.</li>
+          <li><b>Choose images</b> or try a sample to get started.</li>
+          <li><b>Generate palette</b>, then pick, rename, or lock colors.</li>
+          <li><b>Preview and export</b> colors for your project.</li>
         </ol>
         <div class="empty-actions">
           <button type="button" class="primary" id="trySample">Try a sample</button>
-          <button type="button" id="startBtn">Choose stills</button>
+          <button type="button" id="startBtn">Choose images</button>
           <span class="local-note">Local-only processing. Images are not uploaded.</span>
         </div>
       </div>
@@ -683,12 +684,12 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 
     <div id="results" hidden>
       <details class="mobile-section" id="mobileSource" open>
-      <summary>Inspect source · pixel picker</summary>
-      <h2>Still <span class="n" id="stillN"></span></h2>
+      <summary>Source image · color picker</summary>
+      <h2>Image <span class="n" id="stillN"></span></h2>
       <div class="stage" id="stage">
         <canvas class="still" id="stageCanvas" tabindex="0" role="img"
-          aria-label="Source still color picker" aria-describedby="pickerHelp pickerStatus">
-          Source still used for color picking.
+          aria-label="Source image color picker" aria-describedby="pickerHelp pickerStatus">
+          Source image used for color picking.
         </canvas>
         <div class="loupe" id="loupe"><canvas id="loupeCanvas" width="104" height="104"></canvas><div class="lx" id="loupeHex">—</div></div>
       </div>
@@ -696,34 +697,34 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <div class="sr-only" id="pickerStatus" role="status" aria-live="polite" aria-atomic="true"></div>
       </details>
 
-      <h2 id="paletteHeading" tabindex="-1">Plate <span class="mobile-only">· eight colour roles</span></h2>
+      <h2 id="paletteHeading" tabindex="-1">Palette <span class="mobile-only">· eight color roles</span></h2>
       <div class="plate" id="plate">
         <div class="plate-head">
-          <span id="plateId">Plate</span>
-          <span>core eight · every hue a reserved word</span>
+          <span id="plateId">Palette</span>
+          <span>eight roles · editable colors</span>
         </div>
         <details class="mobile-section" id="mobileReview" open>
-        <summary id="reviewSummary" aria-live="polite" aria-atomic="true">Review checks and sealing</summary>
+        <summary id="reviewSummary" aria-live="polite" aria-atomic="true">Checks &amp; human approval</summary>
         <div class="reviewbar" id="reviewBar" aria-live="polite" aria-atomic="true"></div>
-        <div class="review-focus" id="reviewFocus" role="region" aria-label="Review readiness"></div>
+        <div class="review-focus" id="reviewFocus" role="region" aria-label="Palette checks"></div>
         <div class="review-diff" id="reviewDiff" role="region" aria-label="Changes from proposal" hidden></div>
-        <div class="review-history" id="reviewHistory" role="region" aria-label="Prior human seals" hidden></div>
+        <div class="review-history" id="reviewHistory" role="region" aria-label="Prior human approvals" hidden></div>
         </details>
         <div class="chips" id="chips"></div>
         <div class="why-panel" id="whyPanel" role="region" aria-label="Color origin" hidden></div>
         <div id="mobileExtras"></div>
         <div class="colour-diagnostics" id="colourDiagnostics" role="region" aria-label="Palette colour diagnostics"></div>
         <div class="found-wrap" id="foundWrap">
-          <label class="row" style="margin-bottom:8px"><span>Found inks — not roles, just paint the still refused to hide</span></label>
+          <label class="row" style="margin-bottom:8px"><span>Extracted colors · extra colors from your images</span></label>
           <div class="found" id="found"></div>
         </div>
         <div class="voices themed" id="voices">
-          <div class="voice"><div class="k">Human voice<small>source serif</small></div>
-            <div id="vHuman" style="font-family:var(--serif);font-size:14.5px;line-height:1.45">Your words, your charters. The human register is a serif.</div></div>
-          <div class="voice"><div class="k">Machine voice<small>harness chrome</small></div>
-            <div id="vMachine" style="font-size:12.5px">Agent speech. Capable, plain, never confused with the record.</div></div>
-          <div class="voice"><div class="k">The record<small>mono</small></div>
-            <div id="vRecord" style="font-family:var(--mono);font-size:11.5px">run · extract · seal · signed entries only</div></div>
+          <div class="voice"><div class="k">Reading text<small>serif</small></div>
+            <div id="vHuman" style="font-family:var(--serif);font-size:14.5px;line-height:1.45">See how your palette looks in longer text.</div></div>
+          <div class="voice"><div class="k">Interface text<small>sans serif</small></div>
+            <div id="vMachine" style="font-size:12.5px">Clear labels help people find their next step.</div></div>
+          <div class="voice"><div class="k">Code &amp; data<small>monospace</small></div>
+            <div id="vRecord" style="font-family:var(--mono);font-size:11.5px">background · text · accents · #AABBCC</div></div>
         </div>
         <div class="law" id="law"></div>
       </div>
@@ -736,7 +737,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
 
       <h2>Preview</h2>
       <div class="tabs" id="surfaces" role="group" aria-label="Preview surface">
-        <button type="button" data-surf="harness" class="primary" aria-pressed="true">Agent harness</button>
+        <button type="button" data-surf="harness" class="primary" aria-pressed="true">UI preview</button>
         <button type="button" data-surf="forms" aria-pressed="false">Forms</button>
         <button type="button" data-surf="table" aria-pressed="false">Table</button>
         <button type="button" data-surf="approval" aria-pressed="false">Approval</button>
@@ -749,9 +750,9 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <div class="tabs" id="tabs" role="group" aria-label="Export format">
         <button type="button" data-fmt="css" class="primary" aria-pressed="true">CSS tokens</button>
         <button type="button" data-fmt="godot" aria-pressed="false">Godot 4 pack</button>
-        <button type="button" data-fmt="json" aria-pressed="false">JSON plate</button>
-        <button type="button" data-fmt="gpl" aria-pressed="false">GPL</button>
-        <button type="button" data-fmt="hex" aria-pressed="false">HEX</button>
+        <button type="button" data-fmt="json" aria-pressed="false" title="Save editable colors, sources, and approval records">JSON palette</button>
+        <button type="button" data-fmt="gpl" aria-pressed="false" title="GIMP palette file for compatible art apps">GPL</button>
+        <button type="button" data-fmt="hex" aria-pressed="false" title="Plain list of hexadecimal color values">HEX</button>
       </div>
       <textarea id="export" readonly spellcheck="false" aria-label="Exported palette text"></textarea>
       <div class="tabs" style="margin-top:8px">
@@ -761,13 +762,13 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       </details>
     </div>
 
-    <h2 id="shelfHead">Shelf <span class="n" id="shelfN"></span></h2>
+    <h2 id="shelfHead">Saved palettes <span class="n" id="shelfN"></span></h2>
     <div class="shelf" id="shelf"></div>
 
     <h2 id="cmpHead">Compare</h2>
     <div id="compare"></div>
 
-    <h2 id="themeHead">Theme <span class="n">two plates, one file</span></h2>
+    <h2 id="themeHead">Theme <span class="n">two palettes, one file</span></h2>
     <div id="theme"></div>
   </main>
 </div>
@@ -1120,6 +1121,11 @@ const ROLES = [
   { id:"rupture",   job:"rupture only", kind:"chroma", idealH:27  },
   { id:"gold",      job:"human acts only", kind:"chroma", idealH:65 }
 ];
+// Display labels only; saved role keys, purposes, and export tokens stay stable.
+const ROLE_LABELS = { ground:"Background", panel:"Surface", ink:"Primary text",
+  muted:"Secondary text", observed:"Information", attention:"Attention",
+  rupture:"Error", gold:"Human action" };
+const roleLabel = id => Object.hasOwn(ROLE_LABELS, id) ? ROLE_LABELS[id] : id;
 const state = { stills:[], sampleId:null, sel:0, core:[], found:[], fmt:"css", arm:null, seq:1, notes:[],
                 struct:null, cands:[], sets:[], variant:0, baseNotes:[], lightScene:false,
                 hist:null, polarity:"auto", colorPolicy:"readable-ui", roleCands:[], autoLight:false, backend:null, goHistogram:null,
@@ -1685,7 +1691,7 @@ function importedReview(review) {
 }
 function sealPlate() {
   invalidateGoRequest();
-  if (state.core.length !== ROLES.length) { toast("Forge or import a complete plate first", true); return; }
+  if (state.core.length !== ROLES.length) { toast("Generate or import a complete palette first", true); return; }
   const proposal = normalizeProposal(state.review && state.review.proposal) || captureProposal("current plate");
   state.review = {
     version:1, status:"sealed", agentEligible:true, changedBy:"human review",
@@ -1696,7 +1702,7 @@ function sealPlate() {
     history:normalizeReviewHistory(state.review && state.review.history)
   };
   render();
-  toast("Human seal recorded · agents may use this plate");
+  toast("Human approval recorded · agents may use this palette");
 }
 async function hashBytes(buf) {
   const u8 = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
@@ -1725,11 +1731,11 @@ async function addFiles(list, options = {}) {
   if (ingestEpoch !== goEpoch) return;
   const replace = options.replace || !!state.sampleId;
   const imgs = files.filter(f => f.type.startsWith("image/"));
-  if (!imgs.length) { toast("No image or .json plate in that drop", true); return; }
+  if (!imgs.length) { toast("No image or .json palette in that drop", true); return; }
   const priorStillCount = replace ? 0 : state.stills.length;
   const decodedStills = [];
   for (const f of imgs) {
-    if (priorStillCount + decodedStills.length >= 8) { toast("Eight stills is the cap", true); break; }
+    if (priorStillCount + decodedStills.length >= 8) { toast("You can use up to eight images", true); break; }
     try {
       // hash the ORIGINAL bytes before anything touches them — the working copy
       // is a derivative, and the transform chain below says exactly how.
@@ -1986,7 +1992,7 @@ async function rebuildGoPlate(index, polarity = state.polarity) {
     applyGoExtraction(result, index);
     return true;
   } catch (error) {
-    toast("Build failed: " + error.message, true);
+    toast("Could not generate palette: " + error.message, true);
     return false;
   }
 }
@@ -2353,9 +2359,9 @@ function sourceHueDeparture(token) {
 /** Scan pixels once and cache the pooled histogram, then build from it.
  *  Flipping polarity re-runs only the build, so it is instant. */
 async function extract() {
-  if (!state.stills.length) { toast("Add a still first", true); return; }
+  if (!state.stills.length) { toast("Add an image first", true); return; }
   const btn = $("extractBtn");
-  btn.disabled = true; btn.textContent = "Forging…";
+  btn.disabled = true; btn.textContent = "Generating…";
   try {
     const epoch = typeof goEpoch === "number" ? goEpoch : 0;
     const useGo = typeof goBackend === "function" && await goBackend();
@@ -2392,7 +2398,7 @@ async function extract() {
     console.error(err);
     toast("Extraction failed: " + (err && err.message ? err.message : err), true);
   } finally {
-    btn.disabled = false; btn.textContent = "Forge plate";
+    btn.disabled = false; btn.textContent = "Generate palette";
   }
 }
 
@@ -2526,7 +2532,7 @@ function buildPlate(reset) {
     applyVariant(reset ? 0 : state.variant);
   } catch (err) {
     console.error(err);
-    toast("Build failed: " + (err && err.message ? err.message : err), true);
+    toast("Could not generate palette: " + (err && err.message ? err.message : err), true);
   }
 }
 
@@ -2567,7 +2573,7 @@ async function setColorPolicy(value) {
       applyGoExtraction(result,state.variant);
     } catch (error) {
       if ($("colorPolicy")) $("colorPolicy").value = previous;
-      toast("Build failed: " + error.message,true);
+      toast("Could not generate palette: " + error.message,true);
       return false;
     }
   } else {
@@ -2578,7 +2584,7 @@ async function setColorPolicy(value) {
   if ($("colorPolicy")) $("colorPolicy").value = normalizeColorPolicy(state.colorPolicy);
   syncMobileLayout();
   const label = value === "source-hues" ? "Source hues · role colours may share a hue" : "Readable UI · distinct semantic accents";
-  toast(state.hist ? label : label + " · applies to the next Forge");
+  toast(state.hist ? label : label + " · applies when you generate next");
   return true;
 }
 
@@ -2688,10 +2694,10 @@ function applyVariant(i) {
 }
 
 async function remix() {
-  if (!state.sets || state.sets.length < 2) { toast("This still only supports one plate", true); return; }
+  if (!state.sets || state.sets.length < 2) { toast("These images support only one palette variation", true); return; }
   const applied = await applyVariant(state.variant + 1);
   if (applied === false) return;
-  toast(`Plate ${state.variant + 1} of ${state.sets.length}`);
+  toast(`Palette ${state.variant + 1} of ${state.sets.length}`);
 }
 
 /* ============================================================
@@ -2737,8 +2743,8 @@ function renderStage() {
     sourceIdentity(source) === sourceIdentity(plateSourcesFromStills([still])[0]));
   cv.width = still.w; cv.height = still.h;
   cv.getContext("2d").drawImage(still.canvas, 0, 0);
-  $("stillN").textContent = `${state.sel + 1}/${state.stills.length} · ${still.name} · ${attached ? "plate source" : "workspace only"}`;
-  cv.setAttribute("aria-label", `Source still ${state.sel + 1} of ${state.stills.length}: ${still.name}. ${attached ? "Recorded plate source" : "Workspace image, not yet a recorded plate source"}. Color picker.`);
+  $("stillN").textContent = `${state.sel + 1}/${state.stills.length} · ${still.name} · ${attached ? "palette source" : "workspace only"}`;
+  cv.setAttribute("aria-label", `Source image ${state.sel + 1} of ${state.stills.length}: ${still.name}. ${attached ? "Recorded palette source" : "Workspace image, not yet a recorded palette source"}. Color picker.`);
   renderArmbar();
 }
 
@@ -2746,13 +2752,13 @@ function renderArmbar() {
   const bar = $("armbar"), stage = $("stage");
   if (state.arm) {
     const t = state.core.find(x => x.id === state.arm);
-    bar.innerHTML = `<span class="tag">arming ${esc(state.arm)}</span>
-      <span id="pickerHelp">Click the still, or focus it and use the arrow keys. Enter makes that pixel <b>${esc(t ? t.name : state.arm)}</b>, locked.</span>
+    bar.innerHTML = `<span class="tag">Select ${esc(roleLabel(state.arm))}</span>
+      <span id="pickerHelp">Click the image, or focus it and use the arrow keys. Enter assigns that pixel to <b>${esc(t ? t.name : state.arm)}</b> and locks the color.</span>
       <button type="button" class="tiny" id="disarm">cancel</button>`;
     $("disarm").onclick = cancelPick;
     stage.classList.add("armed");
   } else {
-    bar.innerHTML = `<span id="pickerHelp">Click the still to pin a <b>found ink</b>. Keyboard: focus the still, move with arrow keys, then press Enter. To overwrite a role, press <b>pick</b> first.</span>`;
+    bar.innerHTML = `<span id="pickerHelp">Click the image to add an <b>extracted color</b>. Keyboard: focus the image, move with arrow keys, then press Enter. To replace a role color, select <b>Pick</b> first.</span>`;
     stage.classList.remove("armed");
   }
 }
@@ -2788,7 +2794,7 @@ function applyStagePick(still, p) {
       Object.assign(t, { r: col.r, g: col.g, b: col.b, hex: hex(col), name: nameOf(col),
                          locked: true, derived: false, origin: pickOrigin() });
       const cr = contrast(col, token("ground"));
-      toast(`${t.id} = ${safeHex(t.hex)} · locked` + (t.id !== "ground" && cr < 3 ? ` · only ${cr.toFixed(1)}:1 on ground` : ""));
+      toast(`${t.id} = ${safeHex(t.hex)} · locked` + (t.id !== "ground" && cr < 3 ? ` · only ${cr.toFixed(1)}:1 on background` : ""));
     }
     state.arm = null;
   } else {
@@ -2904,7 +2910,7 @@ function renderReviewDiff(decision, proposal) {
   box.hidden = !state.reviewDiffOpen;
   if (box.hidden) { box.innerHTML = ""; return; }
   if (!decision || !decision.baseline) {
-    box.innerHTML = `<div class="empty-note">No proposal baseline was recorded for this older plate. Its current seal can still be verified, but a before/after decision cannot be reconstructed.</div>`;
+    box.innerHTML = `<div class="empty-note">This older palette has no saved original for comparison. Its current review seal can still be checked, but earlier changes cannot be reconstructed.</div>`;
     return;
   }
   const swatch = value => /^#[0-9a-f]{6}$/i.test(String(value || ""))
@@ -2931,12 +2937,12 @@ function renderReviewDiff(decision, proposal) {
   const when = proposal && proposal.createdAt && !Number.isNaN(Date.parse(proposal.createdAt))
     ? new Date(proposal.createdAt).toLocaleString() : "time not recorded";
   box.innerHTML = `<div class="review-diff-head">
-      <strong>Proposal → ${validatedReview().status === "sealed" ? "human-sealed plate" : "current plate"}</strong>
+      <strong>Proposal → ${validatedReview().status === "sealed" ? "approved palette" : "current palette"}</strong>
       <span>${decision.changeCount} item${decision.changeCount === 1 ? "" : "s"} · ${decision.fieldCount} field${decision.fieldCount === 1 ? "" : "s"} · ${esc(when)}</span>
     </div>
     <div class="review-diff-list">${decision.changes.length
       ? decision.changes.map(change => `<div class="review-change"><b>${esc(change.key)}</b><span>${describe(change)}</span></div>`).join("")
-      : `<div class="empty-note">No human changes. Sealing accepts the generated proposal as-is.</div>`}
+      : `<div class="empty-note">No changes from the original. Approval accepts these colors as they are.</div>`}
     </div>`;
 }
 
@@ -2956,7 +2962,7 @@ function renderReviewHistory(history) {
       ? `${entry.assessment.attentionCount} advisory note${entry.assessment.attentionCount === 1 ? "" : "s"}`
       : "review checks clear";
   box.innerHTML = `<div class="review-history-head">
-      <strong>Prior human seals</strong>
+      <strong>Prior human approvals</strong>
       <span>${items.length} recorded · newest first</span>
     </div>
     <div class="review-history-list">${[...items].reverse().map(entry => `
@@ -2966,23 +2972,23 @@ function renderReviewHistory(history) {
         <span>${esc(decision(entry))} · ${esc(focus(entry))}<br>
           Superseded ${esc(when(entry.invalidatedAt))}: ${esc(entry.invalidatedBy)}.</span>
       </div>`).join("")}</div>
-    <p class="review-history-note">Recorded audit provenance only. Earlier palette content is not retained, so these prior seals cannot be independently reverified.</p>`;
+    <p class="review-history-note">Approval history only. Earlier palette content is not retained, so its review seals cannot be independently rechecked.</p>`;
 }
 
 function renderReviewFocus(assessment) {
   const box = $("reviewFocus");
   const attention = assessment.attentionCount;
   box.innerHTML = `<div class="review-focus-head">
-      <strong>Review focus</strong>
+      <strong>Palette checks</strong>
       <span>${attention ? attention + " of " + assessment.checks.length + " checks need attention" : "all " + assessment.checks.length + " checks clear"}</span>
     </div>
     <div class="review-check-grid">${assessment.checks.map(check => `
       <div class="review-check ${check.status}">
-        <div class="review-check-top"><b>${esc(check.label)}</b>
-          <span class="review-check-mark">${check.status === "pass" ? "✓ pass" : "review"}</span></div>
-        <div class="review-check-detail">${esc(check.detail)}</div>
+        <div class="review-check-top"><b>${esc(check.id === "invention" ? "Generated colors" : check.label)}</b>
+          <span class="review-check-mark">${check.status === "pass" ? "✓ pass" : "check"}</span></div>
+        <div class="review-check-detail">${esc(check.detail.replace(/\bground\b/g, "background").replace(/\bpanel\b/g, "surface").replace(/\btoken\b/g, "color"))}</div>
       </div>`).join("")}</div>
-    <p class="review-focus-note">Attention is advisory, not an automatic veto. It tells the human what to judge before sealing.</p>`;
+    <p class="review-focus-note">These checks flag items to inspect; they do not certify accessibility or block export. Human approval records a review seal for agent use.</p>`;
 }
 
 function renderReview() {
@@ -2995,37 +3001,37 @@ function renderReview() {
   const assessment = liveReviewAssessment();
   const history = normalizeReviewHistory(review.history);
   const changed = decision.baseline ? decision.changeCount : null;
-  const title = sealed ? "Human-sealed · ready for agents"
-              : status === "edited" ? "Human-edited · seal required again"
-              : "Proposal · human review required";
+  const title = sealed ? "Approved for agent use"
+              : status === "edited" ? "Edited · agent use needs new approval"
+              : "Palette draft · not approved for agent use";
   let detail;
   if (sealed) {
     const when = review.sealedAt && !Number.isNaN(Date.parse(review.sealedAt))
       ? new Date(review.sealedAt).toLocaleString() : "time not recorded";
     const coverage = review.scope === REVIEW_SCOPE
       ? "Palette content and source identities are bound."
-      : "Legacy seal covers palette content only; edit and reseal to bind source identities.";
-    detail = `Sealed ${when}. ${changed === 0 ? "Accepted as proposed" : changed == null ? "No proposal baseline" : `${changed} changed item${changed === 1 ? "" : "s"} accepted`}. ${coverage} Fingerprint <code>${esc(review.fingerprint.value.slice(0, 12))}…</code>`;
+      : "This older approval covers palette content only. Edit and approve again to include source identities.";
+    detail = `Approved ${when}. ${changed === 0 ? "Accepted as proposed" : changed == null ? "No proposal baseline" : `${changed} changed item${changed === 1 ? "" : "s"} accepted`}. ${coverage} Fingerprint <code>${esc(review.fingerprint.value.slice(0, 12))}…</code>`;
   } else if (status === "edited") {
-    detail = `Not agent-eligible. ${changed == null ? "No proposal baseline." : `${changed} item${changed === 1 ? "" : "s"} changed from the proposal.`} Last change: ${esc(review.changedBy || "human edit")}.`;
+    detail = `Export is available; agent use needs approval. ${changed == null ? "No proposal baseline." : `${changed} item${changed === 1 ? "" : "s"} changed from the proposal.`} Last change: ${esc(review.changedBy || "human edit")}.`;
   } else {
-    detail = "Not agent-eligible. No human changes yet; inspect the proposal and its color origins, then seal or edit.";
+    detail = "You can edit, preview, and export now. Agent use requires your approval after checking the colors and their origins.";
   }
   box.innerHTML = `<div class="review-copy">
-      <div class="review-top"><span class="review-mark ${status}">${status === "sealed" ? "human-sealed" : status}</span>
+      <div class="review-top"><span class="review-mark ${status}">${status === "sealed" ? "approved" : status === "proposed" ? "draft" : status}</span>
         <span class="review-title">${title}</span></div>
       <div class="review-detail">${detail}</div>
     </div>
     <div class="review-actions">
       <button type="button" id="reviewChanges" class="ghost" aria-controls="reviewDiff"
-        aria-expanded="${state.reviewDiffOpen}">${changed == null ? "Decision record" : changed ? `Review ${changed} change${changed === 1 ? "" : "s"}` : "Review proposal"}</button>
+        aria-expanded="${state.reviewDiffOpen}">${changed == null ? "Decision record" : changed ? `View ${changed} change${changed === 1 ? "" : "s"}` : "View original"}</button>
       ${history.length ? `<button type="button" id="reviewHistoryToggle" class="ghost" aria-controls="reviewHistory"
         aria-expanded="${state.reviewHistoryOpen}">History ${history.length}</button>` : ""}
       <button type="button" id="sealPlate" class="${sealed ? "ghost" : "primary"}" ${sealed ? "disabled" : ""}
-        title="${sealed ? "Any plate edit automatically invalidates this seal" : assessment.attentionCount ? "Record human approval after judging the advisory review checks" : "Record explicit human approval for agent use"}">
-        ${sealed ? "Sealed" : assessment.attentionCount ? `Seal with ${assessment.attentionCount} note${assessment.attentionCount === 1 ? "" : "s"}` : "Seal for agents"}</button>
+        title="${sealed ? "Any palette edit automatically invalidates this review seal" : assessment.attentionCount ? `Approve for agent use after judging ${assessment.attentionCount} advisory note${assessment.attentionCount === 1 ? "" : "s"}` : "Record explicit human approval for agent use"}">
+        ${sealed ? "Approved for agent use" : "Approve for agent use"}</button>
     </div>`;
-  $("reviewSummary").textContent = `${status === "sealed" ? "Human-sealed" : status === "edited" ? "Edited · not sealed" : "Proposed · not sealed"} · ${assessment.attentionCount ? assessment.attentionCount + " checks need attention" : "checks clear"} · review`;
+  $("reviewSummary").textContent = `Checks & human approval · ${sealed ? "approved" : "not approved"} · ${assessment.attentionCount ? assessment.attentionCount + " checks need attention" : "checks clear"}`;
   $("reviewChanges").onclick = () => {
     state.reviewDiffOpen = !state.reviewDiffOpen;
     renderReview();
@@ -3109,11 +3115,11 @@ function originNarrative(t) {
     if (o.capped) facts.push(`Chroma was capped at ${o.chromaCap} so a structural role would not turn neon.`);
   } else if (kind === "signal") {
     lead = o.method && String(o.method).startsWith("leftover")
-      ? "Observed color left in the still after the eight reserved roles were assigned."
+      ? "Color extracted from the image in addition to the eight roles."
       : "Observed high-chroma signal selected from the still's hue distribution.";
     if (Number.isFinite(+o.area)) facts.push(`Visible in ${(100 * +o.area).toFixed(+o.area < .001 ? 3 : 2)}% of sampled pixels.`);
     if (Number.isFinite(+o.hueBin)) facts.push(`Hue bin ${o.hueBin}${Number.isFinite(+o.band) ? `, lightness band ${o.band}` : ""}.`);
-    if (Array.isArray(o.stills) && o.stills.length) facts.push(`Contributed by source still${o.stills.length > 1 ? "s" : ""} ${o.stills.map(i => `#${+i + 1}`).join(", ")}.`);
+    if (Array.isArray(o.stills) && o.stills.length) facts.push(`Contributed by source image${o.stills.length > 1 ? "s" : ""} ${o.stills.map(i => `#${+i + 1}`).join(", ")}.`);
   } else if (kind === "picked") {
     lead = "Picked by a person from the source image. Exact picks are locked and never auto-repaired.";
     if (o.still && o.still.file) facts.push(`Source: ${o.still.file}.`);
@@ -3121,7 +3127,7 @@ function originNarrative(t) {
       facts.push(`Natural-image point: ${o.natural.x}, ${o.natural.y}${Array.isArray(o.natural.of) ? ` of ${o.natural.of.join("×")}` : ""}.`);
     if (o.sample) facts.push(`Sample: ${o.sample}.`);
   } else if (kind === "derived") {
-    lead = `Derived because ${o.reason || "the still did not supply a distinct observed color for this role"}.`;
+    lead = `Derived because ${o.reason || "the image did not supply a distinct color for this role"}.`;
     if (Number.isFinite(+o.idealH)) facts.push(`Role target hue: ${Math.round(+o.idealH)}°.`);
   } else if (kind === "fallback") {
     lead = `Fallback color used because ${o.reason || "no readable candidate was available"}.`;
@@ -3168,7 +3174,7 @@ function renderWhy() {
       ? '<button type="button" class="tiny" id="useSourcePaint">Use source colour</button>' : '') + '</div>' : '';
   box.hidden = false;
   box.innerHTML = `<div class="why-head"><div><span class="why-kind">${esc(why.kind)}</span><br>
-      <strong>Why ${esc(t.id || t.name)} is ${esc(t.hex)}</strong></div>
+      <strong>Why ${esc(t.id ? roleLabel(t.id) : t.name)} is ${esc(t.hex)}</strong></div>
       <button type="button" class="tiny" id="closeWhy" aria-label="Close color origin">close</button></div>
     <div>${esc(why.lead)}</div>${comparison}${raw ? `<p>Source paint can fail contrast checks. Using it locks the role and changes the human review state.</p>` : ""}${why.facts.length ? `<ul>${why.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
   $("closeWhy").onclick = () => {
@@ -3197,28 +3203,28 @@ function render() {
     // is judged on lightness separation, never on contrast ratio
     let badge;
     if (t.id === "ground") {
-      badge = `<span class="cr">ground</span>`;
+      badge = `<span class="cr" title="Background role · export key: ground">base</span>`;
     } else if (t.id === "panel") {
       const dL = Math.abs(rgbToLch(t).L - rgbToLch(ground).L);
-      badge = `<span class="cr ${dL >= 0.03 ? "ok" : "lo"}" title="lightness step from ground — a surface should be a step, not a jump">&Delta;L ${dL.toFixed(2)}</span>`;
+      badge = `<span class="cr ${dL >= 0.03 ? "ok" : "lo"}" title="Lightness difference from the background">&Delta;L ${dL.toFixed(2)}</span>`;
     } else {
       const cr = contrast(t, ground), target = t.id === "ink" ? 4.5 : 3.0;
-      badge = `<span class="cr ${cr >= target ? "ok" : "lo"}" title="contrast on ground · target ${target}:1">${cr.toFixed(1)}:1</span>`;
+      badge = `<span class="cr ${cr >= target ? "ok" : "lo"}" title="Contrast on background · target ${target}:1">${cr.toFixed(1)}:1</span>`;
     }
     return `<div class="cell${t.locked ? " locked" : ""}${t.derived ? " derived" : ""}">
-      <button type="button" class="sw" style="background:${safeHex(t.hex)}" data-copy="${i}" aria-label="Copy ${esc(t.id)} color ${esc(t.hex)}"></button>
+      <button type="button" class="sw" style="background:${safeHex(t.hex)}" data-copy="${i}" aria-label="Copy ${esc(roleLabel(t.id))} color ${esc(t.hex)}"></button>
       <div class="cellbar">
         <button type="button" class="tiny" data-why="${esc(t.id)}" aria-controls="whyPanel" aria-expanded="${state.whyRole === "core:" + t.id}"
-          title="Explain where this color came from">why</button>
-        <button type="button" class="tiny" data-pick="${esc(t.id)}" title="Arm this slot, then click the still">pick</button>
+          aria-label="Why this ${esc(roleLabel(t.id))} color?" title="Explain where this color came from">Why</button>
+        <button type="button" class="tiny" data-pick="${esc(t.id)}" aria-label="Pick ${esc(roleLabel(t.id))} from the image" title="Select a color, then click the image">Pick</button>
         <button type="button" class="tiny${t.locked ? " on" : ""}" data-lock="${i}" aria-pressed="${t.locked}"
-          title="Hold through a re-forge">${t.locked ? "locked" : "lock"}</button>
+          aria-label="Lock ${esc(roleLabel(t.id))} color" title="Keep this color when generating again">${t.locked ? "Locked" : "Lock"}</button>
       </div>
       <div class="info">
-        <span class="role-label">${esc(t.id)}</span>
-        <input class="name" data-name="${i}" value="${esc(t.name)}" aria-label="${esc(t.id)} token name" />
+        <span class="role-label" title="Export key: ${esc(t.id)}">${esc(roleLabel(t.id))}</span>
+        <input class="name" data-name="${i}" value="${esc(t.name)}" aria-label="${esc(roleLabel(t.id))} (${esc(t.id)}) color name" />
         <div class="hexline"><button type="button" class="hex" data-copy="${i}" aria-label="Copy ${esc(t.hex)}">${safeHex(t.hex)}</button>${badge}</div>
-        <input class="job" data-job="${i}" value="${esc(t.job)}" aria-label="${esc(t.id)} token purpose" />
+        <input class="job" data-job="${i}" value="${esc(t.job)}" aria-label="${esc(roleLabel(t.id))} (${esc(t.id)}) saved purpose" title="Editable purpose saved with this color; export key: ${esc(t.id)}" />
       </div>
     </div>`;
   }).join("");
@@ -3255,15 +3261,15 @@ function render() {
   // found inks
   $("found").innerHTML = state.found.length
     ? state.found.map((t, i) =>
-        `<span class="ink-pill" role="group" aria-label="${esc(t.name)} found ink">
+        `<span class="ink-pill" role="group" aria-label="${esc(t.name)} extracted color">
            <button type="button" class="ink-copy" data-f="${i}" aria-label="Copy ${esc(t.hex)} ${esc(t.name)}">
              <i style="background:${safeHex(t.hex)}" aria-hidden="true"></i>${safeHex(t.hex)} <em>${esc(t.name)}</em>${t.locked ? " ●" : ""}
            </button>
            <button type="button" class="tiny" data-f-why="${i}" aria-controls="whyPanel" aria-expanded="${state.whyRole === "found:" + t.uid}"
-             aria-label="Explain where ${esc(t.hex)} ${esc(t.name)} came from">why</button>
+             aria-label="Explain where ${esc(t.hex)} ${esc(t.name)} came from">Why</button>
            <button type="button" class="tiny ink-remove" data-f-remove="${i}" aria-label="Remove ${esc(t.hex)} ${esc(t.name)}">✕</button>
          </span>`).join("")
-    : `<span class="empty-note">None above the signal floor. Drag it lower, or click the still to pin one by hand.</span>`;
+    : `<span class="empty-note">No extra colors at this intensity. Lower Color intensity, or click the image to add a color.</span>`;
   $("found").querySelectorAll("[data-f]").forEach(el =>
     el.onclick = () => copy(state.found[+el.dataset.f].hex));
   $("found").querySelectorAll("[data-f-why]").forEach(el => el.onclick = () => {
@@ -3282,7 +3288,7 @@ function render() {
         state.found.splice(Math.min(index, state.found.length), 0, removed);
         state.review = priorReview;
         render();
-      }, "Found ink restored");
+      }, "Extracted color restored");
     };
   });
   renderWhy();
@@ -3308,7 +3314,7 @@ function render() {
   renderShelf();
 
   $("law").textContent = `${name}. ${state.core.map(t => t.name).join(" · ")}.` +
-    (state.found.length ? " Found inks sit outside the law on purpose." : "");
+    (state.found.length ? " Extracted colors are additional colors, separate from the eight roles." : "");
 
   // an eyedropped slot is no longer derived, so drop the note that says it is
   if (!state.core.some(t => t.derived)) state.notes = state.notes.filter(n => !/derived/.test(n));
@@ -3321,14 +3327,15 @@ function render() {
     .map(t => `${t.name} ${contrast(t, P.ground).toFixed(1)}:1`);
   $("diag").innerHTML =
     `<b>engine</b> ${state.backend === "go" ? "local Go" : "standalone JavaScript"}<br>` +
-    `<b>ink on ground</b> ${crInk.toFixed(2)}:1 ${crInk >= 4.5 ? "AA" : "below AA"}<br>` +
-    `<b>ink on panel</b> ${crInkPanel.toFixed(2)}:1 ${crInkPanel >= 4.5 ? "AA" : "below AA"}<br>` +
+    `<b>text on background</b> ${crInk.toFixed(2)}:1 ${crInk >= 4.5 ? "AA" : "below AA"}<br>` +
+    `<b>text on surface</b> ${crInkPanel.toFixed(2)}:1 ${crInkPanel >= 4.5 ? "AA" : "below AA"}<br>` +
     (weak.length ? `<b>below target</b> ${esc(weak.join(", "))} — pinned by hand, left alone<br>` : "") +
     (() => {
       const algos = [...new Set(currentPlateSources().map(source =>
         source && source.hash && source.hash.algo).filter(Boolean))];
       return algos.length ? `<b>source hash</b> ${esc(algos.join(", "))}<br>` : "";
     })() +
+    (state.notes.length ? "<b>Technical extraction notes</b><br>" : "") +
     state.notes.map(n => "· " + esc(n)).join("<br>");
 
   writeExport();
@@ -3407,19 +3414,19 @@ const onC = c => contrast(c, { r:11,g:10,b:8 }) >= contrast(c, { r:255,g:255,b:2
 
 function surfaceForms(plate, P) {
   return `<div class="sf">
-    <div class="sf-head"><span>Deploy request</span><span class="sf-meta">draft · unsaved</span></div>
+    <div class="sf-head"><span>Project details</span><span class="sf-meta">sample form</span></div>
     <div class="sf-body">
-      <div class="fld"><label>Environment</label><div class="inp">production</div></div>
-      <div class="fld"><label>Release tag</label>
-        <div class="inp focus">v2.4.1<i class="caret"></i></div>
-        <div class="help">Focus ring is <b>observed</b>.</div></div>
-      <div class="fld"><label>Rollback window <i class="req">required</i></label>
-        <div class="inp bad">0 minutes</div>
-        <div class="help err">Must be at least 5 minutes.</div></div>
-      <div class="fld"><label>Notes</label><div class="inp ta">Ship the plate extractor.</div></div>
+      <div class="fld"><label>Project type</label><div class="inp">Website</div></div>
+      <div class="fld"><label>Project name</label>
+        <div class="inp focus">Lakeside<i class="caret"></i></div>
+        <div class="help">Focus ring uses <b>Information (observed)</b>.</div></div>
+      <div class="fld"><label>Image width <i class="req">required</i></label>
+        <div class="inp bad">0 pixels</div>
+        <div class="help err">Enter a width greater than 0.</div></div>
+      <div class="fld"><label>Notes</label><div class="inp ta">Use the palette across headings, buttons and cards.</div></div>
       <div class="fld"><label>Owner</label><div class="inp muted">unassigned</div></div>
-      <div class="chkrow"><i class="chk on"></i><span>Notify the on-call channel</span></div>
-      <div class="chkrow"><i class="chk"></i><span class="dimtxt">Skip smoke tests</span></div>
+      <div class="chkrow"><i class="chk on"></i><span>Include image captions</span></div>
+      <div class="chkrow"><i class="chk"></i><span class="dimtxt">Show image credits</span></div>
     </div>
     <div class="sf-foot">
       <button class="pbtn pri">Save draft</button>
@@ -3431,26 +3438,26 @@ function surfaceForms(plate, P) {
 
 function surfaceTable(plate, P) {
   const rows = [
-    ["#4821", "Night bay",   "2.4s",  "ok",   "sealed"],
+    ["#4821", "Night bay",   "2.4s",  "ok",   "approved"],
     ["#4820", "Day facade",  "3.1s",  "ok",   ""],
     ["#4819", "Dock lights", "0.9s",  "warn", ""],
     ["#4818", "Night bay",   "12.7s", "bad",  ""],
-    ["#4817", "Alley wide",  "1.8s",  "ok",   "sealed"]
+    ["#4817", "Alley wide",  "1.8s",  "ok",   "approved"]
   ];
   const pill = s => s === "ok" ? `<i class="pill ok">passed</i>`
                   : s === "warn" ? `<i class="pill warn">slow</i>`
                   : `<i class="pill bad">failed</i>`;
   return `<div class="st">
-    <div class="st-head"><span>Extraction runs</span><span class="sf-meta">last 24h</span></div>
+    <div class="st-head"><span>Palette activity</span><span class="sf-meta">sample table</span></div>
     <div class="st-scroll"><table>
-      <thead><tr><th>Run</th><th>Plate</th><th class="num">Duration</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>ID</th><th>Palette</th><th class="num">Duration</th><th>Status</th><th>Approval</th></tr></thead>
       <tbody>${rows.map(r => `<tr>
         <td class="mono">${r[0]}</td><td>${r[1]}</td><td class="num mono">${r[2]}</td>
         <td>${pill(r[3])}</td>
         <td class="right">${r[4] ? `<i class="seal">${r[4]}</i>` : `<span class="dimtxt">—</span>`}</td>
       </tr>`).join("")}</tbody>
     </table></div>
-    <div class="st-foot"><span class="dimtxt">5 of 128 runs</span><span class="lnk">View all</span></div>
+    <div class="st-foot"><span class="dimtxt">5 of 128 entries</span><span class="lnk">View all</span></div>
   </div>`;
 }
 
@@ -3464,33 +3471,33 @@ function surfaceApproval(plate, P) {
   return `<div class="sa">
     <div class="sa-card">
       <div class="sa-top">
-        <div><div class="sa-kicker">${sealed ? "Human decision recorded" : "Human decision required"}</div>
-             <div class="sa-title">${sealed ? "Human-sealed" : "Review"} &ldquo;${esc(plate.name)}&rdquo;</div></div>
+        <div><div class="sa-kicker">${sealed ? "Human approval recorded" : "Approval required for agent use"}</div>
+             <div class="sa-title">${sealed ? "Approved" : "Not approved"} &ldquo;${esc(plate.name)}&rdquo;</div></div>
         <i class="sa-mark">gold</i>
       </div>
       <div class="sa-body">
-        <div class="sa-row"><span>Status</span><b>${sealed ? "human-sealed" : esc(review.status)}</b></div>
-        <div class="sa-row"><span>Agent use</span><b>${sealed ? "eligible" : "blocked until human seal"}</b></div>
-        <div class="sa-row"><span>Seal scope</span><b>${sealed ? esc(reviewScopeLabel(review.scope)) : "not issued"}</b></div>
-        <div class="sa-row"><span>Proposal delta</span><b>${esc(delta)}</b></div>
-        <div class="sa-row"><span>Prior seals</span><b>${review.history.length ? review.history.length + " recorded" : "none"}</b></div>
-        <div class="sa-row${review.assessment.attentionCount ? " warnrow" : ""}"><span>Review focus</span><b>${
+        <div class="sa-row"><span>Status</span><b>${sealed ? "human-approved" : esc(review.status)}</b></div>
+        <div class="sa-row"><span>Agent use</span><b>${sealed ? "approved" : "requires human approval"}</b></div>
+        <div class="sa-row"><span>Approval covers</span><b>${sealed ? esc(reviewScopeLabel(review.scope)) : "not issued"}</b></div>
+        <div class="sa-row"><span>Changes from original</span><b>${esc(delta)}</b></div>
+        <div class="sa-row"><span>Prior approvals</span><b>${review.history.length ? review.history.length + " recorded" : "none"}</b></div>
+        <div class="sa-row${review.assessment.attentionCount ? " warnrow" : ""}"><span>Quality checks</span><b>${
           review.assessment.attentionCount
             ? review.assessment.attentionCount + " advisory note" + (review.assessment.attentionCount === 1 ? "" : "s")
             : "all checks clear"}</b></div>
         <div class="sa-row"><span>Fingerprint</span><b class="mono">${esc(fingerprint)}</b></div>
-        <div class="sa-row${sealed ? "" : " warnrow"}"><span>Decision</span><b>${sealed ? esc(review.sealedAt || "time not recorded") : "Use the review control above"}</b></div>
+        <div class="sa-row${sealed ? "" : " warnrow"}"><span>Decision</span><b>${sealed ? esc(review.sealedAt || "time not recorded") : "Use the approval control above"}</b></div>
       </div>
       <div class="sa-foot">
-        <button class="pbtn ${sealed ? "au" : "gst"}" disabled>${sealed ? "Human-sealed" : "Awaiting human seal"}</button>
+        <button class="pbtn ${sealed ? "au" : "gst"}" disabled>${sealed ? "Human-approved" : "Awaiting approval"}</button>
       </div>
-      <div class="sa-note">Gold marks acts only a person can take. This preview mirrors the real review control; it cannot approve itself.</div>
+      <div class="sa-note">The gold role marks human actions. Approval records a review seal for agent use; editing the palette invalidates it. This preview reflects your decision and cannot approve itself.</div>
     </div>
   </div>`;
 }
 
 const SURFACES = [
-  { id:"harness",  label:"Agent harness", fn:null },
+  { id:"harness",  label:"UI preview",    fn:null },
   { id:"forms",    label:"Forms",         fn:surfaceForms },
   { id:"table",    label:"Table",         fn:surfaceTable },
   { id:"approval", label:"Approval",      fn:surfaceApproval }
@@ -3509,8 +3516,8 @@ function harnessHTML(plate, opts) {
     ? `${review.assessment.attentionCount} advisory review note${review.assessment.attentionCount === 1 ? "" : "s"}`
     : "all review checks clear";
   const historyTrace = review.history.length
-    ? `${review.history.length} prior human seal${review.history.length === 1 ? "" : "s"} recorded`
-    : "no prior human seals";
+    ? `${review.history.length} prior approval${review.history.length === 1 ? "" : "s"} recorded`
+    : "no prior approvals";
   const P = {};
   ["ground","panel","ink","muted","observed","attention","rupture","gold"]
     .forEach(k => P[k] = plateToken(plate, k));
@@ -3524,37 +3531,37 @@ function harnessHTML(plate, opts) {
   }
 
   const trace =
-    `<span class="dim">→ tool.extract_plate</span>\n` +
-    `<span class="dim">   stills ${esc(plate.stills || 0)} · core 8 · found ${plate.found.length}</span>\n` +
-    `<span class="ok">← ground ${safeHex(P.ground.hex)}</span>  <span class="dim">panel ${safeHex(P.panel.hex)}</span>\n` +
-    `<span class="ok">← observed ${esc(P.observed.name)} ${safeHex(P.observed.hex)}</span>\n` +
-    `<span class="warn">← attention ${esc(P.attention.name)} ${safeHex(P.attention.hex)}</span>\n` +
-    `<span class="bad">← rupture ${esc(P.rupture.name)} ${safeHex(P.rupture.hex)}</span>\n` +
-    `<span class="au">← gold ${esc(P.gold.name)} ${safeHex(P.gold.hex)}</span>` +
-    (plate.found.length ? `\n<span class="dim">← found ${plate.found.map(t => safeHex(t.hex)).join(" ")}</span>` : "") +
-    `\n<span class="dim">review · ${review.agentEligible ? "human-sealed · agent-eligible" : `${review.status} · agent blocked`}</span>` +
+    `<span class="dim">Palette summary</span>\n` +
+    `<span class="dim">images ${esc(plate.stills || 0)} · roles 8 · extracted ${plate.found.length}</span>\n` +
+    `<span class="ok">Background ${safeHex(P.ground.hex)}</span>  <span class="dim">Surface ${safeHex(P.panel.hex)}</span>\n` +
+    `<span class="ok">Information ${esc(P.observed.name)} ${safeHex(P.observed.hex)}</span>\n` +
+    `<span class="warn">Attention ${esc(P.attention.name)} ${safeHex(P.attention.hex)}</span>\n` +
+    `<span class="bad">Error ${esc(P.rupture.name)} ${safeHex(P.rupture.hex)}</span>\n` +
+    `<span class="au">Human action ${esc(P.gold.name)} ${safeHex(P.gold.hex)}</span>` +
+    (plate.found.length ? `\n<span class="dim">Extracted ${plate.found.map(t => safeHex(t.hex)).join(" ")}</span>` : "") +
+    `\n<span class="dim">approval · ${review.agentEligible ? "human-approved for agent use" : `${review.status} · not approved for agent use`}</span>` +
     `\n<span class="dim">decision · ${esc(decisionTrace)}</span>` +
-    `\n<span class="dim">focus · ${esc(focusTrace)}</span>` +
-    `\n<span class="dim">scope · ${review.agentEligible ? esc(reviewScopeLabel(review.scope)) : "not sealed"}</span>` +
+    `\n<span class="dim">checks · ${esc(focusTrace)}</span>` +
+    `\n<span class="dim">approval covers · ${review.agentEligible ? esc(reviewScopeLabel(review.scope)) : "not approved"}</span>` +
     `\n<span class="dim">history · ${esc(historyTrace)}</span>`;
   return `<div class="harness themed" style="${vars}">
     <div class="h-side">
-      <div class="h-brand">Agent harness<strong>${esc(plate.name)}</strong></div>
-      <div class="agent"><span class="dot live"></span><span>forge<span class="role">color compiler</span></span><span class="role">live</span></div>
-      <div class="agent"><span class="dot wait"></span><span>scout<span class="role">still watch</span></span><span class="role">idle</span></div>
-      <div class="agent"><span class="dot"></span><span>scribe<span class="role">theme export</span></span><span class="role">hold</span></div>
-      <div class="agent"><span class="dot err"></span><span>warden<span class="role">rupture watch</span></span><span class="role">arm</span></div>
+      <div class="h-brand">UI preview<strong>${esc(plate.name)}</strong></div>
+      <div class="agent"><span class="dot live"></span><span>Project<span class="role">current work</span></span><span class="role">active</span></div>
+      <div class="agent"><span class="dot wait"></span><span>Images<span class="role">references</span></span><span class="role">ready</span></div>
+      <div class="agent"><span class="dot"></span><span>Export<span class="role">project files</span></span><span class="role">draft</span></div>
+      <div class="agent"><span class="dot err"></span><span>Alerts<span class="role">error state</span></span><span class="role">demo</span></div>
     </div>
     <div class="h-main">
-      <div class="h-top"><span>${esc(o.run || "run #4821 · plate extract")}</span><span class="h-pill">${plate.lightScene ? "light" : "dark"}</span></div>
+      <div class="h-top"><span>${esc(o.run || "Sample interface · your palette")}</span><span class="h-pill">${plate.lightScene ? "light" : "dark"}</span></div>
       <div class="trace">${trace}</div>
         <div class="h-foot">
         <div style="display:flex;gap:6px">
-          <button class="pbtn ${review.agentEligible ? "au" : "pri"}" disabled>${review.agentEligible ? "Human-sealed" : "Awaiting human seal"}</button>
-          <button class="pbtn acc">Export pack</button>
-          <button class="pbtn gst">Trace</button>
+          <button class="pbtn ${review.agentEligible ? "au" : "pri"}" disabled>${review.agentEligible ? "Human-approved" : "Awaiting approval"}</button>
+          <button class="pbtn acc">Download</button>
+          <button class="pbtn gst">Details</button>
         </div>
-        <div class="bar" title="token budget"><span></span></div>
+        <div class="bar" title="Example progress bar"><span></span></div>
       </div>
     </div>
   </div>`;
@@ -3603,7 +3610,7 @@ function coerceColour(o) {
 function parsePlateJSON(text) {
   if (text.length > SHELF_MAX_BYTES) throw new Error("palette file exceeds 8 MiB");
   let j = JSON.parse(text);
-  if (!j || typeof j !== "object") throw new Error("not a plate object");
+  if (!j || typeof j !== "object") throw new Error("not a palette object");
   // a theme file has sides, not a core — take the dark side rather than fail
   if (!Array.isArray(j.core) && j.kind === "color-theme") {
     const side = (j.dark && j.dark.tokens) || (j.light && j.light.tokens) || (j.alt && j.alt.tokens);
@@ -3718,7 +3725,7 @@ async function importPlateFiles(files) {
     toast(`Loaded ${plate.name}`);
   } catch (err) {
     console.error(err);
-    toast("Not a readable plate: " + (err && err.message ? err.message : err), true);
+    toast("Could not read this palette: " + (err && err.message ? err.message : err), true);
   }
   return true;
 }
@@ -3944,7 +3951,7 @@ function persistShelf() {
   catch {
     if (!state.storageWarned) {
       state.storageWarned = true;
-      toast("Browser storage blocked — use Export shelf to keep these", true);
+      toast("Browser storage blocked — use Export collection to keep these palettes", true);
     }
     return false;
   }
@@ -4006,7 +4013,7 @@ function mergeShelfRevision(previous, next) {
   };
 }
 function savePlate() {
-  if (!state.core.length) { toast("Forge or import a plate first", true); return; }
+  if (!state.core.length) { toast("Generate or import a palette first", true); return; }
   const snap = snapshot();
   const activeIndex = state.shelf.findIndex(p => p.id === state.activeShelfId);
   if (activeIndex >= 0) {
@@ -4014,7 +4021,7 @@ function savePlate() {
     const priorTheme = clonePlain(state.theme);
     const revised = mergeShelfRevision(prior, snap);
     if (shelfRevisionValue(prior) === shelfRevisionValue(revised)) {
-      toast("No shelf changes to save");
+      toast("No palette changes to save");
       return;
     }
     const themeUsesRevision = !!(state.theme &&
@@ -4032,12 +4039,12 @@ function savePlate() {
       state.theme = priorTheme;
       persistShelf();
       renderShelf();
-    }, "Shelf revision restored");
+    }, "Saved palette revision restored");
     return;
   }
   const dupe = state.shelf.findIndex(p => p.name === snap.name &&
     p.core.map(t => t.hex).join() === snap.core.map(t => t.hex).join());
-  if (dupe >= 0) { toast("Already on the shelf"); return; }
+  if (dupe >= 0) { toast("Already saved"); return; }
   snap.id = reserveShelfId(null,
     new Set(state.shelf.map(p => String(p && p.id || "").trim()).filter(Boolean)));
   state.shelf.unshift(snap);
@@ -4045,7 +4052,7 @@ function savePlate() {
   state.activeShelfId = snap.id;
   persistShelf();
   renderShelf();
-  toast(`Saved "${snap.name}" · ${state.shelf.length} on the shelf`);
+  toast(`Saved "${snap.name}" · ${state.shelf.length} saved palettes`);
 }
 
 function renderShelf() {
@@ -4054,12 +4061,12 @@ function renderShelf() {
   if (!active) state.activeShelfId = null;
   $("saveBtn").textContent = active ? "Update" : "Save";
   $("saveBtn").title = active
-    ? "Update this loaded shelf plate in place"
-    : "Save this plate to the shelf";
+    ? "Update this saved palette"
+    : "Save this palette in this browser";
   $("shelfN").textContent = state.shelf.length ? `${state.shelf.length}` : "";
   head.hidden = false; box.hidden = false;
   if (!state.shelf.length) {
-    box.innerHTML = `<div class="empty-note">Nothing saved yet. <b>Save</b> keeps the current plate here so you can come back to it or compare it against another.<p><button type="button" class="tiny" id="shelfImport">Import shelf</button> restores an exported shelf.</p></div>`;
+    box.innerHTML = `<div class="empty-note">Nothing saved yet. <b>Save</b> keeps your palette in this browser so you can reopen or compare it later.<p><button type="button" class="tiny" id="shelfImport">Import collection</button> restores saved palettes from a collection file.</p></div>`;
     $("shelfImport").onclick = () => { state.shelfImport = true; $("plateFile").click(); };
     renderCompare();
     return;
@@ -4068,21 +4075,21 @@ function renderShelf() {
     <div class="card${state.abA === p.id ? " inA" : ""}${state.abB === p.id ? " inB" : ""}">
       <div class="csw">${p.core.map(t => `<i style="background:${safeHex(t.hex)}"></i>`).join("")}</div>
       <div class="cname" title="${esc(p.name)}">${esc(p.name)}</div>
-      <div class="cmeta">${p.lightScene ? "light" : "dark"} · ${p.found.length} found · ${plateReview(p).agentEligible ? "human-sealed" : "unsealed"}${state.activeShelfId === p.id ? " · current" : ""}</div>
+      <div class="cmeta">${p.lightScene ? "light" : "dark"} · ${p.found.length} extracted · ${plateReview(p).agentEligible ? "approved for agents" : "not approved for agents"}${state.activeShelfId === p.id ? " · current" : ""}</div>
       <div class="cbtns">
-        <button type="button" class="tiny" data-use="${i}" title="${state.activeShelfId === p.id ? "This shelf plate is loaded" : "Load into the editor"}" ${state.activeShelfId === p.id ? "disabled" : ""}>${state.activeShelfId === p.id ? "current" : "use"}</button>
+        <button type="button" class="tiny" data-use="${i}" title="${state.activeShelfId === p.id ? "This saved palette is open" : "Load into the editor"}" ${state.activeShelfId === p.id ? "disabled" : ""}>${state.activeShelfId === p.id ? "Current" : "Open"}</button>
         <button type="button" class="tiny${state.abA === p.id ? " on" : ""}" data-a="${i}"
           aria-pressed="${state.abA === p.id}" title="Compare as A">A</button>
         <button type="button" class="tiny${state.abB === p.id ? " on" : ""}" data-b="${i}"
           aria-pressed="${state.abB === p.id}" title="Compare as B">B</button>
-        <button type="button" class="tiny" data-del="${i}" aria-label="Remove ${esc(p.name)} from shelf">✕</button>
+        <button type="button" class="tiny" data-del="${i}" aria-label="Remove ${esc(p.name)} from saved palettes">✕</button>
       </div>
     </div>`).join("") +
     `<div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:5px">
-       <button class="tiny" id="shelfExport">Export shelf</button>
-       <button class="tiny" id="shelfImport">Import shelf</button>
-       <button class="tiny" id="vaultExport" title="Every plate as a vault tree, with a real index.json">Export vault</button>
-       <button class="tiny" id="vaultIndex" title="Point at a vault folder — rebuilds index.json from the palette.json in each subfolder">Rebuild index</button>
+       <button class="tiny" id="shelfExport">Export collection</button>
+       <button class="tiny" id="shelfImport">Import collection</button>
+       <button class="tiny" id="vaultExport" title="Download saved palettes as folders with source images, exports, and index.json">Export vault ZIP</button>
+       <button class="tiny" id="vaultIndex" title="Choose a vault folder to rebuild index.json from each palette.json file">Rebuild index</button>
      </div>`;
 
   box.querySelectorAll("[data-use]").forEach(b => b.onclick = () => {
@@ -4111,7 +4118,7 @@ function renderShelf() {
       state.activeShelfId = priorActive;
       persistShelf();
       renderShelf();
-    }, "Shelf plate restored");
+    }, "Saved palette restored");
   });
   const ex = $("shelfExport"), im = $("shelfImport");
   if (ex) ex.onclick = exportShelf;
@@ -4122,7 +4129,7 @@ function renderShelf() {
 }
 
 function exportShelf() {
-  if (!state.shelf.length) { toast("Shelf is empty", true); return; }
+  if (!state.shelf.length) { toast("No saved palettes", true); return; }
   download(JSON.stringify({ kind: "scene-palette-shelf", version: 1, plates: state.shelf }, null, 2),
            "scene-palette-shelf.json");
 }
@@ -4133,7 +4140,7 @@ const shelfById = id => state.shelf.find(p => p.id === id) || null;
 function renderCompare() {
   const box = $("compare");
   const A = shelfById(state.abA), B = shelfById(state.abB);
-  const slot = (side) => `<div class="abslot">Pick <b>${side}</b> on a shelf card to compare.</div>`;
+  const slot = (side) => `<div class="abslot">Select <b>${side}</b> on a saved palette to compare.</div>`;
   const col = (p, side) => `<div class="abcol">
       <div class="abhead"><span>${side}</span><b>${p ? esc(p.name) : "—"}</b></div>
       ${p ? harnessHTML(p, { run: `run · ${side.toLowerCase()} · ${p.lightScene ? "light" : "dark"}` }) : slot(side)}
@@ -4147,7 +4154,7 @@ function renderCompare() {
         : `<i style="background:${safeHex(a.hex)}"></i>${safeHex(a.hex)} → <i style="background:${safeHex(b.hex)}"></i>${safeHex(b.hex)}` +
           `  <span style="color:var(--muted)">${r.id}</span>  ΔE ${deltaE(a, b).toFixed(3)}`;
     }).filter(Boolean);
-    diff = `<div class="abdiff"><b>${rows.length ? `${rows.length} of 8 roles differ` : "identical plates"}</b>` +
+    diff = `<div class="abdiff"><b>${rows.length ? `${rows.length} of 8 roles differ` : "identical palettes"}</b>` +
            (rows.length ? rows.join("<br>") : "Both sides carry the same eight colours.") + `</div>`;
   }
   box.innerHTML = `<div class="ab">${col(A, "A")}${col(B, "B")}</div>${diff}`;
@@ -4176,7 +4183,7 @@ function makeTheme(p1, p2) {
 /** Build the opposite polarity of the current plate from the cached histogram,
  *  without disturbing what is on screen. */
 async function deriveCounterpart() {
-  if (!state.hist) { toast("Forge a still first", true); return null; }
+  if (!state.hist) { toast("Generate a palette from an image first", true); return null; }
   if (state.goHistogram) {
     const base = snapshot();
     try {
@@ -4303,11 +4310,11 @@ function renderTheme() {
 
   if (!state.theme) {
     box.innerHTML = `<div class="abslot" style="text-align:left">
-      A theme is two plates that ship in one file — forge the night bay and the day facade separately,
-      save both, then pair them. Merging them into one plate would only average the two.
+      Pair two saved palettes in one theme file. Generate and save a light palette and a dark palette separately,
+      then select A and B below Saved palettes.
       <div class="tabs" style="margin-top:11px">
-        <button id="pairBtn"${canPair ? "" : " disabled"}>${canPair ? `Pair A + B` : `Pick A and B on the shelf`}</button>
-        <button id="deriveBtn"${canDerive ? "" : " disabled"}>Derive counterpart of this plate</button>
+        <button id="pairBtn"${canPair ? "" : " disabled"}>${canPair ? `Pair A + B` : `Select saved palettes A and B`}</button>
+        <button id="deriveBtn"${canDerive ? "" : " disabled"}>Generate light/dark counterpart</button>
       </div></div>`;
   } else {
     const t = state.theme, rep = themeReport(t);
@@ -4325,7 +4332,7 @@ function renderTheme() {
           { css:"CSS theme", godot:"Godot theme", json:"JSON theme", gpl:"GPL", hex:"HEX" }[f]}</button>`).join("")}
       <button id="unpairBtn" class="ghost" style="margin-left:auto">Unpair</button>
     </div>
-    <textarea id="themeOut" readonly spellcheck="false"></textarea>
+    <textarea id="themeOut" readonly spellcheck="false" aria-label="Exported theme text"></textarea>
     <div class="tabs" style="margin-top:8px">
       <button class="primary" id="themeCopy">Copy</button>
       <button id="themeDownload">Download</button>
@@ -4347,7 +4354,7 @@ function renderTheme() {
   if (pb) pb.onclick = () => {
     invalidateGoRequest();
     state.theme = makeTheme(A, B);
-    toast(state.theme.paired ? "Paired as a light/dark theme" : "Paired — both sides are the same polarity");
+    toast(state.theme.paired ? "Paired as a light/dark theme" : "Paired — both palettes have the same brightness mode");
     renderTheme();
   };
   if (db) db.onclick = async () => {
@@ -4396,14 +4403,14 @@ function renderMatrix() {
     .filter(t => [g, p].some(surface => contrast(t, surface) < (t.id === "ink" ? 4.5 : 3.0)));
 
   box.innerHTML =
-    `<div class="mrow head"><div>Token</div><div>on ground</div><div>on panel</div></div>${rows}` +
+    `<div class="mrow head"><div>Color</div><div>on background</div><div>on surface</div></div>${rows}` +
     `<div class="mrow head sub"><div>Filled surfaces</div><div>label colour</div><div>contrast</div></div>${fills}` +
     `<div class="mnote">${
       weak.length
-        ? `<b style="color:var(--bad)">${weak.length} token${weak.length > 1 ? "s" : ""} below target on <em>ground or panel</em>:</b> ` +
+        ? `<b style="color:var(--bad)">${weak.length} color${weak.length > 1 ? "s" : ""} below target on <em>background or surface</em>:</b> ` +
           esc(weak.map(t => t.name).join(", ")) +
-          ` — check both columns before using these colours. Try Auto polarity, a different plate, or eyedrop those slots.`
-        : `Every token clears its target on both surfaces. <b>AA</b> is 4.5:1 (body copy); <b>3:1</b> is the floor for large text and UI components.`
+          ` — check both columns before using these colours. Try Auto brightness, another palette, or Pick to replace those colors.`
+        : `Every color clears its target on both backgrounds. <b>AA</b> is 4.5:1 (body copy); <b>3:1</b> is the floor for large text and UI components.`
     }</div>`;
 }
 
@@ -4438,9 +4445,9 @@ function renderVariants() {
     const detail = ord.map((c, k) => `${ROLE_ORDER[k]} ${hex(c)}`).join(", ");
     return `<button type="button" class="variant${i === state.variant ? " on" : ""}" data-v="${i}"
                  aria-pressed="${i === state.variant}"
-                 title="Apply plate ${i + 1} — ${detail}${invented ? " (contains a derived slot)" : ""}">
+                 title="Apply palette variation ${i + 1} — ${detail}${invented ? " (contains a derived slot)" : ""}">
       <span class="vsw">${ord.map(c => `<i style="background:${hex(c)}"></i>`).join("")}</span>
-      <span class="vlab"><span>plate ${i + 1}${invented ? " ·" : ""}</span><em>${esc(lab)}</em></span>
+      <span class="vlab"><span>palette ${i + 1}${invented ? " ·" : ""}</span><em>${esc(lab)}</em></span>
     </button>`;
   }).join("");
   box.querySelectorAll("[data-v]").forEach(el => el.onclick = () => applyVariant(+el.dataset.v));
@@ -4810,7 +4817,7 @@ function canvasPNG(cv) {
 /** Write the current plate as a bundle. ZIP today; a directory backend can
  *  reuse bundleEntries() unchanged once one is proven to work here. */
 async function exportBundle() {
-  if (!state.core.length) { toast("Forge or import a plate first", true); return; }
+  if (!state.core.length) { toast("Generate or import a palette first", true); return; }
   try {
     const plate = snapshot();
     const dir = kebab(plate.name);
@@ -4886,12 +4893,12 @@ async function exportVault() {
       (p.core || []).map(t => t.hex).join() === live.core.map(t => t.hex).join();
     if (!same) jobs.push({ plate: JSON.parse(JSON.stringify(p)), bytes: [] });
   }
-  if (!jobs.length) { toast("Nothing to export — forge or save a plate first", true); return; }
+  if (!jobs.length) { toast("Nothing to export — generate or save a palette first", true); return; }
   try {
     if (await goBackend()) {
       const blob = await goArchive("vault", jobs.map(job => job.plate), jobs);
       downloadBlob(blob, "palette-vault.zip");
-      toast(`Vault · ${jobs.length} plates · ${(blob.size / 1024).toFixed(0)} KB`);
+      toast(`Vault · ${jobs.length} palettes · ${(blob.size / 1024).toFixed(0)} KB`);
       return;
     }
     const entries = [], indexed = [], dirs = new Set();
@@ -4920,7 +4927,7 @@ async function exportVault() {
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     const noSrc = indexed.filter(p => (p.sources || []).some(s => s.retained === false)).length;
-    toast(`Vault · ${indexed.length} plates · ${(blob.size / 1024).toFixed(0)} KB` +
+    toast(`Vault · ${indexed.length} palettes · ${(blob.size / 1024).toFixed(0)} KB` +
           (noSrc ? ` · ${noSrc} without sources` : ""));
   } catch (err) {
     console.error(err);
@@ -4963,7 +4970,7 @@ async function rebuildIndexFromFolder(list) {
   } catch (error) { toast("Index rebuild failed: " + error.message, true); return; }
   download(JSON.stringify(idx, null, 2), "index.json");
   if (bad.length) console.warn("skipped while rebuilding index:", bad);
-  toast(`index.json · ${idx.count} plate${idx.count === 1 ? "" : "s"}` +
+  toast(`index.json · ${idx.count} palette${idx.count === 1 ? "" : "s"}` +
         (bad.length ? ` · ${bad.length} skipped (see console)` : ""));
 }
 
@@ -5260,7 +5267,7 @@ $("plateFile").addEventListener("change", async e => {
       if (f.size > SHELF_MAX_BYTES) throw new Error("shelf file exceeds 8 MiB");
       const parsed = parseShelfJSON(await f.text());
       const good = parsed.plates;
-      if (!good.length) throw new Error(parsed.skipped ? `${parsed.skipped} invalid entries; no valid plates` : "no plates in that file");
+      if (!good.length) throw new Error(parsed.skipped ? `${parsed.skipped} invalid entries; no valid palettes` : "no palettes in that file");
       const priorShelf = clonePlain(state.shelf);
       const priorA = state.abA, priorB = state.abB, priorActive = state.activeShelfId;
       const priorTheme = clonePlain(state.theme);
@@ -5268,15 +5275,15 @@ $("plateFile").addEventListener("change", async e => {
       const details = [];
       if (parsed.skipped) details.push(`${parsed.skipped} invalid entries skipped`);
       if (merged.duplicates) details.push(`${merged.duplicates} exact revision${merged.duplicates === 1 ? "" : "s"} already here`);
-      if (merged.skippedCapacity) details.push(`${merged.skippedCapacity} held back at the 40-plate limit`);
+      if (merged.skippedCapacity) details.push(`${merged.skippedCapacity} held back at the 40-palette limit`);
       if (!merged.imported.length) {
-        toast(`No shelf plates imported${details.length ? " · " + details.join(" · ") : ""}`,
+        toast(`No saved palettes imported${details.length ? " · " + details.join(" · ") : ""}`,
           merged.skippedCapacity > 0);
         return;
       }
       state.shelf = merged.shelf;
       persistShelf(); renderShelf();
-      undoToast(`Imported ${merged.imported.length} plate${merged.imported.length === 1 ? "" : "s"}${details.length ? " · " + details.join(" · ") : ""}`, () => {
+      undoToast(`Imported ${merged.imported.length} palette${merged.imported.length === 1 ? "" : "s"}${details.length ? " · " + details.join(" · ") : ""}`, () => {
         state.shelf = priorShelf;
         state.abA = priorA;
         state.abB = priorB;
@@ -5284,8 +5291,8 @@ $("plateFile").addEventListener("change", async e => {
         state.theme = priorTheme;
         persistShelf();
         renderShelf();
-      }, "Shelf import undone");
-    } catch (err) { toast("Not a shelf file: " + (err && err.message ? err.message : err), true); }
+      }, "Collection import undone");
+    } catch (err) { toast("Could not read this collection file: " + (err && err.message ? err.message : err), true); }
     return;
   }
   await importPlateFiles([f]);

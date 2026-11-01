@@ -47,7 +47,7 @@ can skip those checks, so a Go-only run is not complete parity validation.
 `npm run check:browser` builds its own test executable, starts it on an available
 loopback port, waits for readiness, and stops only the processes it started. It runs
 the browser workflow, sample, and mobile suites, then separate generated-fixture
-corpus runs for Readable UI and Source hues. Both require exact Go/HTML parity and readable generated core inks;
+corpus runs for Readable UI and Source hues. Both require exact Go/HTML parity and readable generated text colors;
 Readable UI also requires final accent distinction. This longer check belongs in
 `jobgate start` on the shared development workstation.
 
