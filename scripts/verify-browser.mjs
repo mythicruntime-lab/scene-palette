@@ -107,6 +107,8 @@ try {
     ["scripts/browser-e2e.mjs", "--url", baseURL, "--output", `bin/e2e/${runID}`], 300000);
   await run("Sample image workflows (Go and offline HTML)", node,
     ["scripts/sample-e2e.mjs", "--url", baseURL, "--output", `bin/e2e/${runID}-samples`], 300000);
+  await run("Mobile layout, focus and disclosure workflows", node,
+    ["scripts/mobile-e2e.mjs", "--url", baseURL, "--output", `bin/e2e/${runID}-mobile`], 300000);
   await run("Readable UI corpus: exact parity, readability, and accent distinction", node,
     ["scripts/parity-corpus.mjs", "--url", baseURL, "--output", `bin/corpus/${runID}-readable-ui`,
       "--color-policy", "readable-ui", "--require-readable", "--require-distinct"], 300000);

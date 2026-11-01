@@ -46,10 +46,28 @@ can skip those checks, so a Go-only run is not complete parity validation.
 
 `npm run check:browser` builds its own test executable, starts it on an available
 loopback port, waits for readiness, and stops only the processes it started. It runs
-the browser workflow suite, then separate generated-fixture corpus runs for Readable
-UI and Source hues. Both require exact Go/HTML parity and readable generated core inks;
+the browser workflow, sample, and mobile suites, then separate generated-fixture
+corpus runs for Readable UI and Source hues. Both require exact Go/HTML parity and readable generated core inks;
 Readable UI also requires final accent distinction. This longer check belongs in
 `jobgate start` on the shared development workstation.
+
+The mobile suite covers 360×640, 390×844, 430×932, 768×1024, and 1440×1000,
+plus transitions across 1000/1001 pixels. It records palette document positions,
+screenshots, keyboard focus, touch target bounds, clipboard failure handling,
+and workflow/data preservation. Browser viewport and touch emulation do not replace
+physical Android Chrome, iOS Safari, or in-app browser testing.
+
+To compare a change with a known commit, capture that revision before running the
+current file (use separate ignored output directories):
+
+```sh
+node scripts/mobile-e2e.mjs --baseline-ref f6580ac --output bin/e2e/mobile-before
+node scripts/mobile-e2e.mjs --compare bin/e2e/mobile-before/report.json --output bin/e2e/mobile-after
+```
+
+The baseline is extracted from Git into the artifact directory; it never replaces
+the working frontend. Comparison requires identical generated palette values,
+at least a 40% reduction in mobile palette offset, and unchanged desktop geometry.
 
 For manual investigation, run `go run . serve` in one terminal and these in another:
 

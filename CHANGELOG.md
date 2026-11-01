@@ -6,6 +6,9 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Selecting a bundled sample now sets its plate name to Blue lake, Neon city,
+  or Amber dusk, keeping previews, saved plates, and exports named correctly.
+
 - Removed lettering and decorative overlays from all three bundled sample images
   and their thumbnails; blue remains the default sample.
 
