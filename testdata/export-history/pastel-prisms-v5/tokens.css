@@ -1,0 +1,13 @@
+/* Pastel Prisms — Scene Palette */
+/* Review: human-sealed · agent-eligible · palette + source identities · 2026-01-30T12:00:00.000Z · 1 review note · fnv1a64:29219653583b16c0 */
+:root {
+  --ground: #F6F2E9;           /* bone · ground · oklch(96.2% 0.013 87) */
+  --panel: #E4E0D7;            /* linen · panels · oklch(90.7% 0.013 87) */
+  --ink: #6C5D76;              /* violet · ink · voices · oklch(50.2% 0.043 312) */
+  --muted: #74826B;            /* ash · meta · quiet · oklch(58.8% 0.038 133) */
+  --observed: #008C98;         /* cyan · observed fact · oklch(58.4% 0.100 205) */
+  --attention: #8D8031;        /* gold · attention · oklch(59.6% 0.100 100) */
+  --rupture: #9472A6;          /* orchid · rupture only · oklch(60.4% 0.086 314) */
+  --gold: #B66961;             /* ember · human acts only · oklch(60.5% 0.100 27) */
+  --found_1: #D9B6EE;          /* aubergine · found ink · oklch(82.5% 0.086 313) */
+}

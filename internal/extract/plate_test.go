@@ -75,7 +75,7 @@ type expectedTokenOrigin struct {
 
 func TestPlateAssemblyMatchesJavaScriptForEveryVariantAndPolarity(t *testing.T) {
 	fixture := loadPlateFixture(t)
-	if fixture.Schema != 1 || fixture.Source.Extraction != 5 {
+	if fixture.Schema != 1 || fixture.Source.Extraction != 6 {
 		t.Fatalf("unexpected fixture contract: schema %d extraction %d", fixture.Schema, fixture.Source.Extraction)
 	}
 	modes := []Polarity{PolarityAuto, PolarityDark, PolarityLight}
@@ -93,7 +93,7 @@ func TestPlateAssemblyMatchesJavaScriptForEveryVariantAndPolarity(t *testing.T) 
 				if !ok {
 					t.Fatalf("fixture is missing %s assembly", mode)
 				}
-				structure := BuildStructure(pooled, mode)
+				structure := BuildStructure(pooled, mode, ReadableUI)
 				accents := BuildAccentStage(rawCandidates, structure, 6)
 				got := BuildPlateAssembly(structure, accents, expectedMode.Assembly.FoundLimit)
 				comparePlateAssembly(t, got, expectedMode.Assembly)
@@ -104,7 +104,7 @@ func TestPlateAssemblyMatchesJavaScriptForEveryVariantAndPolarity(t *testing.T) 
 
 func loadPlateFixture(t *testing.T) plateFixture {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "histogram-signal.golden.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "v6", "histogram-signal.golden.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

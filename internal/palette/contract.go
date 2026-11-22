@@ -19,7 +19,7 @@ import (
 const (
 	SchemaVersion                         = 1
 	ToolVersion                           = "2.1.0"
-	ExtractionVersion                     = 5
+	ExtractionVersion                     = 6
 	Kind                                  = "color-plate"
 	ReviewScopePaletteContent             = "palette-content"
 	ReviewScopePaletteAndSourceIdentities = "palette-and-source-identities"
@@ -117,6 +117,7 @@ type Review struct {
 	Fingerprint   *Hash                `json:"fingerprint"`
 	Scope         string               `json:"scope"`
 	Decision      *ReviewDecision      `json:"decision,omitempty"`
+	Assessment    json.RawMessage      `json:"assessment,omitempty"`
 	History       []ReviewHistoryEntry `json:"history,omitempty"`
 }
 
@@ -242,6 +243,10 @@ func (document Document) Validate() error {
 // AssessReview identifies deterministic facts a person should judge before
 // sealing. Attention is advisory: it does not change AgentEligible.
 func (document Document) AssessReview() ReviewAssessment {
+	return document.assessReview(3)
+}
+
+func (document Document) assessReview(version int) ReviewAssessment {
 	checks := make([]ReviewAssessmentCheck, 0, 4)
 	addCheck := func(id, label string, attention bool, roles []string, detail string) {
 		status := "pass"
@@ -269,10 +274,6 @@ func (document Document) AssessReview() ReviewAssessment {
 			for index, token := range document.Core[2:] {
 				role := reviewAssessmentRole(token, index+2)
 				color, ok := reviewRGB(token.Hex)
-				target := 3.0
-				if role == "ink" {
-					target = 4.5
-				}
 				if !ok {
 					readabilityDetails = append(readabilityDetails, role+" has no readable color")
 					readabilityRoles = append(readabilityRoles, role)
@@ -282,12 +283,32 @@ func (document Document) AssessReview() ReviewAssessment {
 					name  string
 					color colorx.RGB
 				}{{"ground", ground}, {"panel", panel}} {
-					ratio := colorx.Contrast(color, surface.color)
-					if ratio < target {
-						readabilityDetails = append(readabilityDetails,
-							fmt.Sprintf("%s on %s %.2f:1 < %.1f:1", role, surface.name, ratio, target))
-						readabilityRoles = append(readabilityRoles, role)
+					// Current accents are raw indicators with independently
+					// readable labels. Earlier versions retain their own usages.
+					target, usage := 4.5, "normal text"
+					if version == 3 && index >= 2 ||
+						version == 2 && role == "rupture" && surface.name == "panel" {
+						target, usage = 3, "UI indicator"
 					}
+					if version == 1 && role != "ink" {
+						target = 3
+					}
+					ratio := colorx.Contrast(color, surface.color)
+					if ratio >= target {
+						continue
+					}
+					var detail string
+					if version == 1 {
+						detail = fmt.Sprintf("%s on %s %.2f:1 < %.1f:1", role, surface.name, ratio, target)
+					} else {
+						value := fmt.Sprintf("%.2f", ratio)
+						if value == fmt.Sprintf("%.2f", target) {
+							value = "<" + value
+						}
+						detail = fmt.Sprintf("%s on %s (%s) %s:1, needs %g:1", role, surface.name, usage, value, target)
+					}
+					readabilityDetails = append(readabilityDetails, detail)
+					readabilityRoles = append(readabilityRoles, role)
 				}
 			}
 			panelStep = math.Abs(colorx.RGBToLCH(panel).L - colorx.RGBToLCH(ground).L)
@@ -300,8 +321,11 @@ func (document Document) AssessReview() ReviewAssessment {
 	}
 	readabilityDetail := strings.Join(readabilityDetails, "; ")
 	if readabilityDetail == "" {
-		readabilityDetail = fmt.Sprintf(
-			"All six readable roles clear ground and panel; panel separation ΔL %.2f.", panelStep)
+		message := "Preview text and UI indicators meet their contrast targets; panel separation ΔL %.2f."
+		if version == 1 {
+			message = "All six readable roles clear ground and panel; panel separation ΔL %.2f."
+		}
+		readabilityDetail = fmt.Sprintf(message, panelStep)
 	}
 	addCheck("readability", "Readability", len(readabilityDetails) > 0,
 		readabilityRoles, readabilityDetail)
@@ -338,6 +362,10 @@ func (document Document) AssessReview() ReviewAssessment {
 		}
 	}
 	var sourceDetail string
+	sourceNoun := "source records"
+	if len(document.Sources) == 1 {
+		sourceNoun = "source record"
+	}
 	switch {
 	case len(document.Sources) == 0:
 		sourceDetail = "No source records are attached."
@@ -346,10 +374,10 @@ func (document Document) AssessReview() ReviewAssessment {
 		if missingHashes == 1 {
 			verb = "has"
 		}
-		sourceDetail = fmt.Sprintf("%d of %d source records %s no hash.",
-			missingHashes, len(document.Sources), verb)
+		sourceDetail = fmt.Sprintf("%d of %d %s %s no hash.",
+			missingHashes, len(document.Sources), sourceNoun, verb)
 	default:
-		sourceDetail = fmt.Sprintf("%d source records hashed", len(document.Sources))
+		sourceDetail = fmt.Sprintf("%d %s hashed", len(document.Sources), sourceNoun)
 		if len(algorithms) > 0 {
 			sourceDetail += " (" + strings.Join(algorithms, ", ") + ")"
 		}
@@ -377,7 +405,7 @@ func (document Document) AssessReview() ReviewAssessment {
 	addCheck("invention", "Machine invention", len(inventedRoles) > 0,
 		inventedRoles, inventionDetail)
 
-	assessment := ReviewAssessment{Version: 1, Status: "clear", Checks: checks}
+	assessment := ReviewAssessment{Version: version, Status: "clear", Checks: checks}
 	for _, check := range checks {
 		if check.Status == "attention" {
 			assessment.AttentionCount++
@@ -509,13 +537,32 @@ func (document Document) reviewFingerprint(includeSources bool) (Hash, error) {
 // VerifyReview treats every incomplete, unsupported, or mismatched seal as
 // non-eligible. A missing review is a normal proposal, not a contract error.
 func (document Document) VerifyReview() (ReviewVerification, error) {
+	return document.verifyReview(3)
+}
+
+// VerifyExportReview recomputes advisory findings under the recorded rules.
+// Extractions through v5 used v1 for exports without an assessment record.
+func (document Document) VerifyExportReview() (ReviewVerification, error) {
+	var saved struct{ Version int }
+	if document.Review != nil && json.Unmarshal(document.Review.Assessment, &saved) == nil &&
+		(saved.Version == 1 || saved.Version == 2) {
+		return document.verifyReview(saved.Version)
+	}
+	if document.Generator.Extraction != nil && *document.Generator.Extraction > 0 && *document.Generator.Extraction <= 5 &&
+		(document.Review == nil || len(document.Review.Assessment) == 0 || string(document.Review.Assessment) == "null") {
+		return document.verifyReview(1)
+	}
+	return document.VerifyReview()
+}
+
+func (document Document) verifyReview(assessmentVersion int) (ReviewVerification, error) {
 	computed, err := document.ContentFingerprint()
 	if err != nil {
 		return ReviewVerification{}, err
 	}
 	result := ReviewVerification{
 		Status: "proposed", Reason: "no human review recorded", Computed: computed,
-		Assessment: document.AssessReview(),
+		Assessment: document.assessReview(assessmentVersion),
 	}
 	review := document.Review
 	if review == nil {

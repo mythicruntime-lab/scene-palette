@@ -10,21 +10,22 @@ boundary; the UI does not require a rewrite or a frontend build step.
 
 - `palette.json` schema: `1`
 - Scene Palette application version: `2.1.0`
-- Extraction algorithm version: `5`
+- Extraction algorithm version: `6`
 - Core role order: `ground`, `panel`, `ink`, `muted`, `observed`, `attention`, `rupture`, `gold`
 - Every durable core token has a six-digit hex colour and an origin object.
 - A durable palette includes `facets` and `signature`; browser imports may remain more tolerant.
 
 Fixtures under `testdata/vault` freeze the JSON boundary and the rebuildable
 `index.json` shape. The ten images under `testdata/reference-images` are deterministic,
-programmatically generated patterns. Their palette baselines live under
-`testdata/reference-palettes`; the manifest records their generation and hashes.
+programmatically generated patterns. The v6 expectations live under `testdata/v6`.
+The original `testdata/reference-palettes` and `testdata/histogram-signal.golden.json`
+retain the v5 outputs for historical comparisons. The image manifest records generation and hashes.
 These patterns exercise extraction behavior without distributing private images.
 Their familiar labels are fixture identifiers, not claims that they reproduce the
 photographs or artwork used during earlier local development. The public repository
 has new history and new image-derived baselines; private PNGs and their goldens are
 not included.
-`testdata/histogram-signal.golden.json` freezes the raw bins and ranked signal
+`testdata/v6/histogram-signal.golden.json` freezes the raw bins and ranked signal
 candidates produced from those pixels, including one lower-budget stride probe.
 It also freezes the repaired structural roles for auto, forced-dark, and
 forced-light polarity on every reference image, plus filtered and repaired
@@ -121,9 +122,10 @@ separate historical evaluation and its limits.
   downloads, archives, and asynchronous failure/cancellation.
   It requires development-only Playwright; Windows uses installed Edge.
   Reports and screenshots are written only below ignored `bin/e2e/`.
-- `scripts/parity-corpus.mjs` compares complete extraction snapshots with the
-  standalone HTML in fresh browser profiles. Only timestamps and human-review
-  state are excluded. It covers all variants, three polarity modes, sampling
+- `scripts/parity-corpus.mjs` compares the full serialized v6 snapshot in fresh Go
+  and standalone browser profiles under a shared fixed clock, including review and
+  provenance member order. Historical comparisons exclude timestamps and human review.
+  It covers all variants, three polarity modes, sampling
   budgets, signal floors, found-ink counts, and pooled images. The standalone
   context is offline. Optional manifests and `--html` support new image corpora
   and the exact packaged HTML; reports include strict diffs and separate quality
@@ -187,7 +189,9 @@ cache. Pending Go responses are discarded after newer requests or human edits,
 imports, clear, undo, and seals. Server failures preserve the displayed plate
 and report the error instead of changing engines mid-operation.
 
-Schema 1 remains unchanged; application 2.1.0 uses extraction version 5. The
+Schema 1 and the eight roles carry forward. Extraction v6 repairs Readable UI secondary
+text to 4.5:1 against both effective surfaces, including after locks. Source hues retains
+its 3:1 secondary-tone floor. Both policies check actual ordinary text at 4.5:1. The
 joint ground/panel contrast solver still checks exact, unrounded ratios. If no
 shared body ink exists, generated surfaces move toward the requested polarity
 and retain their separation, with recorded provenance. Locked paint stays exact;
@@ -218,7 +222,8 @@ Using source colour is an explicit human edit that locks the role, records a
 restore operation, and invalidates a current review seal; Undo restores the prior
 workspace. Existing valid imports, shelf entries, and seals retain their recorded
 extraction identity and parameters, including absent older colour-policy fields.
-No automatic re-forge runs on load; a deliberate Forge writes extraction version 5.
+A deliberate Forge writes extraction version 6. A Go module boundary at `bin/go.mod` keeps
+local build products and experiments outside ordinary `go test ./...` and `go vet ./...`.
 
 Shelf file imports and local-storage restore share a bounded validator for eight
 unique roles, strict colour representations, and metadata types/complexity.

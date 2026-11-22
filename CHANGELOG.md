@@ -6,6 +6,11 @@ hosted Windows download. Add future changes under Unreleased before the next ver
 
 ## Unreleased
 
+- Extraction v6 targets 4.5:1 for Readable UI secondary text on ground and panel.
+  Previews keep accent-coloured indicators and select readable text for small labels.
+  Export guidance accounts for the actual Godot button foreground and browser PNG
+  captions. Older plates keep their recorded colours and export bindings.
+
 - Removed lettering and decorative overlays from all three bundled sample images
   and their thumbnails; blue remains the default sample.
 

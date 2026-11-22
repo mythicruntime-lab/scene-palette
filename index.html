@@ -99,16 +99,33 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .mrow > * { padding:7px 12px; min-width:0; }
   .mrow.head { font:600 9.5px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
   .mrow.head > *:not(:first-child), .mcell { text-align:left; }
-  .mrow.sub { background:#00000028; }
+  .mrow.sub { max-width:none; margin:0; background:var(--panel); }
   .mtok { display:flex; align-items:center; gap:9px; font:650 12px var(--sans); color:var(--ink); }
   .mtok i { width:15px; height:15px; border-radius:2px; flex:none; }
   .mtok em { font:italic 11px var(--serif); color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .mcell { font:11px var(--mono); color:var(--dim); display:flex; align-items:center; gap:7px; }
   .lvl { font:700 8.5px var(--sans); letter-spacing:.09em; padding:1px 5px; border-radius:2px; flex:none; }
-  .lvl.aa  { color:var(--accent); border:1px solid #5ea88f55; }
-  .lvl.ok  { color:var(--gold);   border:1px solid #d2ab4c55; }
-  .lvl.low { color:var(--bad);    border:1px solid #c25a4a66; }
   .mnote { padding:9px 12px; font-size:11.5px; color:var(--muted); line-height:1.55; border-top:1px solid var(--line); }
+  .matrix :is(.mrow.head,.mcell,.mtok,.mtok em,.mnote) { color:var(--read-ink,#e8e1d2); }
+  .matrix .mcell { flex-wrap:wrap; gap:3px 6px; }
+  /* Keep advice legible even when the palette being tried on has identical colours. */
+  .contrast-warning, .contrast-clear { color:#392d1d; background:#fff5df; font:13px/1.45 var(--sans);
+    border-inline-start:3px solid #98611e; padding:7px 11px; border-radius:3px; overflow-wrap:anywhere; }
+  .contrast-warning summary { cursor:pointer; font-weight:650; }
+  .contrast-warning summary:focus-visible, .contrast-warning :is(button,a):focus-visible { outline:2px solid #67430f; outline-offset:2px; }
+  .contrast-warning p, .contrast-warning ul { margin:6px 0; }
+  .contrast-warning ul { padding-inline-start:20px; }
+  .contrast-warning li { margin:3px 0; }
+  .contrast-warning .role-link, .contrast-warning a { background:none; border:0; padding:0; min-height:0;
+    font:inherit; font-weight:650; color:inherit; text-decoration:underline; text-underline-offset:2px; }
+  .contrast-clear { color:#33483c; background:#eef4ed; border-color:#839c89; }
+  .readiness:not(:empty) { margin:8px 0; }
+  #editContrast a { text-transform:none; letter-spacing:normal; }
+  #chips [data-why]:focus-visible { outline:2px solid #fff; box-shadow:0 0 0 4px #181818; outline-offset:0; }
+  .contrast-example { display:block; margin-top:2px; font-size:12px; font-weight:400; }
+  details[open] > summary .contrast-example { display:none; }
+  #bundleReadiness { max-width:52ch; margin-inline-start:auto; }
+  #shelfReadiness { flex:1 1 200px; min-width:0; max-width:60ch; }
   @media (max-width:700px){ .mrow { grid-template-columns:minmax(0,1fr) 84px 84px; } .mrow > * { padding:6px 8px; } }
 
   .theme-card { border:1px solid var(--line); border-radius:4px; background:var(--panel); overflow:hidden; }
@@ -228,6 +245,9 @@ Adapted fdlibm notices are retained beside the arithmetic below.
                        letter-spacing:.08em; text-transform:uppercase; }
   .review-check.attention .review-check-mark { color:var(--gold); }
   .review-check-detail { color:var(--muted); font:10.5px/1.4 var(--sans); overflow-wrap:anywhere; }
+  .review-check.readability { background:var(--panel); }
+  .review-check.readability :is(b,.review-check-mark,.review-check-detail) { color:var(--read-ink,#e8e1d2); }
+  .review-check-detail summary { cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
   .review-focus-note { margin:7px 0 0; color:var(--muted); font:10.5px/1.4 var(--sans); }
   .review-diff { padding:11px 13px 13px; border-bottom:1px solid var(--line); background:var(--panel2);
                  color:var(--dim); font:11.5px/1.5 var(--sans); }
@@ -307,8 +327,8 @@ Adapted fdlibm notices are retained beside the arithmetic below.
          color:var(--dim); cursor:pointer; letter-spacing:.02em; }
   .hex:hover { color:var(--ink); }
   .cr { font:600 9px var(--mono); padding:1px 4px; border-radius:2px; letter-spacing:.02em; }
-  .cr.ok { color:var(--accent); border:1px solid #5ea88f44; }
-  .cr.lo { color:var(--bad);    border:1px solid #c25a4a55; }
+  .cr.ok, .matrix .lvl.aa { color:#254332; background:#e1eddf; border:1px solid #79967c; }
+  .cr.lo, .matrix .lvl.low { color:#6c261c; background:#fce6d9; border:1px solid #b67f65; }
 
   .found-wrap { padding:11px 13px 13px; }
   .found { display:flex; flex-wrap:wrap; gap:7px; }
@@ -338,15 +358,13 @@ Adapted fdlibm notices are retained beside the arithmetic below.
                       overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   .voices { background:var(--p-ground); color:var(--p-ink); }
-  .voices .voice { border-top-color:color-mix(in srgb, var(--p-muted) 32%, transparent); }
-  .voices .k { color:var(--p-muted); }
-  .voices .k small { color:var(--p-muted); opacity:.65; }
-  #vHuman, #vRecord { color:var(--p-ink); }
-  #vMachine { color:var(--p-muted); }
-
-  .voice { display:grid; grid-template-columns:126px 1fr; gap:14px; padding:11px 13px; border-top:1px solid var(--line); }
-  .voice .k { font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
-  .voice .k small { display:block; margin-top:3px; letter-spacing:.05em; color:var(--line2); }
+  .voice { display:grid; grid-template-columns:min(30%, 126px) 1fr; align-items:baseline; gap:14px;
+           padding:11px 13px; border-top:1px solid color-mix(in srgb, var(--p-muted) 32%, transparent); }
+  .voice .k { color:var(--p-muted); font:600 10.5px/1.4 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+  .voice .k small { display:block; margin-top:3px; font:400 11px/1.4 var(--sans); letter-spacing:normal; text-transform:none; }
+  #vHuman { font:600 16px/1.45 var(--serif); }
+  #vMachine { color:var(--p-muted); font:12.5px/1.5 var(--sans); }
+  #vRecord { font:12px/1.5 var(--mono); }
   .law { padding:11px 13px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted); line-height:1.6; }
 
   .empty { color:var(--dim); padding:28px 0 44px; max-width:760px; line-height:1.65; font-size:13.5px; }
@@ -376,7 +394,6 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .themed {
     --p-ground:#100f0c; --p-panel:#1b1914; --p-ink:#e8e1d2; --p-muted:#6e6656;
     --p-observed:#5ea88f; --p-attention:#d2ab4c; --p-rupture:#c25a4a; --p-gold:#d2ab4c;
-    --p-on-attention:#140f08; --p-on-observed:#07140f;
   }
   .harness { display:grid; grid-template-columns:196px 1fr; border:1px solid var(--line); border-radius:4px;
     background:var(--p-ground); color:var(--p-ink); min-height:272px; overflow:hidden; }
@@ -387,31 +404,36 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--p-muted); }
   .h-brand strong { display:block; color:var(--p-ink); letter-spacing:.06em; margin-top:3px; font-size:12px; text-transform:none; }
   .agent { display:grid; grid-template-columns:8px 1fr auto; gap:9px; align-items:center; padding:7px 12px;
-    border-bottom:1px solid color-mix(in srgb,var(--p-muted) 26%,transparent); font-size:11.5px; }
+    border-bottom:1px solid color-mix(in srgb,var(--p-muted) 26%,transparent); font-size:12.5px; font-weight:600; }
   .dot { width:8px; height:8px; border-radius:50%; background:var(--p-muted); }
-  .dot.live { background:var(--p-observed); box-shadow:0 0 0 3px color-mix(in srgb,var(--p-observed) 24%,transparent); }
+  .dot.live { background:var(--p-observed); }
   .dot.wait { background:var(--p-attention); }
-  .dot.err  { background:var(--p-rupture); box-shadow:0 0 0 3px color-mix(in srgb,var(--p-rupture) 22%,transparent); }
-  .agent .role { color:var(--p-muted); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; display:block; margin-top:2px; }
+  .dot.err  { background:var(--p-rupture); }
+  .agent .role { color:var(--p-muted); font-size:10px; font-weight:400; letter-spacing:.07em; text-transform:uppercase; display:block; margin-top:2px; }
   .h-main { display:flex; flex-direction:column; min-width:0; }
   .h-top { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:8px 12px;
     border-bottom:1px solid color-mix(in srgb,var(--p-muted) 45%,transparent);
     font-family:var(--mono); font-size:10.5px; color:var(--p-muted); }
-  .h-pill { display:inline-block; padding:2px 7px; border:1px solid var(--p-observed); color:var(--p-observed);
+  .h-pill { display:inline-block; padding:2px 7px; border:1px solid var(--p-observed); color:var(--p-observed-ground-text);
     letter-spacing:.08em; text-transform:uppercase; font:600 9.5px var(--sans); border-radius:2px; }
   .trace { padding:11px 12px; font-family:var(--mono); font-size:11.5px; line-height:1.6; flex:1; white-space:pre-wrap; word-break:break-word; }
   .trace .dim { color:var(--p-muted); }
-  .trace .ok { color:var(--p-observed); }
-  .trace .warn { color:var(--p-attention); }
-  .trace .bad { color:var(--p-rupture); }
-  .trace .au { color:var(--p-gold); }
+  .trace .ok { --cue:var(--p-observed); color:var(--p-observed-ground-text); }
+  .trace .warn { --cue:var(--p-attention); color:var(--p-attention-ground-text); }
+  .trace .bad { --cue:var(--p-rupture); color:var(--p-rupture-ground-text); }
+  .trace .au { --cue:var(--p-gold); color:var(--p-gold-ground-text); }
+  .trace :is(.ok,.warn,.bad,.au) { font-weight:600; }
+  .trace :is(.ok,.warn,.bad,.au)::before { content:""; display:inline-block; width:6px; height:6px;
+    border-radius:50%; background:var(--cue); margin-right:5px; vertical-align:1px; }
   .h-foot { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:9px 12px;
     border-top:1px solid color-mix(in srgb,var(--p-muted) 45%,transparent); }
   .pbtn { border:0; border-radius:3px; padding:6px 10px; font:700 11px var(--sans); cursor:default; }
-  .pbtn.pri { background:var(--p-attention); color:#140f08; }
-  .pbtn.acc { background:var(--p-observed); color:#07140f; }
-  .pbtn.gst { background:transparent; color:var(--p-ink); border:1px solid color-mix(in srgb,var(--p-muted) 60%,transparent); }
-  .bar { flex:1; height:5px; border-radius:3px; background:color-mix(in srgb,var(--p-panel) 70%,#000); margin:0 10px; overflow:hidden; max-width:180px; }
+  .pbtn.pri { background:var(--p-attention); color:var(--p-on-attention); }
+  .pbtn.acc { background:var(--p-observed); color:var(--p-on-observed); }
+  .pbtn.au { background:var(--p-gold); color:var(--p-on-gold); }
+  .pbtn.gst { background:transparent; color:var(--p-ink); border:1px solid var(--p-muted); }
+  .pbtn:disabled { opacity:1; }
+  .bar { flex:1; height:5px; border-radius:3px; background:var(--p-panel); margin:0 10px; overflow:hidden; max-width:180px; }
   .bar>span { display:block; height:100%; width:58%; background:var(--p-gold); }
 
   /* shared surface chrome. line colours derive from the plate's own muted, so
@@ -424,7 +446,6 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .surface .dimtxt { color:var(--p-muted); }
   .surface .mono { font-family:var(--mono); font-size:11.5px; }
   .surface .pbtn.bad { background:var(--p-rupture); color:var(--p-on-rupture,#fff); }
-  .surface .pbtn.au  { background:var(--p-gold);    color:var(--p-on-gold,#12100b); }
 
   /* forms */
   .sf-head, .st-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
@@ -434,22 +455,20 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .fld label { display:block; font:600 9.5px var(--sans); letter-spacing:.12em; text-transform:uppercase;
                color:var(--p-muted); margin-bottom:5px; }
   .fld label .req { font:italic 10px var(--serif); letter-spacing:0; text-transform:none;
-                    color:var(--p-attention); margin-left:5px; }
-  .inp { position:relative; border:1px solid var(--p-line2); border-radius:3px; padding:8px 10px;
+                    color:var(--p-attention-ground-text); margin-left:5px; padding-left:4px; border-left:2px solid var(--p-attention); }
+  .inp { position:relative; border:1px solid var(--p-muted); border-radius:3px; padding:8px 10px;
          background:var(--p-panel); color:var(--p-ink); font:12.5px var(--sans); }
   .inp.ta { min-height:46px; }
-  .inp.muted { color:var(--p-muted); }
-  .inp.focus { border-color:var(--p-observed);
-               box-shadow:0 0 0 2px color-mix(in srgb, var(--p-observed) 34%, transparent); }
+  .inp.muted { color:var(--p-muted); font-style:italic; }
+  .inp.focus { border-color:var(--p-observed); outline:1px solid var(--p-observed); outline-offset:1px; }
   .inp .caret { display:inline-block; width:1px; height:14px; background:var(--p-observed);
                 vertical-align:-2px; margin-left:1px; }
-  .inp.bad { border-color:var(--p-rupture);
-             box-shadow:0 0 0 2px color-mix(in srgb, var(--p-rupture) 26%, transparent); }
+  .inp.bad { border-color:var(--p-rupture); box-shadow:inset 0 0 0 1px var(--p-rupture); }
   .help { font:11px var(--sans); color:var(--p-muted); margin-top:5px; }
-  .help.err { color:var(--p-rupture); }
-  .help b { color:var(--p-observed); font-weight:600; }
+  .help.err { color:var(--p-rupture-ground-text); }
+  .help b { color:var(--p-observed-ground-text); font-weight:600; }
   .chkrow { display:flex; align-items:center; gap:9px; font-size:12.5px; }
-  .chk { width:14px; height:14px; border:1px solid var(--p-line2); border-radius:2px; flex:none; display:block; }
+  .chk { width:14px; height:14px; border:1px solid var(--p-muted); border-radius:2px; flex:none; display:block; }
   .chk.on { background:var(--p-observed); border-color:var(--p-observed); position:relative; }
   .chk.on::after { content:""; position:absolute; left:4px; top:1px; width:4px; height:8px;
                    border:solid var(--p-on-observed,#fff); border-width:0 2px 2px 0; transform:rotate(42deg); }
@@ -461,29 +480,27 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .st th { text-align:left; font:600 9.5px var(--sans); letter-spacing:.12em; text-transform:uppercase;
            color:var(--p-muted); padding:8px 14px; border-bottom:1px solid var(--p-line2); }
   .st td { padding:8px 14px; border-bottom:1px solid var(--p-line); }
-  .st tbody tr:nth-child(even) { background:color-mix(in srgb, var(--p-panel) 55%, transparent); }
+  .st tbody tr:nth-child(even) { background:var(--p-panel); }
   .st .num, .st .right { text-align:right; }
   .st .pill { display:inline-block; font:700 9px var(--sans); letter-spacing:.09em; text-transform:uppercase;
               padding:2px 7px; border-radius:2px; font-style:normal; }
-  .st .pill.ok   { background:color-mix(in srgb, var(--p-observed) 22%, transparent); color:var(--p-observed);
-                   border:1px solid color-mix(in srgb, var(--p-observed) 55%, transparent); }
-  .st .pill.warn { background:color-mix(in srgb, var(--p-attention) 22%, transparent); color:var(--p-attention);
-                   border:1px solid color-mix(in srgb, var(--p-attention) 55%, transparent); }
-  .st .pill.bad  { background:color-mix(in srgb, var(--p-rupture) 22%, transparent); color:var(--p-rupture);
-                   border:1px solid color-mix(in srgb, var(--p-rupture) 55%, transparent); }
+  .st .pill.ok   { background:var(--p-observed); color:var(--p-on-observed); }
+  .st .pill.warn { background:var(--p-attention); color:var(--p-on-attention); }
+  .st .pill.bad  { background:var(--p-rupture); color:var(--p-on-rupture); }
   .st .seal { font:700 9px var(--sans); letter-spacing:.09em; text-transform:uppercase; font-style:normal;
-              color:var(--p-gold); border:1px solid color-mix(in srgb, var(--p-gold) 55%, transparent);
+              color:var(--p-gold-ground-text); border:1px solid var(--p-gold);
               padding:2px 7px; border-radius:2px; }
   .st-foot { display:flex; justify-content:space-between; align-items:center; padding:9px 14px;
              background:var(--p-panel); font-size:11.5px; }
-  .st .lnk { color:var(--p-observed); text-decoration:underline; text-underline-offset:2px; cursor:default; }
+  .st .lnk { color:var(--p-observed-panel-text); text-decoration:underline solid var(--p-observed); text-underline-offset:2px; cursor:default; }
 
-  /* approval - the only surface that exercises gold */
+  /* approval - gold marks the human decision */
   .sa { padding:16px; }
   .sa-card { border:1px solid var(--p-line2); border-radius:4px; background:var(--p-panel); overflow:hidden; }
   .sa-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
             padding:13px 15px; border-bottom:1px solid var(--p-line); }
-  .sa-kicker { font:700 9px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--p-gold); }
+  .sa-kicker { font:700 9px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--p-gold-panel-text);
+               border-left:3px solid var(--p-gold); padding-left:5px; }
   .sa-title { font-family:var(--serif); font-size:16px; margin-top:5px; color:var(--p-ink); }
   .sa-mark { font:700 9px var(--sans); letter-spacing:.12em; text-transform:uppercase; font-style:normal;
              color:var(--p-on-gold,#12100b); background:var(--p-gold); padding:3px 8px;
@@ -492,13 +509,13 @@ Adapted fdlibm notices are retained beside the arithmetic below.
   .sa-row { display:flex; justify-content:space-between; gap:14px; font-size:12.5px; }
   .sa-row span { color:var(--p-muted); }
   .sa-row b { font-weight:600; text-align:right; }
-  .sa-row.warnrow b { color:var(--p-attention); }
+  .sa-row.warnrow b { color:var(--p-attention-panel-text); border-right:3px solid var(--p-attention); padding-right:5px; }
   .sa-foot { display:flex; gap:7px; padding:12px 15px; border-top:1px solid var(--p-line); }
   .sa-note { padding:10px 15px; border-top:1px solid var(--p-line); background:var(--p-ground);
              font:italic 11.5px var(--serif); color:var(--p-muted); line-height:1.5; }
 
   .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-  textarea { width:100%; min-height:190px; background:#0b0a08; color:var(--ink); border:1px solid var(--line);
+  textarea { width:100%; min-height:190px; background:#0b0a08; color:#e8e1d2; border:1px solid var(--line);
     border-radius:4px; padding:12px; font:11.5px/1.55 var(--mono); resize:vertical; }
   .toast { position:fixed; bottom:16px; right:16px; display:flex; align-items:center; gap:10px;
     background:#0b0a08; border:1px solid var(--gold);
@@ -552,7 +569,6 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     .thumb .x { top:0; right:0; }
     .thumb-open { padding-right:44px; }
     .plate-head { padding:8px 10px; gap:4px; }
-    .plate-head > span:last-child { display:none; }
     .role-label { display:block; font:600 12px var(--sans); margin-bottom:2px; }
     .sw { height:48px; }
     .sw:hover::before { display:none; }
@@ -602,6 +618,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     <button type="button" id="remixBtn" disabled title="Next plate this still supports">Remix</button>
     <button type="button" class="primary" id="extractBtn">Forge plate</button>
   </div>
+  <div class="readiness" id="bundleReadiness"></div>
   </details>
 </header>
 
@@ -642,7 +659,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         <option value="readable-ui" selected>Readable UI</option>
         <option value="source-hues">Source hues</option>
       </select>
-      <p class="hint" id="colorPolicyHelp">Readable UI separates accent roles. Source hues favours the image's hue range; some roles may look similar. Both check readability.</p>
+      <p class="hint" id="colorPolicyHelp">Readable UI separates accent roles. Source hues favours the image's hue range. Check small text in the Readability matrix with either policy.</p>
     </div>
     <div class="ctl">
       <label class="row" for="quality"><span>Quality</span></label>
@@ -667,7 +684,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
     <section id="empty" class="empty" aria-labelledby="emptyTitle">
       <div class="empty-card">
         <h3 class="empty-title" id="emptyTitle">Turn a scene into a working color system</h3>
-        <p class="empty-copy">Scene Palette proposes eight readable role colors. You keep the final say: rename them, lock them, or pick an exact pixel from the source.</p>
+        <p class="empty-copy">Scene Palette proposes eight role colours and checks how they read in a preview. Rename them, lock them, or pick a pixel from your source.</p>
         <ol class="empty-steps">
           <li><b>Choose</b> one or more reference stills.</li>
           <li><b>Forge</b> a plate and inspect its readability.</li>
@@ -700,7 +717,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <div class="plate" id="plate">
         <div class="plate-head">
           <span id="plateId">Plate</span>
-          <span>core eight · every hue a reserved word</span>
+          <div id="editContrast" aria-live="polite" aria-atomic="true"><div class="contrast-warning" hidden><a href="#readHead"></a></div></div>
         </div>
         <details class="mobile-section" id="mobileReview" open>
         <summary id="reviewSummary" aria-live="polite" aria-atomic="true">Review checks and sealing</summary>
@@ -719,11 +736,11 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         </div>
         <div class="voices themed" id="voices">
           <div class="voice"><div class="k">Human voice<small>source serif</small></div>
-            <div id="vHuman" style="font-family:var(--serif);font-size:14.5px;line-height:1.45">Your words, your charters. The human register is a serif.</div></div>
+            <div id="vHuman">Your words, your charters. The human register is a serif.</div></div>
           <div class="voice"><div class="k">Machine voice<small>harness chrome</small></div>
-            <div id="vMachine" style="font-size:12.5px">Agent speech. Capable, plain, never confused with the record.</div></div>
+            <div id="vMachine">Agent speech. Capable, plain, never confused with the record.</div></div>
           <div class="voice"><div class="k">The record<small>mono</small></div>
-            <div id="vRecord" style="font-family:var(--mono);font-size:11.5px">run · extract · seal · signed entries only</div></div>
+            <div id="vRecord">run · extract · seal · signed entries only</div></div>
         </div>
         <div class="law" id="law"></div>
       </div>
@@ -731,7 +748,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <h2 id="variantsHead" hidden>Variants <span class="n" id="variantN"></span></h2>
       <div class="variants" id="variants" hidden></div>
 
-      <h2 id="readHead" hidden>Readability</h2>
+      <h2 id="readHead" tabindex="-1" hidden>Readability</h2>
       <div class="matrix" id="matrix" hidden></div>
 
       <h2>Preview</h2>
@@ -744,7 +761,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
       <div id="harnessHost"></div>
 
       <details class="mobile-section" id="mobileExport" open>
-      <summary>Export · copy or download</summary>
+      <summary id="exportSummary">Export · copy or download</summary>
       <h2>Export</h2>
       <div class="tabs" id="tabs" role="group" aria-label="Export format">
         <button type="button" data-fmt="css" class="primary" aria-pressed="true">CSS tokens</button>
@@ -754,6 +771,7 @@ Adapted fdlibm notices are retained beside the arithmetic below.
         <button type="button" data-fmt="hex" aria-pressed="false">HEX</button>
       </div>
       <textarea id="export" readonly spellcheck="false" aria-label="Exported palette text"></textarea>
+      <div class="readiness" id="exportReadiness"></div>
       <div class="tabs" style="margin-top:8px">
         <button class="primary" id="copyBtn">Copy</button>
         <button id="downloadBtn">Download</button>
@@ -1239,7 +1257,7 @@ function restoreWorkspace(saved) {
    ============================================================ */
 const SCHEMA_VERSION  = 1;         // the palette.json contract
 const TOOL_VERSION    = "2.1.0";   // this application
-const EXTRACT_VERSION = 5;         // joint contrast repair on both surfaces
+const EXTRACT_VERSION = 6;         // Readable UI muted text on both surfaces
 
 const bytesToHex = u8 => {
   let s = "";
@@ -1473,6 +1491,11 @@ function reviewRGB(token) {
   const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(token && token.hex || ""));
   return match ? { r:parseInt(match[1], 16), g:parseInt(match[2], 16), b:parseInt(match[3], 16) } : null;
 }
+// A pure black or white label can meet ordinary-text AA on any opaque sRGB fill.
+function previewLabelRGB(fill) {
+  const black = { r:0, g:0, b:0 }, white = { r:255, g:255, b:255 };
+  return contrast(fill, black) >= contrast(fill, white) ? black : white;
+}
 function reviewRole(token, index) {
   return sanitizeName(token && (token.id || token.key) || "token_" + (index + 1));
 }
@@ -1480,7 +1503,40 @@ function reviewOriginKind(token) {
   const origin = token && token.origin && typeof token.origin === "object" ? token.origin : null;
   return String(origin && origin.kind || "unknown").trim().toLowerCase() || "unknown";
 }
-function reviewAssessment(core, found, sources) {
+function contrastTarget(usage) {
+  return usage === "large text" || usage === "UI indicator" ? 3 : 4.5;
+}
+// Version 1 review records and theme notes described the extraction floors.
+function extractionContrastTarget(role) {
+  return role === "ink" ? 4.5 : 3;
+}
+function contrastRatioText(ratio, target) {
+  const rounded = ratio.toFixed(2);
+  return ratio < target && Number(rounded) === target ? "<" + rounded : rounded;
+}
+// Current accent indicators keep their raw paint. Their small text is chosen
+// per surface, using the accent itself only when it meets ordinary-text AA.
+function previewContrastChecks(core, version = 3) {
+  const checks = [];
+  for (const [index, token] of core.entries()) {
+    if (index < 2) continue;
+    const role = reviewRole(token, index), fg = reviewRGB(token);
+    for (const [surfaceIndex, surface] of ["ground", "panel"].entries()) {
+      const bg = reviewRGB(core[surfaceIndex]);
+      if (!fg || !bg) continue;
+      const indicator = version === 1 ? role !== "ink"
+        : version === 2 ? role === "rupture" && surface === "panel"
+        : index >= 4;
+      const usage = indicator ? "UI indicator" : "normal text";
+      checks.push({ role, surface, usage, target:contrastTarget(usage), ratio:contrast(fg, bg) });
+    }
+  }
+  return checks;
+}
+function contrastDetail(check) {
+  return `${check.role} on ${check.surface} (${check.usage}) ${contrastRatioText(check.ratio, check.target)}:1, needs ${check.target}:1`;
+}
+function reviewAssessment(core, found, sources, version = 3) {
   const roles = Array.isArray(core) ? core : [];
   const extras = Array.isArray(found) ? found : [];
   const records = Array.isArray(sources) ? sources : [];
@@ -1498,18 +1554,18 @@ function reviewAssessment(core, found, sources) {
       readability.push("ground or panel has no readable color");
       readabilityRoles.push("ground", "panel");
     } else {
+      const pairs = previewContrastChecks(roles, version);
       roles.slice(2).forEach((token, offset) => {
         const index = offset + 2, role = reviewRole(token, index);
-        const color = reviewRGB(token), target = role === "ink" ? 4.5 : 3.0;
-        if (!color) {
+        if (!reviewRGB(token)) {
           readability.push(`${role} has no readable color`);
           readabilityRoles.push(role);
           return;
         }
-        [["ground", ground], ["panel", panel]].forEach(([surface, background]) => {
-          const ratio = contrast(color, background);
+        pairs.filter(pair => pair.role === role).forEach(pair => {
+          const { ratio, surface, target } = pair;
           if (ratio < target) {
-            readability.push(`${role} on ${surface} ${ratio.toFixed(2)}:1 < ${target.toFixed(1)}:1`);
+            readability.push(version === 1 ? `${role} on ${surface} ${ratio.toFixed(2)}:1 < ${target.toFixed(1)}:1` : contrastDetail(pair));
             readabilityRoles.push(role);
           }
         });
@@ -1523,7 +1579,8 @@ function reviewAssessment(core, found, sources) {
   }
   check("readability", "Readability", readability.length ? "attention" : "pass",
     readabilityRoles, readability.length ? readability.join("; ")
-      : `All six readable roles clear ground and panel; panel separation ΔL ${panelStep.toFixed(2)}.`);
+      : version === 1 ? `All six readable roles clear ground and panel; panel separation ΔL ${panelStep.toFixed(2)}.`
+      : `Preview text and UI indicators meet their contrast targets; panel separation ΔL ${panelStep.toFixed(2)}.`);
 
   const all = roles.concat(extras);
   const originGaps = all.map((token, index) => ({
@@ -1556,12 +1613,22 @@ function reviewAssessment(core, found, sources) {
 
   const attentionCount = checks.filter(item => item.status === "attention").length;
   return {
-    version:1, status:attentionCount ? "attention" : "clear",
+    version, status:attentionCount ? "attention" : "clear",
     attentionCount, checks
   };
 }
-function liveReviewAssessment() {
-  return reviewAssessment(state.core, state.found, currentPlateSources());
+function liveReviewAssessment(version) {
+  return reviewAssessment(state.core, state.found, currentPlateSources(), version);
+}
+function usesV1ReviewDefault(generator) {
+  return generator?.extraction > 0 && generator.extraction <= 5;
+}
+function exportAssessmentVersion(review, generator) {
+  const version = review?.assessment?.version;
+  if (version === 1 || version === 2) return version;
+  // Extractors through v5 shipped with the v1 review rules.
+  if (review?.assessment == null && usesV1ReviewDefault(generator)) return 1;
+  return 3;
 }
 function normalizeReviewHistory(history) {
   const items = Array.isArray(history) ? history : [];
@@ -1583,10 +1650,10 @@ function normalizeReviewHistory(history) {
         changeCount:count(entry.decision.changeCount),
         fieldCount:count(entry.decision.fieldCount)
       } : null;
-    const attentionCount = entry.assessment && entry.assessment.version === 1
-      ? count(entry.assessment.attentionCount) : 0;
-    const assessment = entry.assessment && entry.assessment.version === 1
-      ? { version:1, status:attentionCount ? "attention" : "clear", attentionCount } : null;
+    const knownAssessment = [1, 2, 3].includes(entry.assessment?.version);
+    const attentionCount = knownAssessment ? count(entry.assessment.attentionCount) : 0;
+    const assessment = knownAssessment
+      ? { version:entry.assessment.version, status:attentionCount ? "attention" : "clear", attentionCount } : null;
     const invalidatedAt = typeof entry.invalidatedAt === "string" &&
       !Number.isNaN(Date.parse(entry.invalidatedAt)) ? entry.invalidatedAt : null;
     const invalidatedBy = sanitizeName(entry.invalidatedBy || "reason not recorded") || "reason not recorded";
@@ -1634,6 +1701,7 @@ function validatedReview(name) {
 function reviewSnapshot(name) {
   const review = validatedReview(name);
   const proposal = normalizeProposal(review.proposal);
+  const assessment = review.keepImportedAssessment ? clonePlain(review.assessment) : liveReviewAssessment();
   return {
     version: 1,
     status: review.status === "sealed" ? "sealed" : review.status === "edited" ? "edited" : "proposed",
@@ -1643,7 +1711,7 @@ function reviewSnapshot(name) {
     fingerprint: review.fingerprint ? { ...review.fingerprint } : null,
     scope: reviewScope(review.scope) || REVIEW_SCOPE, proposal,
     decision: reviewDecision(proposal, name, review.scope),
-    assessment: liveReviewAssessment(),
+    ...(assessment === undefined ? {} : { assessment }),
     history: normalizeReviewHistory(review.history)
   };
 }
@@ -1658,6 +1726,11 @@ function markHumanEdited(reason) {
 function markProposal(reason) {
   const source = reason || "generated by forge";
   if (source === "generated by forge") {
+    // The Go and JS engines build origin maps in different key orders. Keep
+    // fresh exported JSON byte-stable while preserving imported and pinned records.
+    for (const token of [...state.core, ...state.found]) {
+      if (!token.locked) token.origin = stableValue(token.origin);
+    }
     const meta = plateMetadata(state.plateMeta);
     meta.generator = null;
     state.plateMeta = meta;
@@ -1673,15 +1746,20 @@ function importedReview(review) {
   const current = livePlateFingerprint(null, scope || REVIEW_SCOPE);
   const proposal = normalizeProposal(review && review.proposal) || captureProposal("imported plate");
   const history = normalizeReviewHistory(review && review.history);
-  if (sealMatches(review, current)) {
-    return { ...review, version:1, status:"sealed", agentEligible:true, scope,
-             fingerprint:{ ...review.fingerprint }, proposal,
-             decision:reviewDecision(proposal, null, scope), assessment:liveReviewAssessment(), history };
-  }
-  return freshReview(review && review.status === "sealed" ? "edited" : "proposed",
-    review && review.status === "sealed"
-      ? "imported seal did not match this plate"
-      : "imported without a human seal", proposal, history);
+  const sealed = sealMatches(review, current);
+  const imported = sealed
+    ? { ...review, version:1, status:"sealed", agentEligible:true, scope,
+        fingerprint:{ ...review.fingerprint }, proposal, decision:reviewDecision(proposal, null, scope), history }
+    : freshReview(review?.status === "sealed" ? "edited" : "proposed",
+        review?.status === "sealed" ? "imported seal did not match this plate" : "imported without a human seal",
+        proposal, history);
+  // Edits, new proposals and seals replace this editor-only state. While viewing
+  // a historical plate, export its recorded assessment (including its absence).
+  imported.keepImportedAssessment = usesV1ReviewDefault(state.plateMeta?.generator)
+    || [1, 2].includes(review?.assessment?.version);
+  if (imported.keepImportedAssessment) imported.assessment = clonePlain(review?.assessment);
+  else if (sealed) imported.assessment = liveReviewAssessment();
+  return imported;
 }
 function sealPlate() {
   invalidateGoRequest();
@@ -2222,6 +2300,9 @@ function assignRoles(accents, roles) {
 function normalizeColorPolicy(value) {
   return value === "source-hues" ? "source-hues" : "readable-ui";
 }
+function generationTarget(role, policy) {
+  return role === "ink" || (role === "muted" && policy !== "source-hues") ? 4.5 : 3;
+}
 function sourceRGB(value) {
   if (typeof value !== "string" || !/^#[a-f\d]{6}$/i.test(value)) return null;
   return { r:parseInt(value.slice(1,3),16), g:parseInt(value.slice(3,5),16), b:parseInt(value.slice(5,7),16) };
@@ -2469,13 +2550,18 @@ function buildPlate(reset) {
         { op: "contrast", against: "ground+panel", target: 4.5 });
     }
     if (inkBefore < 4.5) state.notes.push(`ink lifted to ${contrast(struct.ink, struct.ground).toFixed(1)}:1 for body copy`);
-    struct.muted = repair("muted", struct.muted, forceContrast(struct.muted, struct.ground, 3.0),
-      { op: "contrast", against: "ground", target: 3.0 });
-    struct.muted = repair("muted", struct.muted, forceContrast(struct.muted, struct.panel, 3.0),
-      { op: "contrast", against: "panel", target: 3.0 });
-    if (contrast(struct.muted, struct.ground) < 3 || contrast(struct.muted, struct.panel) < 3) {
-      struct.muted = repair("muted", struct.muted, forceContrastPair(rawMuted, struct.ground, struct.panel, 3).color,
-        { op: "contrast", against: "ground+panel", target: 3 });
+    if (state.colorPolicy === "source-hues") {
+      struct.muted = repair("muted", struct.muted, forceContrast(struct.muted, struct.ground, 3),
+        { op:"contrast", against:"ground", target:3 });
+      struct.muted = repair("muted", struct.muted, forceContrast(struct.muted, struct.panel, 3),
+        { op:"contrast", against:"panel", target:3 });
+      if (contrast(struct.muted, struct.ground) < 3 || contrast(struct.muted, struct.panel) < 3) {
+        struct.muted = repair("muted", struct.muted, forceContrastPair(rawMuted, struct.ground, struct.panel, 3).color,
+          { op:"contrast", against:"ground+panel", target:3 });
+      }
+    } else {
+      struct.muted = repair("muted", rawMuted, forceContrastPair(rawMuted, struct.ground, struct.panel, 4.5).color,
+        { op:"contrast", against:"ground+panel", target:4.5 });
     }
     state.structOrigin = sOrigin;
     state.medianL = medianL;
@@ -2620,9 +2706,12 @@ function applyVariant(i) {
         : { ...(a.src || { kind: "signal" }), repairs: (a.repairs || []).concat(late) };
     }
     if (role.id !== "ground" && role.id !== "panel") {
-      const target = role.id === "ink" ? 4.5 : 3;
-      if (contrast(col, ground) < target || contrast(col, panel) < target) {
-        const joint = forceContrastPair(col, ground, panel, target);
+      const target = generationTarget(role.id, state.colorPolicy);
+      const recheckMuted = role.id === "muted" && target === 4.5 &&
+        (hex(ground) !== hex(struct.ground) || hex(panel) !== hex(struct.panel));
+      if (recheckMuted || contrast(col, ground) < target || contrast(col, panel) < target) {
+        const input = recheckMuted ? capChroma(sourceRGB(origin.raw), origin.chromaCap) : col;
+        const joint = forceContrastPair(input, ground, panel, target);
         if (joint.readable) {
           if (hex(joint.color) !== hex(col)) origin = { ...origin, repairs: (origin.repairs || []).concat([
             { op: "contrast", against: "ground+panel", target, from: hex(col), to: hex(joint.color) }
@@ -2784,8 +2873,9 @@ function applyStagePick(still, p) {
     if (t) {
       Object.assign(t, { r: col.r, g: col.g, b: col.b, hex: hex(col), name: nameOf(col),
                          locked: true, derived: false, origin: pickOrigin() });
-      const cr = contrast(col, token("ground"));
-      toast(`${t.id} = ${safeHex(t.hex)} · locked` + (t.id !== "ground" && cr < 3 ? ` · only ${cr.toFixed(1)}:1 on ground` : ""));
+      const weak = previewContrastChecks(state.core).find(pair =>
+        (pair.role === t.id || pair.surface === t.id) && pair.ratio < pair.target);
+      toast(`${t.id} = ${safeHex(t.hex)} · locked` + (weak ? " · " + contrastDetail(weak) : ""));
     }
     state.arm = null;
   } else {
@@ -2861,7 +2951,7 @@ function onStageKeydown(ev) {
    ============================================================ */
 const token = id => state.core.find(t => t.id === id) || { r:20,g:18,b:14, hex:"#14120E", name:"—" };
 
-function plateReview(plate) {
+function plateReview(plate, forExport = false) {
   const review = plate && plate.review && typeof plate.review === "object" ? plate.review : null;
   const scope = reviewScope(review && review.scope);
   const fingerprint = contentFingerprint(plate && plate.name,
@@ -2879,13 +2969,14 @@ function plateReview(plate) {
     scope: scope || REVIEW_SCOPE,
     proposal: review && review.proposal || null,
     decision: review && review.decision || null,
-    assessment: reviewAssessment(plate && plate.core, plate && plate.found, plate && plate.sources),
+    assessment: reviewAssessment(plate && plate.core, plate && plate.found, plate && plate.sources,
+      forExport ? exportAssessmentVersion(review, plate?.generator) : undefined),
     history: normalizeReviewHistory(review && review.history)
   };
 }
 
 function reviewExportLabel(plate) {
-  const review = plateReview(plate);
+  const review = plateReview(plate, true);
   const focus = review.assessment.attentionCount
     ? ` · ${review.assessment.attentionCount} review note${review.assessment.attentionCount === 1 ? "" : "s"}`
     : " · review checks clear";
@@ -2969,15 +3060,22 @@ function renderReviewHistory(history) {
 function renderReviewFocus(assessment) {
   const box = $("reviewFocus");
   const attention = assessment.attentionCount;
+  const detail = check => {
+    if (check.id !== "readability") return esc(check.detail);
+    const [first, ...rest] = check.detail.split("; ");
+    if (check.status === "pass" || rest.length < 2) return esc(check.detail);
+    return `${esc(first)}<details><summary>${rest.length} more checks</summary>
+      <ul>${rest.map(issue => `<li>${esc(issue)}</li>`).join("")}</ul></details>`;
+  };
   box.innerHTML = `<div class="review-focus-head">
       <strong>Review focus</strong>
       <span>${attention ? attention + " of " + assessment.checks.length + " checks need attention" : "all " + assessment.checks.length + " checks clear"}</span>
     </div>
     <div class="review-check-grid">${assessment.checks.map(check => `
-      <div class="review-check ${check.status}">
+      <div class="review-check ${check.status} ${check.id}">
         <div class="review-check-top"><b>${esc(check.label)}</b>
           <span class="review-check-mark">${check.status === "pass" ? "✓ pass" : "review"}</span></div>
-        <div class="review-check-detail">${esc(check.detail)}</div>
+        <div class="review-check-detail">${detail(check)}</div>
       </div>`).join("")}</div>
     <p class="review-focus-note">Attention is advisory, not an automatic veto. It tells the human what to judge before sealing.</p>`;
 }
@@ -3189,6 +3287,7 @@ function render() {
   renderStage();
 
   const ground = token("ground");
+  const pairs = previewContrastChecks(state.core);
   $("chips").innerHTML = state.core.map((t, i) => {
     // panel is a surface, not text — it is *meant* to sit close to ground, so it
     // is judged on lightness separation, never on contrast ratio
@@ -3199,8 +3298,10 @@ function render() {
       const dL = Math.abs(rgbToLch(t).L - rgbToLch(ground).L);
       badge = `<span class="cr ${dL >= 0.03 ? "ok" : "lo"}" title="lightness step from ground — a surface should be a step, not a jump">&Delta;L ${dL.toFixed(2)}</span>`;
     } else {
-      const cr = contrast(t, ground), target = t.id === "ink" ? 4.5 : 3.0;
-      badge = `<span class="cr ${cr >= target ? "ok" : "lo"}" title="contrast on ground · target ${target}:1">${cr.toFixed(1)}:1</span>`;
+      const pair = pairs.find(check => check.role === t.id && check.surface === "ground");
+      const low = pair.ratio < pair.target;
+      const label = pair.usage === "UI indicator" ? "UI indicator" : "Normal text";
+      badge = `<span class="cr ${low ? "lo" : "ok"}" title="${label} on ground needs ${pair.target}:1">${low ? "Low " : ""}${esc(contrastRatioText(pair.ratio, pair.target))}:1</span>`;
     }
     return `<div class="cell${t.locked ? " locked" : ""}${t.derived ? " derived" : ""}">
       <button type="button" class="sw" style="background:${safeHex(t.hex)}" data-copy="${i}" aria-label="Copy ${esc(t.id)} color ${esc(t.hex)}"></button>
@@ -3286,19 +3387,15 @@ function render() {
   renderColourDiagnostics();
 
   renderVariants();
-  renderMatrix();
+  renderMatrix(pairs);
 
   // preview theme. #voices is var-driven; the harness carries its own inline
   // vars from the template, so A/B previews are never overwritten by the live plate.
   const P = { ground, panel: token("panel"), ink: token("ink"), muted: token("muted"),
               observed: token("observed"), attention: token("attention"),
               rupture: token("rupture"), gold: token("gold") };
-  const onColor = c => contrast(c, { r:11, g:10, b:8 }) >= contrast(c, { r:255, g:255, b:255 })
-                       ? "#0b0a08" : "#ffffff";
   const voices = $("voices");
   for (const k in P) voices.style.setProperty("--p-" + k, P[k].hex);
-  voices.style.setProperty("--p-on-attention", onColor(P.attention));
-  voices.style.setProperty("--p-on-observed",  onColor(P.observed));
   applyTryOn();
 
   $("harnessHost").innerHTML = harnessHTML(snapshot(name));
@@ -3312,15 +3409,12 @@ function render() {
 
   const crInk = contrast(P.ink, P.ground), crInkPanel = contrast(P.ink, P.panel);
   // a hand-pinned slot is never auto-corrected — law is law — so say when one is weak
-  const weak = state.core
-    .filter(t => t.id !== "ground" && t.id !== "panel")
-    .filter(t => contrast(t, P.ground) < (t.id === "ink" ? 4.5 : 3.0))
-    .map(t => `${t.name} ${contrast(t, P.ground).toFixed(1)}:1`);
+  const weak = pairs.filter(check => check.ratio < check.target);
   $("diag").innerHTML =
     `<b>engine</b> ${state.backend === "go" ? "local Go" : "standalone JavaScript"}<br>` +
-    `<b>ink on ground</b> ${crInk.toFixed(2)}:1 ${crInk >= 4.5 ? "AA" : "below AA"}<br>` +
-    `<b>ink on panel</b> ${crInkPanel.toFixed(2)}:1 ${crInkPanel >= 4.5 ? "AA" : "below AA"}<br>` +
-    (weak.length ? `<b>below target</b> ${esc(weak.join(", "))} — pinned by hand, left alone<br>` : "") +
+    `<b>ink on ground</b> ${esc(contrastRatioText(crInk, 4.5))}:1 ${crInk >= 4.5 ? "AA" : "below AA"}<br>` +
+    `<b>ink on panel</b> ${esc(contrastRatioText(crInkPanel, 4.5))}:1 ${crInkPanel >= 4.5 ? "AA" : "below AA"}<br>` +
+    (weak.length ? `<b>preview contrast</b> ${weak.length} below target · <a href="#readHead">Readability</a><br>` : "") +
     (() => {
       const algos = [...new Set(currentPlateSources().map(source =>
         source && source.hash && source.hash.algo).filter(Boolean))];
@@ -3399,8 +3493,17 @@ const plateToken = (plate, id) =>
 /* ---------- preview surfaces ----------
    Every surface is pure markup on the --p-* vars, so a plate is judged on the
    things a single trace view cannot show: panel-vs-ground separation, borders,
-   focus and error states, and gold, which has no other preview at all. */
-const onC = c => contrast(c, { r:11,g:10,b:8 }) >= contrast(c, { r:255,g:255,b:255 }) ? "#0b0a08" : "#ffffff";
+   focus and error states, and the human approval mark. */
+const onC = c => hex(previewLabelRGB(c));
+
+// Prefer the source accent for small type, then palette ink. Even deliberately
+// locked, unreadable ink leaves an independent readable label for the marker.
+function accentText(accent, surface, ink) {
+  const target = contrastTarget("normal text");
+  if (contrast(accent, surface) >= target) return safeHex(accent.hex);
+  if (contrast(ink, surface) >= target) return safeHex(ink.hex);
+  return onC(surface);
+}
 
 function surfaceForms(plate, P) {
   return `<div class="sf">
@@ -3511,9 +3614,14 @@ function harnessHTML(plate, opts) {
   const P = {};
   ["ground","panel","ink","muted","observed","attention","rupture","gold"]
     .forEach(k => P[k] = plateToken(plate, k));
-  const vars = Object.keys(P).map(k => `--p-${k}:${safeHex(P[k].hex)}`).join(";")
-             + `;--p-on-attention:${onC(P.attention)};--p-on-observed:${onC(P.observed)}`
-             + `;--p-on-rupture:${onC(P.rupture)};--p-on-gold:${onC(P.gold)}`;
+  const paints = Object.keys(P).map(k => `--p-${k}:${safeHex(P[k].hex)}`);
+  for (const id of ["observed","attention","rupture","gold"]) {
+    paints.push(`--p-on-${id}:${onC(P[id])}`);
+    for (const surface of ["ground","panel"]) {
+      paints.push(`--p-${id}-${surface}-text:${accentText(P[id], P[surface], P.ink)}`);
+    }
+  }
+  const vars = paints.join(";");
 
   const surf = SURFACES.find(s => s.id === (o.surface || state.surface)) || SURFACES[0];
   if (surf.fn) {
@@ -3672,6 +3780,9 @@ function applyPlate(plate, options) {
   state.lightScene = plate.lightScene;
   state.activeShelfId = o.shelfId || null;
   state.plateMeta = plateMetadata(plate);
+  // A loose import can contain only swatches. Only a real forge may claim the current extractor.
+  if (!state.plateMeta.generator)
+    state.plateMeta.generator = { name:"unknown", version:"unknown", extraction:0 };
   state.plateSources = clonePlain(Array.isArray(plate.sources) ? plate.sources : []);
   state.params = plate.params && typeof plate.params === "object" ? clonePlain(plate.params) : null;
   state.colorPolicy = normalizeColorPolicy(state.params && state.params.colorPolicy);
@@ -4080,7 +4191,7 @@ function renderShelf() {
        <button class="tiny" id="shelfImport">Import shelf</button>
        <button class="tiny" id="vaultExport" title="Every plate as a vault tree, with a real index.json">Export vault</button>
        <button class="tiny" id="vaultIndex" title="Point at a vault folder — rebuilds index.json from the palette.json in each subfolder">Rebuild index</button>
-     </div>`;
+     </div><div id="shelfReadiness"><div class="readiness" id="vaultContrast"></div><div class="readiness" id="shelfContrast"></div></div>`;
 
   box.querySelectorAll("[data-use]").forEach(b => b.onclick = () => {
     const p = state.shelf[+b.dataset.use];
@@ -4115,6 +4226,7 @@ function renderShelf() {
   const vx = $("vaultExport"); if (vx) vx.onclick = exportVault;
   const vi = $("vaultIndex");  if (vi) vi.onclick = () => $("vaultDir").click();
   if (im) im.onclick = () => { state.shelfImport = true; $("plateFile").click(); };
+  renderCollectionReadiness();
   renderCompare();
 }
 
@@ -4195,8 +4307,17 @@ async function deriveCounterpart() {
   return other;
 }
 
+// A freshly derived Go counterpart has no review record of its own. Its
+// other side establishes the current rules for the pair on both hosts.
+function themeAssessmentVersion(theme) {
+  return Math.max(...[theme.dark, theme.light].map(plate => {
+    const version = plate.review?.assessment?.version;
+    if ([1, 2, 3].includes(version)) return version;
+    return plate.generator?.extraction >= 6 ? 3 : 1;
+  }));
+}
 /** What is worth knowing before shipping a pair. */
-function themeReport(theme) {
+function themeReport(theme, includeContrast = true) {
   const notes = [];
   if (!theme.paired) {
     notes.push({ lvl:"low", text:`both sides are ${theme.dark.lightScene ? "light" : "dark"} plates — exported as a base/alt pair, not light/dark` });
@@ -4212,14 +4333,27 @@ function themeReport(theme) {
     if (gl < 0.62) notes.push({ lvl:"low",
       text:`the light side grounds at L ${gl.toFixed(2)} — dim for a light theme. Pair with a brighter still.` });
   }
-  for (const [side, p] of [["dark", theme.dark], ["light", theme.light]]) {
-    const g = plateToken(p, "ground"), pn = plateToken(p, "panel");
-    const weak = p.core.filter(t => t.id !== "ground" && t.id !== "panel")
-      .filter(t => contrast(t, g) < (t.id === "ink" ? 4.5 : 3.0) ||
-                   contrast(t, pn) < (t.id === "ink" ? 4.5 : 3.0));
-    notes.push(weak.length
-      ? { lvl:"low", text:`${side} side: ${weak.map(t => t.name).join(", ")} below target` }
-      : { lvl:"ok",  text:`${side} side clears every target` });
+  // The editor shows this information by the export controls. Keep the
+  // existing contrast notes in JSON truthful for their named side.
+  if (includeContrast) {
+    const version = themeAssessmentVersion(theme);
+    for (const [key, p] of [["dark", theme.dark], ["light", theme.light]]) {
+      const pairs = previewContrastChecks(p.core, version);
+      if (version === 1) {
+        const weak = p.core.filter(t => pairs.some(pair =>
+          pair.role === t.id && pair.ratio < extractionContrastTarget(t.id)));
+        notes.push(weak.length
+          ? { lvl:"low", text:`${key} side: ${weak.map(t => t.name).join(", ")} below target` }
+          : { lvl:"ok", text:`${key} side clears every target` });
+        continue;
+      }
+      const side = theme.paired ? key : key === "dark" ? "base" : "alt";
+      const weak = pairs.filter(pair => pair.ratio < pair.target);
+      const roles = [...new Set(weak.map(pair => pair.role))];
+      notes.push(weak.length
+        ? { lvl:"low", text:`${side} side needs a preview contrast review for ${roles.join(", ")}` }
+        : { lvl:"ok", text:`${side} side meets preview contrast targets` });
+    }
   }
   // an accent that changes hue between sides reads as a different colour
   for (const id of ["observed","attention","rupture","gold"]) {
@@ -4256,13 +4390,16 @@ function themeExport(theme, fmt) {
   if (fmt === "godot") {
     const dict = tk => tk.map(t =>
       `\t"${t.key}": Color("${t.hex.toLowerCase()}"),`.padEnd(46) + ` # ${safeComment(t.name)}`).join("\n");
+    const baseText = godotButtonPaint(theme.dark, 'p["ink"]');
+    const altText = godotButtonPaint(theme.light, 'p["ink"]');
+    const buttonText = baseText === altText ? baseText : `${altText} if light else ${baseText}`;
     return `## ${name} — Scene Palette theme\n## generated by Scene Palette\nextends Resource\nclass_name ColorTheme\n\n` +
       `const DARK := {\n${dict(D)}\n}\n\nconst ${altKey.toUpperCase()} := {\n${dict(L)}\n}\n\n` +
       `static func plate(light: bool = false) -> Dictionary:\n\treturn ${altKey.toUpperCase()} if light else DARK\n\n` +
       `func apply_to_theme(theme: Theme, light := false) -> void:\n` +
       `\tvar p := plate(light)\n` +
       `\ttheme.set_color("font_color", "Label", p["ink"])\n` +
-      `\ttheme.set_color("font_color", "Button", p["ink"])\n` +
+      `\ttheme.set_color("font_color", "Button", ${buttonText})\n` +
       `\tvar surface := StyleBoxFlat.new()\n\tsurface.bg_color = p["panel"]\n\tsurface.set_corner_radius_all(6)\n` +
       `\ttheme.set_stylebox("panel", "PanelContainer", surface)\n` +
       `\tvar btn := StyleBoxFlat.new()\n\tbtn.bg_color = p["attention"]\n\tbtn.set_corner_radius_all(4)\n` +
@@ -4307,7 +4444,7 @@ function renderTheme() {
         <button id="deriveBtn"${canDerive ? "" : " disabled"}>Derive counterpart of this plate</button>
       </div></div>`;
   } else {
-    const t = state.theme, rep = themeReport(t);
+    const t = state.theme, rep = themeReport(t, false);
     const side = (p, label) => `<div class="tside">
       <div class="abhead"><span>${label}</span><b>${esc(p.name)}</b></div>
       <div class="csw">${p.core.map(x => `<i style="background:${safeHex(x.hex)}"></i>`).join("")}</div>
@@ -4322,12 +4459,17 @@ function renderTheme() {
           { css:"CSS theme", godot:"Godot theme", json:"JSON theme", gpl:"GPL", hex:"HEX" }[f]}</button>`).join("")}
       <button id="unpairBtn" class="ghost" style="margin-left:auto">Unpair</button>
     </div>
-    <textarea id="themeOut" readonly spellcheck="false"></textarea>
+    <textarea id="themeOut" readonly spellcheck="false" aria-label="Exported theme text"></textarea>
+    ${state.themeFmt === "json" && themeAssessmentVersion(t) < 3
+      ? '<p class="hint">This pair retains its historical contrast notes. The summary checks the current preview on both sides.</p>' : ""}
+    <div class="readiness" id="themeReadiness"></div>
     <div class="tabs" style="margin-top:8px">
       <button class="primary" id="themeCopy">Copy</button>
       <button id="themeDownload">Download</button>
     </div>`;
     $("themeOut").value = themeExport(t, state.themeFmt);
+    renderReadiness($("themeReadiness"), "Theme", [t.dark, t.light], state.themeFmt, null,
+      t.paired ? ["Dark", "Light"] : ["Base", "Alt"]);
     $("themeTabs").querySelectorAll("[data-tfmt]").forEach(b => b.onclick = () => {
       state.themeFmt = b.dataset.tfmt; renderTheme();
     });
@@ -4359,49 +4501,38 @@ function renderTheme() {
 /** Readability matrix. Every token against BOTH surfaces — accents were only
  *  ever checked against ground, so an accent that dies on a panel went unseen —
  *  plus the foregrounds the filled preview buttons actually paint with. */
-const crLevel = v => v >= 4.5 ? ["aa", "AA"] : v >= 3 ? ["ok", "pass"] : ["low", "low"];
-
-function renderMatrix() {
+function renderMatrix(pairs = previewContrastChecks(state.core)) {
   const head = $("readHead"), box = $("matrix");
-  if (!state.core.length) { head.hidden = true; box.hidden = true; return; }
-  head.hidden = false; box.hidden = false;
-
-  const g = token("ground"), p = token("panel");
-  const cell = (fg, bg) => {
-    const v = contrast(fg, bg), [cls, lab] = crLevel(v);
-    return `<div class="mcell"><span>${v.toFixed(2)}:1</span><span class="lvl ${cls}">${lab}</span></div>`;
+  head.hidden = box.hidden = !state.core.length;
+  if (box.hidden) return;
+  const cell = ({ role, surface, usage, ratio, target }) => {
+    const low = ratio < target;
+    const indicator = usage === "UI indicator";
+    const hint = ratio >= 3 && ratio < 4.5 ? " Suits large text or a UI indicator. Ordinary text needs 4.5:1." : "";
+    return `<div class="mcell" data-role="${esc(role)}" data-surface="${esc(surface)}" data-target="${target}"
+        title="${esc(usage)} needs ${target}:1.${hint}"><span>${esc(contrastRatioText(ratio, indicator && ratio >= target ? 4.5 : target))}:1</span>
+      <span class="lvl ${low ? "low" : "aa"}">${low ? "Low" : indicator ? "UI pass" : "Pass"}</span><span class="sr-only"> · ${esc(usage)} needs ${target}:1</span></div>`;
   };
-  const rows = state.core.filter(t => t.id !== "ground" && t.id !== "panel").map(t => `
-    <div class="mrow">
-      <div class="mtok"><i style="background:${safeHex(t.hex)}"></i>${esc(t.name)} <em>${esc(t.id)}</em></div>
-      ${cell(t, g)}${cell(t, p)}
-    </div>`).join("");
-
-  // text painted ON a filled accent — the other half of the contrast story
-  const onC = c => contrast(c, { r:11, g:10, b:8 }) >= contrast(c, { r:255, g:255, b:255 })
-                   ? { r:11, g:10, b:8 } : { r:255, g:255, b:255 };
-  const fills = ["attention", "observed", "rupture", "gold"].map(id => {
-    const t = token(id), fg = onC(t), v = contrast(fg, t), [cls, lab] = crLevel(v);
-    return `<div class="mrow">
-      <div class="mtok"><i style="background:${safeHex(t.hex)}"></i>label on ${esc(t.name)} <em>${esc(id)}</em></div>
-      <div class="mcell"><span>${hex(fg)}</span></div>
-      <div class="mcell"><span>${v.toFixed(2)}:1</span><span class="lvl ${cls}">${lab}</span></div>
-    </div>`;
+  const rows = state.core.slice(2).map(t => `<div class="mrow">
+    <div class="mtok"><i style="background:${safeHex(t.hex)}"></i>${esc(t.name)} <em>${esc(t.id)}</em></div>
+    ${pairs.filter(pair => pair.role === t.id).map(cell).join("")}</div>`).join("");
+  const fills = state.core.slice(4).map(t => {
+    const fg = previewLabelRGB(t);
+    return `<div class="mrow"><div class="mtok"><i style="background:${safeHex(t.hex)}"></i>Label on ${esc(t.id)}</div>
+      <div class="mcell">${hex(fg)}</div>${cell({role:"label", surface:t.id, usage:"normal text",
+        ratio:contrast(fg, t), target:contrastTarget("normal text")})}</div>`;
   }).join("");
-
-  const weak = state.core.filter(t => t.id !== "ground" && t.id !== "panel")
-    .filter(t => [g, p].some(surface => contrast(t, surface) < (t.id === "ink" ? 4.5 : 3.0)));
-
   box.innerHTML =
-    `<div class="mrow head"><div>Token</div><div>on ground</div><div>on panel</div></div>${rows}` +
-    `<div class="mrow head sub"><div>Filled surfaces</div><div>label colour</div><div>contrast</div></div>${fills}` +
-    `<div class="mnote">${
-      weak.length
-        ? `<b style="color:var(--bad)">${weak.length} token${weak.length > 1 ? "s" : ""} below target on <em>ground or panel</em>:</b> ` +
-          esc(weak.map(t => t.name).join(", ")) +
-          ` — check both columns before using these colours. Try Auto polarity, a different plate, or eyedrop those slots.`
-        : `Every token clears its target on both surfaces. <b>AA</b> is 4.5:1 (body copy); <b>3:1</b> is the floor for large text and UI components.`
-    }</div>`;
+    '<div class="mrow head"><div>Preview role</div><div>On ground</div><div>On panel</div></div>' + rows +
+    '<div class="mrow head sub"><div>Preview fills</div><div>Label colour</div><div>Contrast</div></div>' + fills +
+    '<div class="mnote">Ink, muted text and labels on accent fills need <b>4.5:1</b>. Accent indicators need <b>3:1</b>. ' +
+    'For small accent text below 4.5:1, the preview keeps the coloured cue and uses readable label text. ' +
+    'Large text (18 pt regular or 14 pt bold) can also use 3:1.</div>';
+  const failures = pairs.filter(pair => pair.ratio < pair.target);
+  const banner = $("editContrast").firstElementChild, link = banner.firstElementChild;
+  banner.hidden = !failures.length;
+  const message = failures.length ? `Low preview contrast · ${failures.length} check${failures.length === 1 ? "" : "s"}` : "";
+  if (link.textContent !== message) link.textContent = message;
 }
 
 /** The variants strip. Only the four signal slots differ between plates —
@@ -4446,13 +4577,14 @@ function renderVariants() {
 function applyTryOn() {
   const on = $("tryOn").checked;
   const r = document.documentElement.style;
-  const keys = ["bg","panel","panel2","ink","dim","muted","line","line2","accent","gold","app-on-gold"];
+  const keys = ["bg","panel","panel2","ink","dim","muted","line","line2","accent","gold","app-on-gold","read-ink"];
   if (!on || !state.core.length) { keys.forEach(k => r.removeProperty("--" + k)); return; }
   const g = token("ground"), p = token("panel"), i = token("ink"), m = token("muted");
   const gl = rgbToLch(g), pl = rgbToLch(p);
   const d = state.lightScene ? -1 : 1;          // step away from ground, not always up
   r.setProperty("--bg", g.hex);
   r.setProperty("--panel", p.hex);
+  r.setProperty("--read-ink", onC(p));
   r.setProperty("--panel2", hex(lchToRgb(clamp(pl.L + d * .04,0,1), pl.C, pl.H)));
   r.setProperty("--ink", i.hex);
   r.setProperty("--dim", hex(forceContrast(m, g, 4.5)));
@@ -4588,7 +4720,7 @@ function plateSignature(plate) {
 
 function notesMD(plate) {
   const f = plate.facets || plateFacets(plate);
-  const review = plateReview(plate);
+  const review = plateReview(plate, true);
   const assessment = review.assessment;
   const decision = review.decision && review.decision.baseline ? review.decision : null;
   const decisionLine = !decision ? "- Decision: **no proposal baseline recorded**"
@@ -4780,7 +4912,8 @@ function previewCanvas(plate) {
   x.fillText(plate.name, 18, 32);
   x.font = "11px ui-monospace, Consolas, monospace";
   const f = plate.facets || plateFacets(plate);
-  x.globalAlpha = 0.7;
+  const alphas = captionAlphas(plate);
+  x.globalAlpha = alphas.metadata;
   x.fillText(`${f.polarity} · ${f.temperature} · min ${f.minContrastOnGround}:1`, 18, 50);
   x.globalAlpha = 1;
   const cw = W / 8;
@@ -4788,7 +4921,7 @@ function previewCanvas(plate) {
     x.fillStyle = t.hex; x.fillRect(i * cw, 62, cw - 2, 104);
     x.fillStyle = ink.hex;
     x.fillText(t.hex, i * cw + 4, 182);
-    x.globalAlpha = 0.65; x.fillText(t.id || "", i * cw + 4, 196); x.globalAlpha = 1;
+    x.globalAlpha = alphas.role; x.fillText(t.id || "", i * cw + 4, 196); x.globalAlpha = 1;
   });
   const found = plate.found || [];
   if (found.length) {
@@ -4873,16 +5006,21 @@ ${plates.map(p => `| ${p.name} | ${p.polarity || "?"} | \`${p.folder}/\` | ${
  *  Shelf entries never kept their source bytes — localStorage could not hold
  *  them — so those sources are recorded but marked `retained: false` rather
  *  than left pointing at a file that is not in the zip. */
-async function exportVault() {
-  const enc = new TextEncoder();
-  const live = state.core.length ? snapshot() : null;
-  const jobs = [];
-  if (live) jobs.push({ plate: live, bytes: sourceBytesFor(live).map(source => source.bytes) });
+function vaultPlates(live) {
+  const plates = live ? [live] : [];
   for (const p of state.shelf || []) {
     const same = live && p.name === live.name &&
       (p.core || []).map(t => t.hex).join() === live.core.map(t => t.hex).join();
-    if (!same) jobs.push({ plate: JSON.parse(JSON.stringify(p)), bytes: [] });
+    if (!same) plates.push(p);
   }
+  return plates;
+}
+async function exportVault() {
+  const enc = new TextEncoder();
+  const live = state.core.length ? snapshot() : null;
+  const jobs = vaultPlates(live).map(plate => plate === live
+    ? { plate, bytes:sourceBytesFor(plate).map(source => source.bytes) }
+    : { plate:clonePlain(plate), bytes:[] });
   if (!jobs.length) { toast("Nothing to export — forge or save a plate first", true); return; }
   try {
     if (await goBackend()) {
@@ -4968,8 +5106,96 @@ function exportTokens() {
   return plateTokens({ core: state.core, found: state.found });
 }
 
+// Retain the historical PNG and Godot bindings when re-exporting an older plate.
+function captionAlphas(plate) {
+  return plate.generator?.extraction >= 6 ? {metadata:1, role:1} : {metadata:0.7, role:0.65};
+}
+function godotButtonPaint(plate, inkName = "INK") {
+  const fill = reviewRGB(plate.core[5]), ink = reviewRGB(plate.core[2]);
+  if (!(plate.generator?.extraction >= 6) || contrast(ink, fill) >= contrastTarget("normal text")) return inkName;
+  return previewLabelRGB(fill).r === 0 ? "Color.BLACK" : "Color.WHITE";
+}
+let captionProbe;
+function archiveCaptionChecks(plate, ink, ground) {
+  const alphas = captionAlphas(plate);
+  if (alphas.metadata === 1 && alphas.role === 1)
+    return [{role:"ink", surface:"ground", usage:"PNG caption text", target:contrastTarget("normal text"), ratio:contrast(ink, ground)}];
+  if (!captionProbe) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1; canvas.height = 2;
+    captionProbe = canvas.getContext("2d", { willReadFrequently:true });
+  }
+  const ctx = captionProbe;
+  if (!ctx) return [];
+  ctx.globalAlpha = 1; ctx.fillStyle = hex(ground); ctx.fillRect(0, 0, 1, 2);
+  ctx.fillStyle = hex(ink);
+  const captions = Object.entries(alphas);
+  captions.forEach(([, alpha], i) => { ctx.globalAlpha = alpha; ctx.fillRect(0, i, 1, 1); });
+  const pixels = ctx.getImageData(0, 0, 1, 2).data;
+  return captions.map(([name], i) => ({
+    role:"ink", surface:"ground", usage:`PNG ${name} text`, target:contrastTarget("normal text"),
+    ratio:contrast({r:pixels[i*4], g:pixels[i*4+1], b:pixels[i*4+2]}, ground)
+  }));
+}
+function exportContrastIssues(plate, format) {
+  const core = plate.core;
+  const checks = previewContrastChecks(core);
+  if (format === "godot" || format === "archive") {
+    const ink = reviewRGB(core[2]), fill = reviewRGB(core[5]);
+    const label = godotButtonPaint(plate) === "INK" ? ink : previewLabelRGB(fill);
+    checks.push({ role:"ink", surface:"attention", usage:"Godot button label",
+      target:contrastTarget("normal text"), ratio:contrast(label, fill) });
+    if (format === "archive") checks.push(...archiveCaptionChecks(plate, ink, reviewRGB(core[0])));
+  }
+  return checks.filter(check => check.ratio < check.target);
+}
+function renderReadiness(box, label, plates, format, live = null, sides = []) {
+  const groups = plates.map((plate, i) => ({ plate, side:sides[i], issues:exportContrastIssues(plate, format) }))
+    .filter(group => group.issues.length);
+  const count = groups.reduce((total, group) => total + group.issues.length, 0);
+  if (!count) {
+    box.innerHTML = `<div class="contrast-clear">${esc(label)} · Contrast checks pass</div>`;
+    return 0;
+  }
+  const wasOpen = box.querySelector("details")?.open ?? (label === "Export" && count <= 3);
+  const first = groups[0].issues[0];
+  const title = label === "Export" ? "Low contrast" : label + " contrast";
+  box.innerHTML = `<details class="contrast-warning"${wasOpen ? " open" : ""}>
+    <summary>${esc(title)} · ${count} check${count === 1 ? "" : "s"}
+      <span class="contrast-example">${esc(first.role)} on ${esc(first.surface)} · ${esc(contrastRatioText(first.ratio, first.target))}:1
+      (${first.target}:1 needed)</span></summary>
+    <p>You can export these colours as they are.</p><div class="contrast-issues"></div></details>`;
+  const details = box.firstElementChild, list = details.querySelector(".contrast-issues");
+  const showIssues = () => {
+    if (!details.open || list.childElementCount) return;
+    list.innerHTML = groups.map(({plate, side, issues}) => {
+      const title = side ? side + " · " + plate.name
+        : plates.length > 1 || label === "Shelf" || label === "Vault" ? plate.name : "";
+      return (title ? `<strong>${esc(title)}</strong>` : "") + "<ul>" + issues.map(check => {
+        const role = plate === live ? `<button type="button" class="role-link" data-contrast-role="${esc(check.role)}"
+          aria-label="Inspect ${esc(check.role)} in palette">${esc(check.role)}</button>` : esc(check.role);
+        return `<li>${role} on ${esc(check.surface)} · ${esc(contrastRatioText(check.ratio, check.target))}:1
+          (${esc(check.usage)} needs ${check.target}:1)</li>`;
+      }).join("") + "</ul>";
+    }).join("");
+  };
+  details.ontoggle = showIssues;
+  showIssues();
+  return count;
+}
+function renderCollectionReadiness() {
+  const live = state.core.length ? { core:state.core, name:sanitizeName($("plateName").value.trim() || "Plate"),
+    generator:state.plateMeta.generator || {extraction:EXTRACT_VERSION} } : null;
+  renderReadiness($("vaultContrast"), "Vault", vaultPlates(live), "archive", live);
+  renderReadiness($("shelfContrast"), "Shelf", state.shelf, "json");
+}
 function writeExport() {
-  $("export").value = formatPlate(snapshot(), state.fmt);
+  const plate = snapshot();
+  $("export").value = formatPlate(plate, state.fmt);
+  const count = renderReadiness($("exportReadiness"), "Export", [plate], state.fmt, plate);
+  $("exportSummary").textContent = count ? `Export · ${count} contrast issue${count === 1 ? "" : "s"}` : "Export · copy or download";
+  renderReadiness($("bundleReadiness"), "Bundle", [plate], "archive", plate);
+  return $("export").value;
 }
 
 /** Pure formatter: a plate object in, a file's text out. The bundle and the
@@ -4999,7 +5225,7 @@ function formatPlate(plate, fmt) {
       + tk.map(t => `\t"${t.key}": ${C(t)},`).join("\n")
       + `\n}\n\nfunc apply_to_theme(theme: Theme) -> void:\n`
       + `\ttheme.set_color("font_color", "Label", INK)\n`
-      + `\ttheme.set_color("font_color", "Button", INK)\n`
+      + `\ttheme.set_color("font_color", "Button", ${godotButtonPaint(plate)})\n`
       + `\ttheme.set_color("font_color", "RichTextLabel", INK)\n`
       + `\tvar surface := StyleBoxFlat.new()\n\tsurface.bg_color = PANEL\n\tsurface.set_corner_radius_all(6)\n`
       + `\ttheme.set_stylebox("panel", "PanelContainer", surface)\n`
@@ -5023,7 +5249,7 @@ function download(text, filename) {
 }
 function downloadExport() {
   const ext = { hex:"txt", css:"css", godot:"gd", json:"json", gpl:"gpl" }[state.fmt] || "txt";
-  download($("export").value, slug($("plateName").value || "plate") + "." + ext);
+  download(writeExport(), slug($("plateName").value || "plate") + "." + ext);
 }
 
 function clearAll(options) {
@@ -5044,6 +5270,7 @@ function clearAll(options) {
   state.activeShelfId = null;
   state.reviewDiffOpen = false; state.reviewHistoryOpen = false;
   state.review = freshReview("proposed", "no active plate");
+  $("bundleReadiness").replaceChildren();
   $("readHead").hidden = true; $("matrix").hidden = true;
   $("harnessHost").innerHTML = "";
   state.theme = null;
@@ -5291,8 +5518,12 @@ $("tryOn").onchange = applyTryOn;
 $("plateName").oninput = () => {
   if (state.core.length) { markHumanEdited("plate renamed by human"); render(); }
 };
-$("copyBtn").onclick = () => copy($("export").value);
+$("copyBtn").onclick = () => copy(writeExport());
 $("downloadBtn").onclick = downloadExport;
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-contrast-role]");
+  if (button) $("chips").querySelector(`[data-why="${CSS.escape(button.dataset.contrastRole)}"]`)?.focus();
+});
 $("stageCanvas").addEventListener("click", onStageClick);
 $("stageCanvas").addEventListener("mousemove", onStageMove);
 $("stageCanvas").addEventListener("keydown", onStageKeydown);

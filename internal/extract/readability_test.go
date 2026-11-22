@@ -39,14 +39,14 @@ func checkGeneratedReadability(t *testing.T, name string, input image.Image) {
 	histogram := Pool([]Histogram{BuildHistogram(input, 140000, 0.085)})
 	for _, mode := range []Polarity{PolarityAuto, PolarityDark, PolarityLight} {
 		t.Run(name+"/"+string(mode), func(t *testing.T) {
-			structure := BuildStructure(histogram, mode)
+			structure := BuildStructure(histogram, mode, ReadableUI)
 			accents := BuildAccentStage(SignalCandidates(histogram), structure, 6)
 			assembly := BuildPlateAssembly(structure, accents, 6)
 			for _, variant := range assembly.Variants {
 				ground, panel := variant.Core[0].RGB, variant.Core[1].RGB
 				for _, token := range variant.Core[2:] {
 					target := 3.0
-					if token.ID == "ink" {
+					if token.ID == "ink" || token.ID == "muted" {
 						target = 4.5
 					}
 					if colorx.Contrast(token.RGB, ground) < target || colorx.Contrast(token.RGB, panel) < target {
@@ -63,7 +63,7 @@ func TestGeneratedAutoMatchesVersionedFixtures(t *testing.T) {
 	for _, reference := range fixture.Images {
 		t.Run(reference.Label, func(t *testing.T) {
 			histogram := Pool([]Histogram{BuildHistogram(openFixtureImage(t, reference.File), fixture.Params.Budget, fixture.Params.ChromaMin)})
-			structure := BuildStructure(histogram, PolarityAuto)
+			structure := BuildStructure(histogram, PolarityAuto, ReadableUI)
 			accents := BuildAccentStage(SignalCandidates(histogram), structure, 6)
 			expected := reference.Structures["auto"].Assembly
 			comparePlateAssembly(t, BuildPlateAssembly(structure, accents, expected.FoundLimit), expected)
@@ -86,7 +86,7 @@ func TestJointContrastSurfaceRepairProvenance(t *testing.T) {
 				}
 				input.SetNRGBA(x, 0, color.NRGBA{R: gray, G: gray, B: gray, A: 255})
 			}
-			structure := BuildStructure(Pool([]Histogram{BuildHistogram(input, 140000, 0.085)}), mode)
+			structure := BuildStructure(Pool([]Histogram{BuildHistogram(input, 140000, 0.085)}), mode, ReadableUI)
 			endpoint, note := "#FFFFFF", "surfaces adjusted for a shared light ink"
 			if mode == PolarityLight {
 				endpoint, note = "#000000", "surfaces adjusted for a shared dark ink"

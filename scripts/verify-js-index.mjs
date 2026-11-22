@@ -135,12 +135,66 @@ core[5] = { ...core[5], origin:{ kind:"imported" } };
 attentionResult = reviewAssessment(core, found, []);`, assessment);
 
 assert.equal(assessment.clearResult.status, "clear");
+assert.equal(assessment.clearResult.version, 3);
 assert.equal(assessment.clearResult.attentionCount, 0);
 assert.equal(assessment.attentionResult.status, "attention");
 assert.equal(assessment.attentionResult.attentionCount, 4);
 assert.equal(assessment.attentionResult.checks.find(check => check.id === "readability").roles.includes("ink"), true);
 assert.equal(assessment.attentionResult.checks.find(check => check.id === "origins").roles.includes("attention"), true);
 assert.equal(assessment.attentionResult.checks.find(check => check.id === "invention").roles.includes("observed"), true);
+
+// Each boundary pair rounds to the same hundredth. Use actual RGB values and
+// stale snapshot ratios so neither display rounding nor saved metadata can pass a failure.
+const contrastMath = vm.runInContext("({ contrast, contrastTarget, contrastRatioText, previewContrastChecks, previewLabelRGB, reviewAssessment })", assessment);
+const black = { r:0, g:0, b:0 };
+for (const [color, usage, passes] of [
+  [[119, 119, 65], "normal text", false],
+  [[120, 120, 26], "normal text", true],
+  [[92, 92, 25], "large text", false],
+  [[81, 81, 155], "large text", true],
+  [[92, 92, 25], "UI indicator", false],
+  [[81, 81, 155], "UI indicator", true]
+]) {
+  const [r, g, b] = color;
+  const ratio = contrastMath.contrast({ r, g, b }, black);
+  const target = contrastMath.contrastTarget(usage);
+  assert.equal(target, usage === "normal text" ? 4.5 : 3);
+  assert.equal(ratio >= target, passes, `${usage} at ${ratio}:1`);
+  assert.equal(contrastMath.contrastRatioText(ratio, target), (passes ? "" : "<") + target.toFixed(2));
+}
+const lockedCore = structuredClone(assessment.core);
+lockedCore[3] = { ...lockedCore[3], r:119, g:119, b:65, hex:"#777741", locked:true,
+  contrast:{ onGround:4.5, onPanel:4.5 }, origin:{ kind:"picked", repairs:[] } };
+const beforeCheck = structuredClone(lockedCore);
+const usageChecks = contrastMath.previewContrastChecks(lockedCore);
+assert.equal(usageChecks.length, 12);
+for (const role of roleIDs.slice(2)) {
+  for (const surface of ["ground", "panel"]) {
+    const pair = usageChecks.find(check => check.role === role && check.surface === surface);
+    const indicator = roleIDs.indexOf(role) >= 4;
+    assert.equal(pair?.usage, indicator ? "UI indicator" : "normal text", `${role} on ${surface}`);
+    assert.equal(pair.target, indicator ? 3 : 4.5);
+  }
+}
+const lockedCheck = contrastMath.reviewAssessment(lockedCore, [], []).checks.find(check => check.id === "readability");
+assert.ok(lockedCheck.roles.includes("muted"));
+assert.ok(lockedCheck.detail.includes("muted on ground (normal text) <4.50:1, needs 4.5:1"));
+const historical = contrastMath.reviewAssessment(lockedCore, [], [], 1);
+assert.equal(historical.version, 1);
+assert.ok(!historical.checks.find(check => check.id === "readability").roles.includes("muted"),
+  "recorded v1 assessment must keep its original generation threshold");
+const historicalAccents = structuredClone(lockedCore);
+Object.assign(historicalAccents[4], { r:119, g:119, b:65, hex:"#777741" });
+const earlier = contrastMath.reviewAssessment(historicalAccents, [], [], 2);
+assert.equal(earlier.version, 2);
+assert.ok(earlier.checks[0].detail.includes("observed on ground (normal text) <4.50:1, needs 4.5:1"));
+assert.ok(!contrastMath.reviewAssessment(historicalAccents, [], []).checks[0].roles.includes("observed"),
+  "raw indicator clears 3:1 on each surface and its small label is checked independently");
+assert.deepEqual(lockedCore, beforeCheck, "checking contrast changed locked paint or provenance");
+for (const [r, g, b] of [[0, 0, 0], [119, 119, 119], [0, 132, 143], [174, 103, 0], [255, 255, 255]]) {
+  const fill = { r, g, b };
+  assert.ok(contrastMath.contrast(contrastMath.previewLabelRGB(fill), fill) >= 4.5, "small filled label failed");
+}
 
 const fingerprintDocument = palettes.find(plate => plate.folder === "night-bay");
 assert.ok(fingerprintDocument, "night-bay fingerprint fixture is missing");
@@ -285,6 +339,7 @@ first = archiveCurrentSeal("observed renamed by human");
 state.review = { version:1, status:"edited", history:first };
 repeated = archiveCurrentSeal("continued typing");
 state.review = seal("0000000000000002", first);
+state.review.assessment = { version:2, status:"attention", attentionCount:1 };
 second = archiveCurrentSeal("source still removed");
 bounded = normalizeReviewHistory(Array.from({ length:25 }, (_, index) => ({
   version:1, sealedAt:"2026-08-29T12:34:56.000Z", sealedBy:"human", scope:"palette-content",
@@ -297,6 +352,8 @@ assert.equal(historyAudit.first[0].invalidatedBy, "observed renamed by human");
 assert.equal(historyAudit.repeated.length, 1);
 assert.equal(historyAudit.second.length, 2);
 assert.equal(historyAudit.second[1].invalidatedBy, "source still removed");
+assert.equal(historyAudit.second[0].assessment.version, 1);
+assert.deepEqual({ ...historyAudit.second[1].assessment }, { version:2, status:"attention", attentionCount:1 });
 assert.equal(historyAudit.bounded.length, 20);
 assert.equal(historyAudit.bounded[0].fingerprint.value, "0000000000000005");
 

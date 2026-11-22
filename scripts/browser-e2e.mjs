@@ -104,22 +104,449 @@ async function forcePolarity(target, mode) {
   await target.locator(`[data-pol="${mode}"]`).click();
   await target.waitForFunction(expected => state.polarity === expected && state.lightScene === (expected === "light") && !document.getElementById("extractBtn").disabled, mode);
 }
-async function assertGeneratedReadable(target, plate, label) {
+async function assertGenerationFloors(target, plate, label) {
   assert.equal(plate.core.length, 8, `${label}: incomplete generated core`);
   const checks = await target.evaluate(p => {
     const ground = p.core.find(t => t.id === "ground"), panel = p.core.find(t => t.id === "panel");
+    const readableMuted = p.generator.extraction >= 6 && p.params.colorPolicy === "readable-ui";
     return p.core.filter(t => !["ground", "panel"].includes(t.id)).map(t => ({
-      role: t.id, locked: !!t.locked, target: t.id === "ink" ? 4.5 : 3,
+      role: t.id, locked: !!t.locked, target: t.id === "ink" || (readableMuted && t.id === "muted") ? 4.5 : 3,
       onGround: contrast(t, ground), onPanel: contrast(t, panel)
     }));
   }, plate);
   assert.equal(checks.length, 6, `${label}: missing core inks`);
   for (const check of checks) {
-    assert.equal(check.locked, false, `${label}: generated readability case unexpectedly contains a locked ${check.role}`);
+    assert.equal(check.locked, false, `${label}: generation floor case unexpectedly contains a locked ${check.role}`);
     assert.ok(check.onGround >= check.target && check.onPanel >= check.target,
       `${label}: ${check.role} needs ${check.target}:1 on both surfaces; ground=${check.onGround}, panel=${check.onPanel}`);
   }
 }
+
+// Hold matrix thresholds to the actual text and marker usages.
+async function assertMatrix(target) {
+  assert.equal(await target.locator(".cell").filter({has:target.locator('[data-why="observed"]')})
+    .locator(".cr").getAttribute("title"), "UI indicator on ground needs 3:1");
+  const expected = await target.evaluate(() => state.core.slice(2).flatMap(role =>
+    ["ground", "panel"].map(surface => ({
+      role: role.id, surface, minimum: ["ink","muted"].includes(role.id) ? 4.5 : 3,
+      ratio: contrast(role, token(surface))
+    }))));
+  const cells = await target.locator("#matrix [data-role][data-surface]").evaluateAll(nodes =>
+    nodes.map(el => ({ ...el.dataset, text: el.textContent })));
+  for (const { role, surface, minimum, ratio } of expected) {
+    const cell = cells.find(item => item.role === role && item.surface === surface);
+    assert.equal(Number(cell?.target), minimum, `${role} on ${surface}`);
+    assert.match(cell.text, ratio >= minimum ? /pass/i : /low/i,
+      `${role} on ${surface}: ${ratio} versus ${minimum}`);
+  }
+  const failures = expected.filter(check => check.ratio < check.minimum).length;
+  assert.equal(await target.locator("#editContrast .contrast-warning").isVisible(), failures > 0);
+  if (await target.locator('#tabs [data-fmt="godot"]').getAttribute("aria-pressed") !== "true") {
+    const advice = await target.locator("#exportReadiness").textContent();
+    if (failures) assert.match(advice, new RegExp(`\\b${failures} checks?\\b`));
+    else assert.match(advice, /contrast checks pass/i);
+  }
+}
+
+async function assertPreviewStatusPaints(target) {
+  const cases = {
+    harness:[[".trace .ok","observed","ground","::before","backgroundColor"],
+      [".trace .warn","attention","ground","::before","backgroundColor"],
+      [".trace .bad","rupture","ground","::before","backgroundColor"],
+      [".trace .au","gold","ground","::before","backgroundColor"],
+      [".h-pill","observed","ground",null,"borderTopColor"]],
+    forms:[[".fld .req","attention","ground",null,"borderLeftColor"],
+      [".help.err","rupture","ground",".inp.bad","borderTopColor"],
+      [".help b","observed","ground",".inp.focus","outlineColor"]],
+    table:[[".st .lnk","observed","panel",null,"textDecorationColor"],
+      [".st .seal","gold","ground",null,"borderTopColor"]],
+    approval:[[".sa-kicker","gold","panel",null,"borderLeftColor"],
+      [".sa-row.warnrow b","attention","panel",null,"borderRightColor"]]
+  };
+  for (const [surface, checks] of Object.entries(cases)) {
+    await target.locator(`[data-surf="${surface}"]`).click();
+    const measurements = await target.locator("#harnessHost").evaluate((host, checks) => {
+      const rgb = css => { const [r,g,b] = css.match(/\d+/g).map(Number); return {r,g,b}; };
+      return checks.map(([selector, role, expectedSurface, cueSelector, property]) => {
+        const label = host.querySelector(selector);
+        const cue = cueSelector?.startsWith("::") ? getComputedStyle(label, cueSelector)
+          : getComputedStyle(cueSelector ? host.querySelector(cueSelector) : label);
+        let backdrop = label;
+        while (getComputedStyle(backdrop).backgroundColor === "rgba(0, 0, 0, 0)") backdrop = backdrop.parentElement;
+        const bg = rgb(getComputedStyle(backdrop).backgroundColor), fg = rgb(getComputedStyle(label).color);
+        return {selector, actualBG:hex(bg), expectedBG:token(expectedSurface).hex, actualCue:hex(rgb(cue[property])),
+          accent:token(role).hex, text:hex(fg), ratio:contrast(fg,bg), accentRatio:contrast(token(role),bg)};
+      });
+    }, checks);
+    for (const m of measurements) {
+      assert.equal(m.actualBG, m.expectedBG, m.selector);
+      assert.equal(m.actualCue, m.accent, m.selector + " keeps raw accent paint");
+      assert.ok(m.ratio >= 4.5, m.selector + " rendered small text contrast " + m.ratio);
+      if (m.accentRatio >= 4.5) assert.equal(m.text, m.accent, m.selector + " preserves readable accent text");
+    }
+  }
+  await target.locator('[data-surf="harness"]').click();
+}
+
+async function contrastExportChecks(target, label, mobile = false) {
+  const roles = ["ground", "panel", "ink", "muted", "observed", "attention", "rupture", "gold"];
+  const colors = ["#FFFEF8", "#FEFEFE", "#000000", "#495E67", "#275A5A", "#757575", "#99366F", "#78601A"];
+  const study = name => ({ name, polarity: "light", createdAt:"2026-08-28T00:00:00.000Z",
+    core: roles.map((id, i) => ({ id, hex: colors[i], locked: id === "muted" })), found: [] });
+  const upload = async plate => {
+    await target.locator("#plateFile").setInputFiles({
+      name: "contrast-study.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(plate))
+    });
+    await target.waitForFunction(name => document.getElementById("plateName").value === name && state.core.length === 8, plate.name);
+  };
+  const open = async selector => {
+    const disclosure = target.locator(`details${selector}, ${selector} details`).first();
+    if (!(await disclosure.evaluate(el => el.open))) await disclosure.locator(":scope > summary").press("Enter");
+    if (await disclosure.locator(".contrast-issues").count()) await disclosure.locator(".contrast-issues li").first().waitFor();
+  };
+  const active = target.locator("#exportReadiness");
+  const assertOutputText = async selector => {
+    const ratio = await target.locator(selector).evaluate(el => {
+      const rgb = value => { const [r, g, b] = value.match(/\d+/g).map(Number); return { r, g, b }; };
+      const style = getComputedStyle(el);
+      return contrast(rgb(style.color), rgb(style.backgroundColor));
+    });
+    assert.ok(ratio >= 4.5, `${selector} actual exported text contrast ${ratio}`);
+  };
+  const capture = async state => {
+    await active.evaluate(el => el.scrollIntoView({ block: "center" }));
+    await target.screenshot({ path: path.join(output, `contrast-${label}-${state}.png`) });
+  };
+  const equalInks = study("Equal primary and secondary ink");
+  equalInks.core[3].hex = equalInks.core[2].hex;
+  await upload(equalInks);
+  const hierarchy = await target.evaluate(() => {
+    const style = selector => getComputedStyle(document.querySelector(selector));
+    const weight = selector => Number(style(selector).fontWeight);
+    return {
+      equalPaint: style("#vHuman").color === style("#vMachine").color,
+      humanEmphasis: weight("#vHuman") > weight("#vMachine"),
+      agentEmphasis: weight("#harnessHost .agent") > weight("#harnessHost .agent .role"),
+      resultEmphasis: weight("#harnessHost .trace .ok") > weight("#harnessHost .trace .dim")
+    };
+  });
+  for (const [cue, present] of Object.entries(hierarchy)) assert.ok(present, `Equal-ink preview: ${cue}`);
+  await target.locator('[data-surf="forms"]').click();
+  const fieldStyle = selector => target.locator(selector).first().evaluate(el => getComputedStyle(el).fontStyle);
+  assert.notEqual(await fieldStyle(".inp.muted"), await fieldStyle(".inp:not(.muted)"), "Placeholder has its own type style");
+  await target.locator('[data-surf="harness"]').click();
+  await upload(study("Porcelain"));
+  if (mobile) {
+    await open("#mobileExport");
+    assert.ok(await target.locator("#exportSummary").isVisible());
+  }
+  await assertMatrix(target);
+  await assertOutputText("#export");
+  assert.match(await active.innerText(), /contrast checks pass/i);
+  assert.equal(await active.locator("details").count(), 0, "Passing palette has no warning disclosure");
+  const initial = await readPlate(target);
+  assert.deepEqual(initial.generator, {name:"unknown", version:"unknown", extraction:0},
+    "Importing unversioned paint must not claim it was forged by the current extractor");
+  await capture("pass");
+  await target.locator('#tabs [data-fmt="json"]').click();
+  assert.deepEqual(JSON.parse(await download(target, "#downloadBtn", `contrast-${label}-pass.json`)), initial);
+  if (!mobile) {
+    assert.match(await target.locator("#bundleReadiness").innerText(), /contrast checks pass/i);
+    await checkSingleBundle(await download(target, "#bundleBtn", `contrast-${label}-clear-bundle.zip`), initial, false);
+    await target.locator("#saveBtn").click();
+    for (const id of ["shelfContrast", "vaultContrast"]) assert.match(await target.locator(`#${id}`).innerText(), /contrast checks pass/i);
+  }
+
+  const warning = study("Porcelain study");
+  warning.core[3].hex = "#898989"; // 3.49:1 on white. This locked secondary colour is intentional.
+  await upload(warning);
+  await assertMatrix(target);
+  assert.ok(await target.locator("#editContrast").isVisible(), "Editor surfaces failing checks before opening a panel");
+  if (mobile) {
+    assert.ok(await target.locator("#mobileReview").evaluate(el => !el.open));
+    assert.match(await target.locator("#exportSummary").innerText(), /contrast|check/i);
+  }
+  await open("#exportReadiness");
+  const details = await active.innerText();
+  for (const text of [/muted/i, /ground/i, /panel/i, /4\.5/, /3\.\d+/]) assert.match(details, text);
+  assert.ok(await target.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await capture("warning");
+  const link = active.locator('[data-contrast-role="muted"]').first();
+  await link.focus(); await link.press("Enter");
+  assert.equal(await target.locator('[data-why="muted"]').evaluate(el => el === document.activeElement), true);
+  if (mobile) await open("#mobileReview");
+  await target.locator("#sealPlate").click();
+  const sealed = await readPlate(target);
+  assert.ok(sealed.core[3].locked && sealed.core[3].hex === "#898989");
+  assert.ok(sealed.review.agentEligible, "Human review can intentionally accept a contrast issue");
+  assert.match(await target.locator("#reviewFocus").innerText(), /muted on (ground|panel)/i);
+  if (label === "desktop") {
+    const response = await target.request.post(new URL("/api/check", baseURL).href, { data: sealed });
+    assert.equal(response.status(), 200);
+    const verified = await response.json();
+    assert.equal(verified.agentEligible, true);
+    const assessment = verified.review.assessment;
+    assert.deepEqual({ ...assessment, checks:assessment.checks.map(check => ({ roles:[], ...check })) }, sealed.review.assessment,
+      "Go seal verification and the browser must agree on every usage-aware human review result");
+  }
+  await target.locator('#tabs [data-fmt="json"]').click();
+  assert.deepEqual(JSON.parse(await download(target, "#downloadBtn", `contrast-${label}-warning.json`)), sealed);
+  if (mobile) {
+    assert.deepEqual(await readPlate(target), sealed);
+    return;
+  }
+  await open("#bundleReadiness");
+  assert.match(await target.locator("#bundleReadiness").innerText(), /muted/i);
+  await checkSingleBundle(await download(target, "#bundleBtn", `contrast-${label}-bundle.zip`), sealed, false);
+  await target.locator("#saveBtn").click();
+  const shelf = await target.evaluate(() => JSON.parse(JSON.stringify(state.shelf)));
+  await target.locator('[data-a="0"]').click();
+  await target.locator('[data-b="1"]').click();
+  await target.locator("#pairBtn").click();
+  await open("#themeReadiness");
+  const themeWarning = await target.locator("#themeReadiness").innerText();
+  assert.match(themeWarning, /muted/i);
+  assert.match(themeWarning, /base|alt/i, "Same-polarity pairs identify the side that fails");
+  await target.locator('[data-tfmt="json"]').click();
+  await assertOutputText("#themeOut");
+  const themeBytes = await target.locator("#themeOut").inputValue();
+  assert.equal((await download(target, "#themeDownload", `contrast-${label}-theme.json`)).toString(), themeBytes);
+  const theme = JSON.parse(themeBytes);
+  assert.equal(theme.alt.tokens.find(t => t.key === "muted").hex, "#495E67");
+  assert.equal(theme.dark.tokens.find(t => t.key === "muted").hex, "#898989");
+  assert.deepEqual(await readPlate(target), sealed, "Inspecting and exporting failures preserves the sealed palette");
+
+  const unsaved = study("Bottle glass");
+  unsaved.core[5].hex = "#14452E"; // Dark fill and black ink fail only for the Godot Button.
+  await upload(unsaved);
+  assert.match(await active.innerText(), /contrast checks pass/i);
+  await target.locator('#tabs [data-fmt="godot"]').click();
+  await open("#exportReadiness");
+  assert.match(await active.innerText(), /ink/i); assert.match(await active.innerText(), /attention/i);
+  await open("#shelfContrast");
+  await open("#vaultContrast");
+  const savedAdvice = await target.locator("#shelfContrast").innerText();
+  assert.match(savedAdvice, /Porcelain study/);
+  assert.doesNotMatch(savedAdvice, /Bottle glass/, "Shelf advice covers only the saved plates");
+  const vaultAdvice = await target.locator("#vaultContrast").innerText();
+  assert.match(vaultAdvice, /Porcelain study/); assert.match(vaultAdvice, /Bottle glass/);
+  const shelfExport = JSON.parse(await download(target, "#shelfExport", `contrast-${label}-shelf.json`));
+  assert.deepEqual(shelfExport.plates, shelf, "Shelf export excludes the unsaved live palette");
+  const vault = unzip(await download(target, "#vaultExport", `contrast-${label}-vault.zip`));
+  const index = JSON.parse(vault.get("index.json"));
+  assert.deepEqual(index.entries.map(e => e.name).sort(), ["Bottle glass", "Porcelain", "Porcelain study"]);
+  const archived = JSON.parse(vault.get(index.entries.find(e => e.name === sealed.name).path));
+  assert.deepEqual(archived.review, sealed.review);
+  assert.deepEqual(archived.core, sealed.core);
+
+  const indicator = study("Indicator study");
+  indicator.core[1].hex = "#D8D8D8";
+  indicator.core[4].hex = "#777777";
+  indicator.core[6].hex = "#757575";
+  indicator.core[2].hex = "#EEEEEE"; // Broken manual body ink exercises the independent label fallback.
+  indicator.core[2].locked = true;
+  await upload(indicator);
+  await assertMatrix(target);
+  assert.match(await target.locator('#matrix [data-role="rupture"][data-surface="panel"]').innerText(), /3\.\d+.*pass/is);
+  await assertPreviewStatusPaints(target);
+  const fill = await target.locator("#harnessHost .pbtn.acc").evaluate(el => {
+    const s = getComputedStyle(el);
+    return [s.color, s.backgroundColor];
+  });
+  assert.deepEqual(fill, ["rgb(0, 0, 0)", "rgb(119, 119, 119)"],
+    "The rendered small button label must use the selected 4.69:1 foreground");
+
+  await target.locator("#sealPlate").click();
+  const savedV2 = await readPlate(target);
+  savedV2.review.assessment = await target.evaluate(p => reviewAssessment(p.core, p.found, p.sources, 2), savedV2);
+  assert.ok(savedV2.review.assessment.checks[0].roles.includes("observed"));
+  savedV2.review.assessment.checks[0].detail += " Historical annotation.";
+  await upload(savedV2);
+  await target.waitForFunction(() => state.review.assessment?.version === 2);
+  assert.deepEqual(await readPlate(target), savedV2, "Reopening a v2 seal preserves its fingerprint and original assessment");
+  assert.doesNotMatch(await target.locator(".review-check.readability .review-check-detail").innerText(), /observed on/,
+    "The current indicator meets its target even though the sealed v2 accent-text use failed");
+  await target.locator('[data-lock="4"]').click();
+  const changedV2 = await readPlate(target);
+  assert.equal(changedV2.review.agentEligible, false);
+  assert.equal(changedV2.review.assessment.version, 3);
+  assert.equal(changedV2.review.history.at(-1).assessment.version, 2);
+
+  const unassessed = structuredClone(savedV2);
+  unassessed.name = "Historical indicator study";
+  unassessed.generator = {name:"scene-palette", version:"2.1.0", extraction:5};
+  delete unassessed.review;
+  await upload(unassessed);
+  const reopened = await readPlate(target);
+  assert.ok(!Object.hasOwn(reopened.review || {}, "assessment"), "Reading a v5 draft must not add an assessment");
+  const rawChecks = await target.evaluate(p => [plateReview(p, true).assessment, plateReview(p).assessment], unassessed);
+  assert.equal(rawChecks[0].version, 1);
+  assert.ok(!rawChecks[0].checks[0].roles.includes("observed"));
+  assert.equal(rawChecks[1].version, 3);
+  assert.ok(!rawChecks[1].checks[0].roles.includes("observed"));
+  await target.locator('[data-lock="4"]').click();
+  assert.equal((await readPlate(target)).review.assessment.version, 3);
+
+  const pastel = JSON.parse(await fs.readFile(path.join(root, "testdata/reference-palettes/pastel-prisms/palette.json"), "utf8"));
+  await upload(pastel);
+  await target.locator("#sealPlate").click();
+  const historical = await readPlate(target);
+  historical.review.assessment = await target.evaluate(p => reviewAssessment(p.core, p.found, p.sources, 1), historical);
+  assert.equal(historical.review.assessment.attentionCount, 1);
+  const neon = JSON.parse(await fs.readFile(path.join(root, "testdata/reference-palettes/empty-neon-street/palette.json"), "utf8"));
+  const notes = await target.evaluate(([dark, light]) =>
+    JSON.parse(themeExport(makeTheme(dark, light), "json")).notes, [neon, historical]);
+  assert.deepEqual(notes.slice(0, 2), ["dark side clears every target", "light side clears every target"],
+    "Historical theme JSON notes must retain their original extraction-floor meaning and bytes");
+  await upload(historical);
+  await target.waitForFunction(() => state.review.assessment?.version === 1);
+  assert.deepEqual(await readPlate(target), historical, "Opening a sealed v1 assessment preserves its original export");
+  assert.ok(await target.locator("#editContrast").isVisible());
+  await target.locator('[data-fmt="css"]').click();
+  assert.match(await target.locator("#export").inputValue(), /1 review note ·/);
+  await open("#bundleReadiness");
+  await open("#vaultContrast");
+  for (const selector of ["#bundleReadiness", "#vaultContrast"]) {
+    const advice = await target.locator(selector).innerText();
+    assert.match(advice, /PNG metadata text/); assert.match(advice, /PNG role text/);
+  }
+  const archive = unzip(await download(target, "#bundleBtn", `contrast-${label}-historical.zip`));
+  const entry = suffix => [...archive].find(([name]) => name.endsWith(suffix))[1];
+  assert.match(entry("/tokens.css").toString(), /1 review note ·/);
+  const png = await target.evaluate(async p => Array.from(await canvasPNG(previewCanvas(p))), historical);
+  assert.deepEqual(entry("/preview.png"), Buffer.from(png), "Both hosts ship the measured browser caption rendering");
+  await target.locator('[data-lock="3"]').click();
+  const edited = await readPlate(target);
+  assert.equal(edited.review.agentEligible, false);
+  assert.equal(edited.review.assessment.version, 3);
+  assert.equal(edited.review.history.at(-1).assessment.version, 1);
+}
+
+async function historicalExportChecks(target, label) {
+  const directory = path.join(root, "testdata/export-history/pastel-prisms-v5");
+  const source = await fs.readFile(path.join(directory, "sealed-no-assessment.json"));
+  const original = JSON.parse(source);
+  const oracle = JSON.parse(await fs.readFile(path.join(directory, "archive-baseline.json"), "utf8"));
+  const browserNotes = await fs.readFile(path.join(directory, "notes.browser.md"), "utf8");
+  const isOffline = label === "offline";
+  await target.locator("#plateFile").setInputFiles(path.join(directory, "sealed-no-assessment.json"));
+  await target.waitForFunction(stamp => state.review.sealedAt === stamp, original.review.sealedAt);
+  assert.deepEqual(await readPlate(target), original, "Opening a v5 seal must preserve every field and the missing assessment");
+  assert.equal(original.review.agentEligible, true);
+  assert.ok(await target.locator("#editContrast .contrast-warning").isVisible(), "Current advice must flag this v5 plate");
+  assert.match(await target.locator(".review-check.readability .review-check-detail").innerText(), /muted on/);
+  await target.locator('#tabs [data-fmt="json"]').click();
+  const exported = await download(target, "#downloadBtn", `contrast-${label}-preserved-seal.json`);
+  assert.ok(exported.equals(source), "The canonical single JSON must retain the exact imported metadata, colours and seal");
+  const files = unzip(await download(target, "#bundleBtn", `contrast-${label}-preserved-seal.zip`));
+  const folder = "pastel-prisms/";
+  for (const [format, file] of [["css","tokens.css"], ["godot","plate.gd"], ["gpl","palette.gpl"]]) {
+    const expected = await fs.readFile(path.join(directory, file));
+    assert.equal(sha256(expected), oracle.sha256.browser[file], `HEAD fixture hash for ${file}`);
+    assert.ok(files.get(folder + file)?.equals(expected), `${label} archived ${file} changed since HEAD`);
+    await target.locator(`#tabs [data-fmt="${format}"]`).click();
+    const direct = await download(target, "#downloadBtn", `contrast-${label}-preserved-${file}`);
+    assert.ok(direct.equals(expected), `${label} direct ${format} changed since HEAD`);
+  }
+  const packed = JSON.parse(files.get(folder + "palette.json"));
+  const expectedPacked = {...original, folder:"pastel-prisms",
+    sources:original.sources.map(record => ({...record, path:null, retained:false}))};
+  assert.deepEqual(packed, expectedPacked, "Archive metadata may only record its folder and unavailable source bytes");
+  if (!isOffline) {
+    assert.equal(sha256(files.get(folder + "palette.json")), oracle.sha256.go["palette.json"]);
+    const response = await target.request.post(new URL("/api/check", baseURL).href, {data:packed});
+    assert.equal(response.status(), 200);
+    const verdict = await response.json();
+    assert.equal(verdict.agentEligible, true);
+    assert.equal(verdict.review.assessment.version, 3);
+    assert.match(verdict.review.assessment.checks[0].detail, /muted on/);
+  }
+  const nativeNotes = await fs.readFile(path.join(directory, "notes.go.md"), "utf8");
+  // The old native formatter pluralized one source as "1 source records".
+  const expectedNotes = isOffline ? browserNotes : nativeNotes.replace("1 source records hashed", "1 source record hashed");
+  const notes = files.get(folder + "notes.md").toString("utf8");
+  assert.equal(notes, expectedNotes, `${label} Markdown changed from its historical format`);
+  const findings = text => text.split("## Review focus\n\n")[1].split("\n\n")[0];
+  assert.equal(findings(notes), findings(browserNotes), "Offline and Go must render the same four historical findings");
+  assert.deepEqual(await readPlate(target), original);
+
+  // Reopen the actual downloaded file, then invalidate its original seal with a real edit.
+  await target.locator("#clearAll").click();
+  await target.locator("#plateFile").setInputFiles(path.join(output, `contrast-${label}-preserved-seal.json`));
+  await target.waitForFunction(stamp => state.review.sealedAt === stamp, original.review.sealedAt);
+  assert.deepEqual(await readPlate(target), original);
+  await target.locator('[data-lock="3"]').click();
+  const changed = await readPlate(target);
+  assert.equal(changed.review.agentEligible, false);
+  assert.equal(changed.review.assessment.version, 3);
+  const prior = changed.review.history.at(-1);
+  assert.deepEqual(prior.fingerprint, original.review.fingerprint);
+  assert.equal(prior.assessment, null, "An archived seal must not invent an earlier recorded assessment");
+  await target.locator("#sealPlate").click();
+  assert.equal((await readPlate(target)).review.assessment.version, 3);
+
+  const nullable = structuredClone(original);
+  nullable.review.assessment = null;
+  await target.locator("#plateFile").setInputFiles({name:"null-assessment.json", mimeType:"application/json",
+    buffer:Buffer.from(JSON.stringify(nullable))});
+  await target.waitForFunction(stamp => state.review.sealedAt === stamp, original.review.sealedAt);
+  assert.deepEqual(await readPlate(target), nullable, "A historical explicit null remains explicit null");
+}
+
+async function versionedExportChecks(target, label) {
+  const read = async file => JSON.parse(await fs.readFile(path.join(root, "testdata", file), "utf8"));
+  const pastel = await read("v6/reference-palettes/pastel-prisms/palette.json");
+  const historical = await read("reference-palettes/empty-neon-street/palette.json");
+  await target.locator("#plateFile").setInputFiles({
+    name:"generated-v6.json", mimeType:"application/json", buffer:Buffer.from(JSON.stringify(pastel))
+  });
+  await target.waitForFunction(() => state.plateMeta.generator?.extraction === 6);
+  await target.locator('#tabs [data-fmt="godot"]').click();
+  const plate = await readPlate(target);
+  assert.equal(plate.review.assessment.version, 3, "Unreviewed v6 generation uses current assessment rules");
+  const script = await target.locator("#export").inputValue();
+  const button = /theme\.set_color\("font_color", "Button", (Color\.(?:WHITE|BLACK))\)/.exec(script);
+  assert.ok(button, "Pastel Prisms needs an adaptive Godot button foreground");
+  assert.match(await target.locator("#exportReadiness").innerText(), /contrast checks pass/i);
+  assert.match(await target.locator("#bundleReadiness").innerText(), /contrast checks pass/i);
+  const archive = unzip(await download(target, "#bundleBtn", `contrast-${label}-v6.zip`));
+  const entry = suffix => [...archive].find(([name]) => name.endsWith(suffix))[1];
+  assert.equal(entry("/plate.gd").toString(), script, "ZIP and single Godot output must agree exactly");
+  const readings = await target.evaluate(([current, old, binding]) => {
+    const mixed = makeTheme(old, current);
+    const buttonPaint = binding === "Color.WHITE" ? {r:255,g:255,b:255} : {r:0,g:0,b:0};
+    const g = current.core[0], ink = current.core[2];
+    const canvas = previewCanvas(current).getContext("2d");
+    // Solid interior glyph pixels from the role caption, below the swatch and hex.
+    const pixels = canvas.getImageData(0, 185, 118, 14).data;
+    let maxRatio = 1;
+    for (let i = 0; i < pixels.length; i += 4) {
+      maxRatio = Math.max(maxRatio, contrast({r:pixels[i],g:pixels[i+1],b:pixels[i+2]}, g));
+    }
+    return {raw:contrast(ink, current.core[5]), label:contrast(buttonPaint, current.core[5]),
+      maxRatio, theme:themeExport(mixed, "godot"), old:formatPlate(old, "godot")};
+  }, [plate, historical, button[1]]);
+  assert.ok(readings.raw < 4.5 && readings.label >= 4.5);
+  assert.ok(readings.maxRatio >= 4.5, "Actual v6 PNG caption glyph never reaches readable contrast");
+  assert.ok(readings.theme.includes(`"Button", ${button[1]} if light else p["ink"])`));
+  assert.ok(readings.old.includes('"Button", INK)'), "Historical single binding changed");
+  assert.deepEqual(await readPlate(target), plate, "Checking and exporting v6 altered the document");
+
+  const samePaint = {name:"Opaque caption and preview text", generator:plate.generator,
+    core:plate.core.map(t => ({id:t.id, hex:t.id === "ink" ? plate.core[0].hex : t.hex, locked:true}))};
+  await target.locator("#plateFile").setInputFiles({name:"shared-paint.json", mimeType:"application/json",
+    buffer:Buffer.from(JSON.stringify(samePaint))});
+  await target.waitForFunction(name => document.getElementById("plateName").value === name, samePaint.name);
+  const warning = target.locator("#bundleReadiness details");
+  await warning.locator("summary").press("Enter");
+  await warning.locator("li").first().waitFor();
+  const uses = warning.locator("li").filter({hasText:/ink on ground/});
+  assert.equal(await uses.count(), 2, "Body and opaque PNG caption share a pair but describe two text usages");
+  assert.match((await uses.allInnerTexts()).join(" "), /PNG caption text/);
+  const count = await warning.locator("li").count();
+  assert.match(await warning.locator("summary").innerText(), new RegExp(`Bundle contrast · ${count} checks\\b`));
+}
+
 async function clickImage(target, xFraction, yFraction) {
   const canvas = target.locator("#stageCanvas");
   const position = await canvas.evaluate((element, fractions) => {
@@ -464,7 +891,7 @@ async function checkColourPolicyParity(goTarget, htmlTarget) {
           assert.equal(plate.params.polarityMode, polarity);
           assert.equal(await target.locator("#colorPolicy").inputValue(), policy);
           assert.match(await target.locator("#colourDiagnostics").innerText(), policy === "source-hues" ? /^Source hues/ : /^Readable UI/);
-          await assertGeneratedReadable(target, plate, `${label}: ${image} ${policy}/${polarity}`);
+          await assertGenerationFloors(target, plate, `${label}: ${image} ${policy}/${polarity}`);
           if (neutral && policy === "source-hues") {
             for (const token of plate.core) assert.ok(token.rgb.every(channel => channel === token.rgb[0]),
               `${label}: Source hues invented chromatic paint for grayscale ${token.id}: ${token.hex}`);
@@ -503,6 +930,11 @@ async function checkColourRoundtripAndPaint(target, label, go) {
   await target.waitForFunction(() => !!state.theme && goPending === null);
   const theme = await target.evaluate(() => JSON.parse(JSON.stringify(state.theme)));
   for (const side of [theme.dark, theme.light]) assert.equal(side.params.colorPolicy, "source-hues", "Counterpart lost colour policy");
+  const notes = await target.evaluate(() => JSON.parse(themeExport(state.theme, "json")).notes);
+  for (const side of ["dark", "light"]) {
+    assert.ok(notes.some(note => note.startsWith(side + " side") && note.includes("preview contrast")),
+      `${label}: generated counterpart needs current preview contrast notes on the ${side} side`);
+  }
   assert.deepEqual(await readPlate(target), sealed, "Deriving a counterpart changed the visible sealed palette");
   await target.locator("#saveBtn").click();
   await target.locator('[data-fmt="json"]').click();
@@ -653,6 +1085,27 @@ try {
   const fallback = await context.newPage(); watch(fallback, "standalone");
   await fallback.goto(pathToFileURL(standaloneHTML).href);
   await fallback.locator("#extractBtn").waitFor();
+  for (const [label, url, mobile] of [
+    ["desktop", baseURL.href, false], ["offline", pathToFileURL(standaloneHTML).href, false],
+    ["mobile", pathToFileURL(standaloneHTML).href, true]
+  ]) {
+    const audit = await browser.newPage({ acceptDownloads:true, viewport:mobile ? {width:390, height:844} : {width:1440, height:1000},
+      hasTouch:mobile, reducedMotion:"reduce", serviceWorkers:"block" });
+    try {
+      if (url.startsWith("file:")) await audit.context().setOffline(true);
+      watch(audit, label);
+      await audit.goto(url);
+      await contrastExportChecks(audit, label, mobile);
+      if (!mobile) {
+        await historicalExportChecks(audit, label);
+        await versionedExportChecks(audit, label);
+      }
+      passed(`Contrast feedback, keyboard navigation and intentional exports: ${label}`);
+    } catch (error) {
+      await audit.screenshot({ path:path.join(output, `contrast-${label}-failure.png`) }).catch(() => {});
+      throw error;
+    } finally { await audit.close(); }
+  }
   // Native Chromium/Edge cube roots have differed from the reference arithmetic
   // by one ULP. Near-neutral hues expose that drift before palette rounding.
   for (const [target, label] of [[page, "Go"], [fallback, "standalone"]]) {
@@ -692,8 +1145,8 @@ try {
     assert.deepEqual(semantic(actual), semantic(expected), `${label}: Go / standalone parity`);
     assert.equal(actual.params.polarityMode, "auto", `${label}: baseline must use Auto`);
     assert.equal(actual.params.variant, 0, `${label}: Forge must reset to first variant`);
-    await assertGeneratedReadable(page, actual, `${label}: Go Auto`);
-    await assertGeneratedReadable(fallback, expected, `${label}: standalone Auto`);
+    await assertGenerationFloors(page, actual, `${label}: Go Auto`);
+    await assertGenerationFloors(fallback, expected, `${label}: standalone Auto`);
     report.extractionVersions = { go: actual.generator.extraction, reference: expected.generator.extraction };
     passed(`Go and standalone palette parity: ${label}`, `${actual.params.variantCount} variants; ${actual.found.length} found inks`);
     for (const mode of ["dark", "light"]) {
@@ -707,17 +1160,18 @@ try {
         assert.equal(plate.params.variant, 0, `${label}: forced ${mode} did not retain the requested first variant`);
       }
       assert.deepEqual(semantic(forcedActual), semantic(forcedExpected), `${label}: forced ${mode} Go / standalone parity`);
-      await assertGeneratedReadable(page, forcedActual, `${label}: Go forced ${mode}`);
-      await assertGeneratedReadable(fallback, forcedExpected, `${label}: standalone forced ${mode}`);
-      assert.match(await page.locator("#matrix .mnote").innerText(), /Every token clears its target on both surfaces/);
+      await assertGenerationFloors(page, forcedActual, `${label}: Go forced ${mode}`);
+      await assertGenerationFloors(fallback, forcedExpected, `${label}: standalone forced ${mode}`);
+      await assertMatrix(page);
+      await assertMatrix(fallback);
     }
     for (const target of [page, fallback]) {
       await target.evaluate(async () => { await setPolarity("auto"); });
       const restored = await readPlate(target);
       assert.equal(restored.params.polarityMode, "auto", `${label}: return to Auto failed`);
-      await assertGeneratedReadable(target, restored, `${label}: restored Auto`);
+      await assertGenerationFloors(target, restored, `${label}: restored Auto`);
     }
-    passed(`Generated palettes remain readable on both surfaces in forced dark and light: ${label}`);
+    passed(`Forced dark and light palettes meet their policy's extraction floors and show actual preview contrast: ${label}`);
   }
   await checkColourRoundtripAndPaint(page, "Go", true);
   await checkColourRoundtripAndPaint(fallback, "standalone", false);
@@ -746,7 +1200,8 @@ try {
       inks.every(t => contrast(t, token("panel")) >= (t.id === "ink" ? 4.5 : 3));
   });
   assert.ok(groundOnlyFailure, "Intentional manual fixture must preserve exactly the ground-only ink failure");
-  assert.match(await page.locator("#matrix .mnote").innerText(), /below target on ground or panel/);
+  await assertMatrix(page);
+  assert.ok(await page.locator("#editContrast").isVisible());
   await page.locator("#matrix").screenshot({ path: path.join(output, "manual-ground-contrast-warning.png") });
   passed("Intentional locked manual ink is preserved and warns when only ground contrast fails");
 
@@ -754,11 +1209,16 @@ try {
   await page.evaluate(async () => { await setPolarity("auto"); });
   const initial = await forge(page);
   assert.ok(initial.params.variantCount > 1, "Fixture needs multiple variants for Remix regression");
-  await assertGeneratedReadable(page, initial, "Clean generated fixture after manual warning test");
-  assert.match(await page.locator("#matrix .mnote").innerText(), /Every token clears its target on both surfaces/);
+  await assertGenerationFloors(page, initial, "Clean generated fixture after manual warning test");
+  await assertMatrix(page);
   await page.locator('[data-pick="observed"]').click();
   await clickImage(page, 0.25, 0.25);
   await page.waitForFunction(() => !state.arm && state.core[4].origin.kind === "picked");
+  await assertMatrix(page);
+  await page.locator('[data-fmt="json"]').click();
+  const freshPick = JSON.parse(await download(page, "#downloadBtn", "just-picked.json"));
+  assert.deepEqual(freshPick.core[4], (await readPlate(page)).core[4]);
+  assert.ok(freshPick.core[4].locked, "Export immediately after picking must include the new locked paint");
   await page.locator('[data-name="4"]').fill("Pinned fixture");
   await page.locator('[data-name="4"]').press("Tab");
   await page.locator('[data-job="4"]').fill("test-only role purpose");

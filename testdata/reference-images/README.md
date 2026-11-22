@@ -35,6 +35,11 @@ node scripts/reference-extract.mjs --check
 go test ./...
 ```
 
-The oracle requires the optional Sharp development package. It writes both the
-palette/stage goldens and their index. Review those changes; never replace a
-golden solely to silence an unexpected algorithm regression.
+The oracle requires the optional Sharp development package. Its v6 outputs live in
+`testdata/v6`. The earlier `testdata/reference-palettes` and
+`testdata/histogram-signal.golden.json` files retain the v5 results. With the same
+pixels, v6 moves Readable UI secondary text to meet 4.5:1 on both surfaces.
+This changes its repair record, computed contrast, and colour signature. A moved
+core colour can also free up a source candidate for the found-ink list. The same
+images and raw histograms exercise both versions. Review changed expectations
+against the intended algorithm before accepting them.

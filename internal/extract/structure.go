@@ -120,7 +120,7 @@ func QuantileColor(histogram PooledHistogram, q0, q1 float64) (colorx.RGB, bool)
 
 // BuildStructure reproduces the browser's polarity choice, structural
 // quantiles, chroma caps, surface separation, and contrast repairs.
-func BuildStructure(histogram PooledHistogram, mode Polarity) StructureResult {
+func BuildStructure(histogram PooledHistogram, mode Polarity, policy ColorPolicy) StructureResult {
 	if mode != PolarityDark && mode != PolarityLight {
 		mode = PolarityAuto
 	}
@@ -244,6 +244,11 @@ func BuildStructure(histogram PooledHistogram, mode Polarity) StructureResult {
 	}
 
 	mutedInput := result.Colors["muted"]
+	if policy != SourceHues {
+		muted, _ := colorx.ForceContrastPair(mutedInput, result.Colors["ground"], result.Colors["panel"], 4.5)
+		applyRepair(&result, "muted", muted, Repair{Operation: "contrast", Against: "ground+panel", Target: 4.5})
+		return result
+	}
 	muted := colorx.ForceContrast(mutedInput, result.Colors["ground"], 3.0)
 	applyRepair(&result, "muted", muted, Repair{Operation: "contrast", Against: "ground", Target: 3.0})
 	muted = colorx.ForceContrast(result.Colors["muted"], result.Colors["panel"], 3.0)
@@ -254,6 +259,15 @@ func BuildStructure(histogram PooledHistogram, mode Polarity) StructureResult {
 	}
 
 	return result
+}
+
+// GenerationTarget applies to generated foreground roles on both surfaces.
+// The accessibility assessment separately tests each actual preview usage.
+func GenerationTarget(role string, policy ColorPolicy) float64 {
+	if role == "ink" || (role == "muted" && policy != SourceHues) {
+		return 4.5
+	}
+	return 3
 }
 
 func applyRepair(result *StructureResult, role string, next colorx.RGB, repair Repair) {

@@ -69,7 +69,7 @@ func Build(images []image.Image, request Request) (Response, error) {
 		}
 		pooled = extract.Pool(histograms)
 	}
-	structure := extract.BuildStructure(pooled, request.Polarity)
+	structure := extract.BuildStructure(pooled, request.Polarity, request.Params.ColorPolicy)
 	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, 6, request.Params.ColorPolicy)
 	assembly := extract.BuildPlateAssembly(structure, accents, request.Params.FoundInks, true)
 	result := Response{
@@ -95,13 +95,13 @@ func Build(images []image.Image, request Request) (Response, error) {
 		if err != nil {
 			return Response{}, err
 		}
-		applyHumanState(&plate, request, accents.Filtered, accents.RoleCandidates, structure.Notes)
+		applyHumanState(&plate, request, accents.Filtered, accents.RoleCandidates, structure)
 		result.Variants = append(result.Variants, plate)
 	}
 	return result, nil
 }
 
-func applyHumanState(plate *palette.Snapshot, request Request, candidates []extract.Candidate, observed []extract.AccentColor, baseNotes []string) {
+func applyHumanState(plate *palette.Snapshot, request Request, candidates []extract.Candidate, observed []extract.AccentColor, structure extract.StructureResult) {
 	locked := make(map[string]palette.SnapshotToken)
 	used := make(map[string]bool)
 	for _, token := range request.Core {
@@ -131,12 +131,17 @@ func applyHumanState(plate *palette.Snapshot, request Request, candidates []extr
 			plate.Core[i] = previous
 		} else {
 			if token.ID != "ground" && token.ID != "panel" {
-				target := 3.0
-				if token.ID == "ink" {
-					target = 4.5
-				}
-				if colorx.Contrast(rgb(token), ground) < target || colorx.Contrast(rgb(token), panel) < target {
-					joint, readable := colorx.ForceContrastPair(rgb(token), ground, panel, target)
+				target := extract.GenerationTarget(token.ID, request.Params.ColorPolicy)
+				recheckMuted := token.ID == "muted" && target == 4.5 &&
+					(ground != structure.Colors["ground"] || panel != structure.Colors["panel"])
+				if recheckMuted || colorx.Contrast(rgb(token), ground) < target || colorx.Contrast(rgb(token), panel) < target {
+					input := rgb(token)
+					if recheckMuted {
+						origin := structure.Origins["muted"]
+						raw, _ := extract.ParseHex(origin.Raw)
+						input = colorx.CapChroma(raw, origin.ChromaCap)
+					}
+					joint, readable := colorx.ForceContrastPair(input, ground, panel, target)
 					if !readable {
 						unreadableLockedSurfaces = true
 					} else if colorx.Hex(joint) != token.Hex {
@@ -189,7 +194,7 @@ func applyHumanState(plate *palette.Snapshot, request Request, candidates []extr
 			derived++
 		}
 	}
-	plate.Notes = append([]string{}, baseNotes...)
+	plate.Notes = append([]string{}, structure.Notes...)
 	plate.Notes = append(plate.Notes, final.Notes...)
 	if extract.NormalizeColorPolicy(request.Params.ColorPolicy) == extract.SourceHues {
 		departures := []string{}

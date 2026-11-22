@@ -1,0 +1,27 @@
+{
+  "sourceCommit": "bdadc0c34982fa8758a2d4956a44124389942540",
+  "input": "HEAD offline app opened testdata/reference-palettes/pastel-prisms/palette.json and recorded a human seal with a fixed clock. Only review.assessment was removed to model a seal predating assessment storage. Both original verifiers accept the seal.",
+  "fingerprint": "fnv1a64:29219653583b16c0",
+  "archivedWith": "Original Go CLI bundle and offline browser Bundle control, without original image bytes.",
+  "evidence": "Per-member SHA-256. Historical CSS, GDScript and GPL match across hosts. Markdown layout, archived palette serialization and preview rendering were host-specific. Browser PNG bytes depend on fonts and browser version.",
+  "nativeNotesCorrection": "The original hashes and notes.go.md retain the v5 typo. Current Go exports use '1 source record hashed' to match all four browser review findings.",
+  "host": "Windows amd64; Go 1.27.0; Microsoft Edge 158.0.4370.33",
+  "sha256": {
+    "go": {
+      "palette.json": "e854417872c8279454ae0b8b573ad434aa45b152ca208a755c8d2d4af65e6e43",
+      "tokens.css": "01ce7d3c038a62f22dd84d513160d6c27f007b742fe3f4398ccdf6ce6ce48512",
+      "plate.gd": "777f1114466d4f768256ced67ec2b94878c839dfbf3711dcf9892bea3d2c25cf",
+      "palette.gpl": "c7fba48773eccdc175dace5a0698b8ed9da17eda532ccae1ccbc1b81ace1c9b5",
+      "notes.md": "eb42ce63060fbf045e88a0e97b418ceaaf3937e2e5546cc1f6c02bbbf79a574b",
+      "preview.png": "8510417a148468252a2839311b591542a246fdd0021ff4a946e24f88d632c4ae"
+    },
+    "browser": {
+      "palette.json": "9aa79222c41e07d4b674267dd9555829e39885d04ae885c46bc1d8c369e4c940",
+      "tokens.css": "01ce7d3c038a62f22dd84d513160d6c27f007b742fe3f4398ccdf6ce6ce48512",
+      "plate.gd": "777f1114466d4f768256ced67ec2b94878c839dfbf3711dcf9892bea3d2c25cf",
+      "palette.gpl": "c7fba48773eccdc175dace5a0698b8ed9da17eda532ccae1ccbc1b81ace1c9b5",
+      "notes.md": "70a4447cddb1663ae0da94b2aaec552229bcccea62cd6e3dd1d95245334cdb95",
+      "preview.png": "769f06ee6e8caf10ada0c99505a0fc589129d9f3daab5d835000795c6489c83d"
+    }
+  }
+}

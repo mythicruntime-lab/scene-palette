@@ -228,7 +228,7 @@ func TestRunCheckEnforcesHumanSeal(t *testing.T) {
 		len(report.Review.RecordedHistory) != 1 ||
 		report.Review.RecordedHistory[0].InvalidatedBy == nil ||
 		*report.Review.RecordedHistory[0].InvalidatedBy != "observed renamed by human" ||
-		report.Review.Assessment.Version != 1 || len(report.Review.Assessment.Checks) != 4 {
+		report.Review.Assessment.Version != 3 || len(report.Review.Assessment.Checks) != 4 {
 		t.Fatalf("sealed report = %#v", report)
 	}
 	stdout.Reset()

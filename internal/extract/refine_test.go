@@ -79,7 +79,7 @@ func TestSourceHuesGrayscaleAndPastel(t *testing.T) {
 			}
 			pooled := Pool([]Histogram{BuildHistogram(img, 140000, .085)})
 			for _, mode := range []Polarity{PolarityAuto, PolarityDark, PolarityLight} {
-				structure := BuildStructure(pooled, mode)
+				structure := BuildStructure(pooled, mode, SourceHues)
 				accents := BuildAccentStage(SignalCandidates(pooled), structure, 6, SourceHues)
 				assembly := BuildPlateAssembly(structure, accents, 6)
 				if len(assembly.Variants) != 1 {
@@ -166,7 +166,7 @@ func TestReadablePolicyFixtureDistinctness(t *testing.T) {
 		pooled := Pool([]Histogram{BuildHistogram(openFixtureImage(t, name), 140000, .085)})
 		for _, mode := range []Polarity{PolarityAuto, PolarityDark, PolarityLight} {
 			t.Run(name+"/"+string(mode), func(t *testing.T) {
-				structure := BuildStructure(pooled, mode)
+				structure := BuildStructure(pooled, mode, ReadableUI)
 				accents := BuildAccentStage(SignalCandidates(pooled), structure, 6, ReadableUI)
 				for _, variant := range BuildPlateAssembly(structure, accents, 6).Variants {
 					colors := make([]colorx.RGB, 4)

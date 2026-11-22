@@ -272,6 +272,148 @@ func TestFormatExportsCanonicalRolesAndSafeText(t *testing.T) {
 	}
 }
 
+func TestGodotButtonBindsReadableTextForNewExtractions(t *testing.T) {
+	for _, tc := range []struct {
+		version         int
+		ink, fill, want string
+	}{
+		{5, "#222222", "#202020", "INK"},
+		{6, "#222222", "#202020", "Color.WHITE"},
+		{6, "#DDDDDD", "#EEEEEE", "Color.BLACK"},
+		{6, "#222222", "#DDDDDD", "INK"},
+	} {
+		raw := fixture(t)
+		raw["generator"] = json.RawMessage(fmt.Sprintf(`{"name":"scene-palette","version":"2.1.0","extraction":%d}`, tc.version))
+		var core []map[string]json.RawMessage
+		if err := json.Unmarshal(raw["core"], &core); err != nil {
+			t.Fatal(err)
+		}
+		core[2]["hex"], _ = json.Marshal(tc.ink)
+		core[5]["hex"], _ = json.Marshal(tc.fill)
+		raw["core"], _ = json.Marshal(core)
+		text, err := Format(encodeFixture(t, raw), "godot")
+		if err != nil || !strings.Contains(text, `theme.set_color("font_color", "Button", `+tc.want+`)`) {
+			t.Fatalf("Godot v%d ink %s fill %s: expected %s, error %v\n%s", tc.version, tc.ink, tc.fill, tc.want, err, text)
+		}
+	}
+}
+
+func TestFormatPreservesHistoricalAssessmentWhileCheckUsesCurrentRules(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "reference-palettes", "pastel-prisms", "palette.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatal(err)
+	}
+	// Claim no findings, although this plate has derived colours (v1 and v2)
+	// and insufficient contrast for normal preview text (v2).
+	raw["review"] = json.RawMessage(`{"version":1,"status":"proposed","assessment":{"version":1,"status":"clear","attentionCount":0}}`)
+	data = encodeFixture(t, raw)
+	document, err := palette.Parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, err := document.VerifyReview()
+	if err != nil || current.AgentEligible || current.Assessment.Version != 3 || current.Assessment.AttentionCount != 2 {
+		t.Fatalf("live verification = %+v, %v", current, err)
+	}
+	for _, format := range []string{"css", "godot", "gpl", "hex", "notes"} {
+		text, err := Format(data, format)
+		if err != nil || !strings.Contains(text, "proposed · not agent-eligible · 1 review note") {
+			t.Fatalf("historical review count changed in %s: %v\n%s", format, err, text)
+		}
+		if format == "notes" {
+			for _, detail := range []string{
+				"**Readability — pass:** All six readable roles clear ground and panel; panel separation ΔL 0.05.",
+				"**Source records — pass:** 1 source record hashed (sha256).",
+			} {
+				if !strings.Contains(text, detail) {
+					t.Fatalf("historical notes missing %q", detail)
+				}
+			}
+		}
+	}
+	delete(raw, "review")
+	historicalText, err := Format(encodeFixture(t, raw), "css")
+	if err != nil || !strings.Contains(historicalText, "proposed · not agent-eligible · 1 review note") {
+		t.Fatalf("unannotated v5 proposal lost its historical export summary: %v\n%s", err, historicalText)
+	}
+}
+
+func TestBundlePreservesHistoricalSealedV5BytesWithoutAssessment(t *testing.T) {
+	dir := filepath.Join("..", "..", "testdata", "export-history", "pastel-prisms-v5")
+	read := func(name string) []byte {
+		t.Helper()
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return data
+	}
+	input := read("sealed-no-assessment.json")
+	original := bytes.Clone(input)
+	archive, err := Build(input, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := zipFiles(t, archive)
+	var baseline struct {
+		Fingerprint string
+		SHA256      struct{ Go map[string]string }
+	}
+	if err := json.Unmarshal(read("archive-baseline.json"), &baseline); err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 6 || len(baseline.SHA256.Go) != len(files) {
+		t.Fatalf("archive has %d members and %d baseline hashes", len(files), len(baseline.SHA256.Go))
+	}
+	const prefix = "pastel-prisms/"
+	// Native v5 said "1 source records". Restore the original findings and
+	// use the browser's singular grammar, leaving the host's layout intact.
+	notes := bytes.Replace(read("notes.go.md"), []byte("1 source records hashed"), []byte("1 source record hashed"), 1)
+	for name, want := range baseline.SHA256.Go {
+		if name == "notes.md" {
+			if !bytes.Equal(files[prefix+name], notes) {
+				t.Error("historical archive notes differ beyond the singular source-record correction")
+			}
+			continue
+		}
+		if got := fmt.Sprintf("%x", sha256.Sum256(files[prefix+name])); got != want {
+			t.Errorf("historical archive %s SHA-256 = %s, want %s", name, got, want)
+		}
+	}
+	_, focus, ok := bytes.Cut(read("notes.browser.md"), []byte("## Review focus\n\n"))
+	focus, _, _ = bytes.Cut(focus, []byte("\n\n"))
+	if !ok || bytes.Count(focus, []byte("- **")) != 4 || !bytes.Contains(files[prefix+"notes.md"], focus) {
+		t.Error("Go and browser disagree on the four historical review findings")
+	}
+	for format, name := range map[string]string{"css": "tokens.css", "godot": "plate.gd", "gpl": "palette.gpl"} {
+		got, err := Format(input, format)
+		if err != nil || !bytes.Equal([]byte(got), read(name)) {
+			t.Errorf("historical %s export differs from original v5 bytes: %v", format, err)
+		}
+	}
+	for _, data := range [][]byte{input, files[prefix+"palette.json"]} {
+		doc, err := palette.Parse(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if doc.Review == nil || len(doc.Review.Assessment) != 0 {
+			t.Fatal("an export created a stored assessment")
+		}
+		live, err := doc.VerifyReview()
+		if err != nil || !live.AgentEligible || !live.FingerprintMatches || live.Assessment.Version != 3 ||
+			live.Assessment.AttentionCount != 2 || live.Computed.Algo+":"+live.Computed.Value != baseline.Fingerprint {
+			t.Fatalf("live verification of historical seal: %+v, %v", live, err)
+		}
+	}
+	if !bytes.Equal(input, original) {
+		t.Fatal("export mutated the supplied palette")
+	}
+}
+
 func TestArchiveBudgetCountsEveryCopyBeforeAllocation(t *testing.T) {
 	budget := newArchiveBudget(MaxArchiveBytes)
 	// Simulate repeated references to one 64 MiB attachment with only integer
