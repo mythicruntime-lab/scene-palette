@@ -121,6 +121,22 @@ async function captureWidths() {
     if (!baselineRef) {
       assert.ok(initial.pageWidth <= width + 1, `${label}: initial page overflows horizontally`);
       assert.ok(generated.pageWidth <= width + 1, `${label}: horizontal page overflow (${generated.pageWidth})`);
+      assert.deepEqual(plate.core.map(token => token.id), ["ground", "panel", "ink", "muted", "observed", "attention", "rupture", "gold"],
+        `${label}: friendly labels must retain the serialized color-role identifiers`);
+      assert.deepEqual(await page.locator("#chips .role-label").allTextContents(),
+        ["Background", "Surface", "Primary text", "Secondary text", "Information", "Attention", "Error", "Human action"],
+        `${label}: fixed role labels must explain the color roles alongside editable names`);
+      for (const [index, token] of plate.core.entries()) {
+        const role = page.locator("#chips .role-label").nth(index);
+        assert.ok(await role.isVisible(), `${label}: role ${token.id} needs a visible explanation`);
+        assert.ok(await role.evaluate(element => element.scrollWidth <= element.clientWidth + 1),
+          `${label}: role ${token.id} label is clipped`);
+        const identity = [await role.getAttribute("title"), await page.locator(`[data-name="${index}"]`).getAttribute("aria-label")].join(" ");
+        assert.ok(identity.includes(token.id), `${label}: technical role ${token.id} must remain discoverable`);
+      }
+      assert.match(await page.locator("#stageCanvas").getAttribute("aria-label"), /^Source image 1 of 1:/);
+      assert.equal(await page.locator("#stageCanvas").getAttribute("aria-describedby"), "pickerHelp pickerStatus");
+      assert.equal(await page.locator("#pickerStatus").getAttribute("aria-live"), "polite");
       if (width <= 1000) {
         assert.ok(initial.drop.top < height, `${label}: image chooser is below the first viewport`);
         assert.ok(initial.forge.bottom <= height, `${label}: the initial Forge action should fit in the first viewport`);
@@ -129,8 +145,6 @@ async function captureWidths() {
         assert.equal(generated.focused, "paletteHeading", `${label}: successful extraction should focus the palette`);
         assert.ok(generated.chips.bottom - generated.scrollY <= 2 * height,
           `${label}: all eight roles must fit within two viewports after extraction navigation`);
-        assert.deepEqual(await page.locator("#chips .role-label").allTextContents(), plate.core.map(token => token.id), `${label}: fixed role labels must remain visible alongside editable colour names`);
-        for (const label of await page.locator("#chips .role-label").all()) assert.ok(await label.isVisible());
         for (const id of ["mobileTools", "mobileSettings", "mobileSource", "mobileReview"]) {
           assert.equal(await page.locator(`#${id}`).evaluate(element => element.open), false, `${label}: ${id} should start compact`);
         }
@@ -155,6 +169,16 @@ async function captureWidths() {
             }
           }
         }
+      }
+      if (width <= 1000) {
+        for (const id of ["mobileTools", "mobileSettings", "mobileSource", "mobileReview", "mobileExport"]) {
+          await openAncestors(page, `#${id}`);
+          if (!(await page.locator(`#${id}`).evaluate(element => element.open))) await page.locator(`#${id} > summary`).click();
+        }
+        await frame(page);
+        assert.ok((await geometry(page)).pageWidth <= width + 1, `${label}: expanded tools or approval copy overflow horizontally`);
+        assert.deepEqual(canonical(await readPlate(page)), plate, `${label}: opening tools must not change the palette`);
+        await page.screenshot({ path: path.join(output, `${label}-05-expanded-tools.png`), fullPage: true });
       }
     }
     passed(`${label}: ${baselineRef ? "baseline captured" : "palette layout and unchanged output verified"} (palette ${Math.round(generated.chips.top)}–${Math.round(generated.chips.bottom)}px)`);

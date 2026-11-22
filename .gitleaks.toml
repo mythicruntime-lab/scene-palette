@@ -12,3 +12,10 @@ condition = "AND"
 paths = ['''(^|[\\/])index\.html$''']
 regexTarget = "secret"
 regexes = ['''^scene-palette\.shelf\.v1$''']
+
+[[rules.allowlists]]
+description = "SHA-256 of the frozen v5 tokens.css export, recorded for both formatters"
+condition = "AND"
+paths = ['''(^|[\\/])testdata[\\/]export-history[\\/]pastel-prisms-v5[\\/]archive-baseline\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"tokens\.css": "01ce7d3c038a62f22dd84d513160d6c27f007b742fe3f4398ccdf6ce6ce48512",\s*$''']

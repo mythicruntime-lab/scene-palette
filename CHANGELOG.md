@@ -11,6 +11,13 @@ hosted Windows download. Add future changes under Unreleased before the next ver
   Export guidance accounts for the actual Godot button foreground and browser PNG
   captions. Older plates keep their recorded colours and export bindings.
 
+- Clarified the image-to-palette workflow, color role labels, previews, saved
+  collections, and optional human approval for agent use. Technical role keys,
+  exports, extraction, saved data, and review seals remain compatible.
+
+- Selecting a bundled sample now sets its plate name to Blue lake, Neon city,
+  or Amber dusk, keeping previews, saved plates, and exports named correctly.
+
 - Removed lettering and decorative overlays from all three bundled sample images
   and their thumbnails; blue remains the default sample.
 

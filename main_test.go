@@ -22,7 +22,7 @@ func TestFrontendHandlerServesReferenceApp(t *testing.T) {
 		t.Fatalf("GET / returned %d", response.Code)
 	}
 	body := response.Body.String()
-	if !strings.Contains(body, `id="extractBtn"`) || !strings.Contains(body, "Forge plate") {
+	if !strings.Contains(body, `id="extractBtn"`) || !strings.Contains(body, "Generate palette") {
 		t.Fatal("GET / did not serve the existing Scene Palette frontend")
 	}
 	for _, marker := range []string{
@@ -49,8 +49,8 @@ func TestFrontendHandlerServesReferenceApp(t *testing.T) {
 		"function reserveShelfId",
 		"function mergeShelfImport",
 		"function mergeShelfRevision",
-		"No shelf changes to save",
-		"held back at the 40-plate limit",
+		"No palette changes to save",
+		"held back at the 40-palette limit",
 		"plateMeta:{createdAt:null",
 		"function plateMetadata",
 		"createdAt: meta.createdAt",

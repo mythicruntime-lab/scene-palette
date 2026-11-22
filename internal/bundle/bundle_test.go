@@ -6,7 +6,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"image"
 	"image/color"
+	"image/draw"
 	"image/png"
 	"io"
 	"os"
@@ -342,6 +344,33 @@ func TestFormatPreservesHistoricalAssessmentWhileCheckUsesCurrentRules(t *testin
 	}
 }
 
+// The native v5 renderer passed its NRGBA canvas to the standard PNG encoder.
+// Its compressed bytes can change with Go's encoder. Its paint must not.
+func checkHistoricalPreview(t *testing.T, archived, frozen []byte) {
+	t.Helper()
+	decode := func(encoded []byte) *image.NRGBA {
+		t.Helper()
+		source, err := png.Decode(bytes.NewReader(encoded))
+		if err != nil {
+			t.Fatal(err)
+		}
+		canvas := image.NewNRGBA(source.Bounds())
+		draw.Draw(canvas, canvas.Bounds(), source, source.Bounds().Min, draw.Src)
+		return canvas
+	}
+	got, want := decode(archived), decode(frozen)
+	if got.Rect != want.Rect || !bytes.Equal(got.Pix, want.Pix) {
+		t.Fatalf("historical preview raster = %v %x, want %v %x", got.Rect, sha256.Sum256(got.Pix), want.Rect, sha256.Sum256(want.Pix))
+	}
+	var expected bytes.Buffer
+	if err := png.Encode(&expected, want); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(archived, expected.Bytes()) {
+		t.Error("historical preview bytes differ from the v5 encoding of its frozen raster on this toolchain")
+	}
+}
+
 func TestBundlePreservesHistoricalSealedV5BytesWithoutAssessment(t *testing.T) {
 	dir := filepath.Join("..", "..", "testdata", "export-history", "pastel-prisms-v5")
 	read := func(name string) []byte {
@@ -380,7 +409,13 @@ func TestBundlePreservesHistoricalSealedV5BytesWithoutAssessment(t *testing.T) {
 			}
 			continue
 		}
-		if got := fmt.Sprintf("%x", sha256.Sum256(files[prefix+name])); got != want {
+		data := files[prefix+name]
+		if name == "preview.png" {
+			frozen := read("preview.go.png")
+			checkHistoricalPreview(t, data, frozen)
+			data = frozen // Verify the historical PNG file itself against its original manifest.
+		}
+		if got := fmt.Sprintf("%x", sha256.Sum256(data)); got != want {
 			t.Errorf("historical archive %s SHA-256 = %s, want %s", name, got, want)
 		}
 	}

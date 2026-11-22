@@ -125,7 +125,7 @@ async function assertGenerationFloors(target, plate, label) {
 // Hold matrix thresholds to the actual text and marker usages.
 async function assertMatrix(target) {
   assert.equal(await target.locator(".cell").filter({has:target.locator('[data-why="observed"]')})
-    .locator(".cr").getAttribute("title"), "UI indicator on ground needs 3:1");
+    .locator(".cr").getAttribute("title"), "UI indicator on background needs 3:1");
   const expected = await target.evaluate(() => state.core.slice(2).flatMap(role =>
     ["ground", "panel"].map(surface => ({
       role: role.id, surface, minimum: ["ink","muted"].includes(role.id) ? 4.5 : 3,
@@ -268,7 +268,7 @@ async function contrastExportChecks(target, label, mobile = false) {
   }
   await open("#exportReadiness");
   const details = await active.innerText();
-  for (const text of [/muted/i, /ground/i, /panel/i, /4\.5/, /3\.\d+/]) assert.match(details, text);
+  for (const text of [/Secondary text/i, /background/i, /surface/i, /4\.5/, /3\.\d+/]) assert.match(details, text);
   assert.ok(await target.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   await capture("warning");
   const link = active.locator('[data-contrast-role="muted"]').first();
@@ -279,7 +279,7 @@ async function contrastExportChecks(target, label, mobile = false) {
   const sealed = await readPlate(target);
   assert.ok(sealed.core[3].locked && sealed.core[3].hex === "#898989");
   assert.ok(sealed.review.agentEligible, "Human review can intentionally accept a contrast issue");
-  assert.match(await target.locator("#reviewFocus").innerText(), /muted on (ground|panel)/i);
+  assert.match(await target.locator("#reviewFocus").innerText(), /Secondary text on (background|surface)/i);
   if (label === "desktop") {
     const response = await target.request.post(new URL("/api/check", baseURL).href, { data: sealed });
     assert.equal(response.status(), 200);
@@ -296,7 +296,7 @@ async function contrastExportChecks(target, label, mobile = false) {
     return;
   }
   await open("#bundleReadiness");
-  assert.match(await target.locator("#bundleReadiness").innerText(), /muted/i);
+  assert.match(await target.locator("#bundleReadiness").innerText(), /Secondary text/i);
   await checkSingleBundle(await download(target, "#bundleBtn", `contrast-${label}-bundle.zip`), sealed, false);
   await target.locator("#saveBtn").click();
   const shelf = await target.evaluate(() => JSON.parse(JSON.stringify(state.shelf)));
@@ -305,7 +305,7 @@ async function contrastExportChecks(target, label, mobile = false) {
   await target.locator("#pairBtn").click();
   await open("#themeReadiness");
   const themeWarning = await target.locator("#themeReadiness").innerText();
-  assert.match(themeWarning, /muted/i);
+  assert.match(themeWarning, /Secondary text/i);
   assert.match(themeWarning, /base|alt/i, "Same-polarity pairs identify the side that fails");
   await target.locator('[data-tfmt="json"]').click();
   await assertOutputText("#themeOut");
@@ -322,7 +322,7 @@ async function contrastExportChecks(target, label, mobile = false) {
   assert.match(await active.innerText(), /contrast checks pass/i);
   await target.locator('#tabs [data-fmt="godot"]').click();
   await open("#exportReadiness");
-  assert.match(await active.innerText(), /ink/i); assert.match(await active.innerText(), /attention/i);
+  assert.match(await active.innerText(), /Primary text/i); assert.match(await active.innerText(), /attention/i);
   await open("#shelfContrast");
   await open("#vaultContrast");
   const savedAdvice = await target.locator("#shelfContrast").innerText();
@@ -364,7 +364,7 @@ async function contrastExportChecks(target, label, mobile = false) {
   await upload(savedV2);
   await target.waitForFunction(() => state.review.assessment?.version === 2);
   assert.deepEqual(await readPlate(target), savedV2, "Reopening a v2 seal preserves its fingerprint and original assessment");
-  assert.doesNotMatch(await target.locator(".review-check.readability .review-check-detail").innerText(), /observed on/,
+  assert.doesNotMatch(await target.locator(".review-check.readability .review-check-detail").innerText(), /Information on/,
     "The current indicator meets its target even though the sealed v2 accent-text use failed");
   await target.locator('[data-lock="4"]').click();
   const changedV2 = await readPlate(target);
@@ -434,7 +434,7 @@ async function historicalExportChecks(target, label) {
   assert.deepEqual(await readPlate(target), original, "Opening a v5 seal must preserve every field and the missing assessment");
   assert.equal(original.review.agentEligible, true);
   assert.ok(await target.locator("#editContrast .contrast-warning").isVisible(), "Current advice must flag this v5 plate");
-  assert.match(await target.locator(".review-check.readability .review-check-detail").innerText(), /muted on/);
+  assert.match(await target.locator(".review-check.readability .review-check-detail").innerText(), /Secondary text on/);
   await target.locator('#tabs [data-fmt="json"]').click();
   const exported = await download(target, "#downloadBtn", `contrast-${label}-preserved-seal.json`);
   assert.ok(exported.equals(source), "The canonical single JSON must retain the exact imported metadata, colours and seal");
@@ -540,7 +540,7 @@ async function versionedExportChecks(target, label) {
   const warning = target.locator("#bundleReadiness details");
   await warning.locator("summary").press("Enter");
   await warning.locator("li").first().waitFor();
-  const uses = warning.locator("li").filter({hasText:/ink on ground/});
+  const uses = warning.locator("li").filter({hasText:/Primary text on background/});
   assert.equal(await uses.count(), 2, "Body and opaque PNG caption share a pair but describe two text usages");
   assert.match((await uses.allInnerTexts()).join(" "), /PNG caption text/);
   const count = await warning.locator("li").count();
@@ -1085,6 +1085,13 @@ try {
   const fallback = await context.newPage(); watch(fallback, "standalone");
   await fallback.goto(pathToFileURL(standaloneHTML).href);
   await fallback.locator("#extractBtn").waitFor();
+  for (const [target, label] of [[page, "Go"], [fallback, "standalone"]]) {
+    assert.equal(await target.getByRole("textbox", { name: "Palette name", exact: true }).count(), 1);
+    assert.equal(await target.getByRole("button", { name: "Generate palette", exact: true }).count(), 1);
+    assert.equal(await target.locator("#drop").getAttribute("aria-describedby"), "dropHelp");
+    assert.ok((await target.locator("#dropHelp").textContent()).trim(), `${label}: image upload needs a screen-reader description`);
+    passed("Plain-language entry controls retain accessible names and upload help: " + label);
+  }
   for (const [label, url, mobile] of [
     ["desktop", baseURL.href, false], ["offline", pathToFileURL(standaloneHTML).href, false],
     ["mobile", pathToFileURL(standaloneHTML).href, true]
@@ -1135,6 +1142,12 @@ try {
     await loadImages(fallback, images, name);
     const actual = await forge(page);
     const expected = await forge(fallback, false);
+    if (label === "dark") for (const target of [page, fallback]) {
+      assert.equal(await target.getByRole("button", { name: "UI preview", exact: true }).count(), 1);
+      assert.equal(await target.getByRole("button", { name: "JSON palette", exact: true }).count(), 1);
+      assert.equal(await target.locator('[data-surf="harness"]').getAttribute("aria-pressed"), "true");
+      assert.equal(await target.locator('[data-fmt="json"]').count(), 1, "The visible JSON label must retain its format identifier");
+    }
     for (let sourceIndex = 0; sourceIndex < images.length; sourceIndex++) {
       const png = await fs.readFile(images[sourceIndex]);
       const natural = [png.readUInt32BE(16), png.readUInt32BE(20)];
