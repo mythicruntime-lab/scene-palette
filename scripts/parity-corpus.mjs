@@ -86,12 +86,12 @@ const report = {
   methodology: {
     reference: "Selected standalone HTML JavaScript extraction in file://, using actual decoded working canvases; observed extraction versions recorded below",
     candidate: "Local Go API through the served app, using the same input files and browser",
-    comparison: "Exact deep equality of every snapshot field except createdAt and review; no numeric tolerance",
+    comparison: "Extraction v6 compares the complete serialized palette, including review, at a fixed clock. Historical comparisons cover all extraction-owned fields.",
     interaction: "File-input uploads, settings and Forge through the UI; awaited actual setPolarity/applyVariant functions select cached builds",
     isolation: "Separate clean Go and standalone browser contexts for every image and pooled case; external requests blocked and standalone context offline",
     settings: configurations, pooling: "First and last image, equal still weighting, baseline in all three polarities",
-    diagnostics: "Measured contrast uses unrounded colors on both surfaces: ink >=4.5, other core nonsurfaces >=3. Found inks are raw paint and have no readability guarantee. Accent DeltaE is Euclidean OKLab (not CIEDE2000). Flags are evidence for visual review, not subjective quality verdicts.",
-    thresholds: { inkContrast: 4.5, otherCoreContrast: 3, nearAccentDeltaE: 0.07, significantRawToFinalDeltaE: 0.10 },
+    diagnostics: "Measured contrast uses unrounded colors on both surfaces: ink >=4.5, muted >=4.5 in Readable UI or >=3 in Source hues, accents >=3. Found inks are raw paint and have no readability guarantee. Accent DeltaE is Euclidean OKLab (not CIEDE2000). Flags are evidence for visual review, not subjective quality verdicts.",
+    thresholds: { inkContrast: 4.5, mutedContrast: colorPolicy === "source-hues" ? 3 : 4.5, accentContrast: 3, nearAccentDeltaE: 0.07, significantRawToFinalDeltaE: 0.10 },
     distinctionGate: { enabled: requireDistinct, threshold: 0.07, policy: colorPolicy, scope: "Final generated unlocked accent pairs in readable-ui; source-hues and manual/locked pairs are explicitly excluded and reported." },
     readabilityGate: { enabled: requireReadable, scope: "Generated unlocked core inks on both surfaces, in both engines; locked or manual-origin tokens explicitly excluded and reported. Raw found inks are excluded." },
     limitation: "This is automated testing in fresh browser profiles, with a contact sheet for separate visual inspection; no recruited-human usability study is claimed. Synthetic fixtures and retained references do not establish fresh-source coverage. Original committed golden-reference tests must be run separately."
@@ -99,9 +99,8 @@ const report = {
 };
 let browser;
 
-// Comparing the full durable snapshot makes future extraction fields part of
-// parity automatically. Only wall-clock metadata and review workflow are omitted.
-function comparable(plate) {
+function comparable(plate, full) {
+  if (full) return plate;
   const { createdAt, review, ...extraction } = plate;
   return extraction;
 }
@@ -159,7 +158,7 @@ async function metrics(page, plate) {
     const ground = color(p.core.find(t => t.id === "ground"));
     const panel = color(p.core.find(t => t.id === "panel"));
     const readability = p.core.filter(t => !["ground", "panel"].includes(t.id)).map(t => {
-      const target = t.id === "ink" ? 4.5 : 3;
+      const target = t.id === "ink" || (t.id === "muted" && p.params?.colorPolicy !== "source-hues") ? 4.5 : 3;
       const onGround = contrast(color(t), ground), onPanel = contrast(color(t), panel);
       const locked = !!t.locked;
       const generated = ["structure", "signal", "derived", "fallback"].includes(t.origin?.kind);
@@ -230,6 +229,7 @@ async function makePage(address, label) {
     return route.continue();
   });
   const page = await context.newPage();
+  await page.clock.setFixedTime(new Date("2026-08-28T00:00:00.000Z"));
   page.on("pageerror", error => report.errors.push({ sample: label, error: error.stack || error.message }));
   page.on("console", message => {
     if (message.type() === "error" && !message.location().url?.endsWith("/favicon.ico")) report.errors.push({ sample: label, error: message.text() });
@@ -296,7 +296,12 @@ async function runSample(sample, files, matrix) {
             const version = plate.generator?.extraction ?? null;
             if (!report.extractionVersions[engine].includes(version)) report.extractionVersions[engine].push(version);
           }
-          const fields = diff(comparable(reference), comparable(candidate));
+          const full = reference.generator.extraction >= 6 && candidate.generator.extraction >= 6;
+          const expected = comparable(reference, full), actual = comparable(candidate, full);
+          const fields = diff(expected, actual);
+          if (full && !fields.length && JSON.stringify(expected) !== JSON.stringify(actual)) {
+            fields.push({path:"$", reason:"Different serialized member order"});
+          }
           const measured = await metrics(goPage, candidate);
           const referenceMetrics = await metrics(jsPage, reference);
           const referenceReadability = referenceMetrics.readability;
@@ -323,7 +328,7 @@ async function runSample(sample, files, matrix) {
           }
           if (fields.length) {
             sample.mismatches++;
-            report.differences.push({ id: caseId, fields, expected: comparable(reference), actual: comparable(candidate) });
+            report.differences.push({ id: caseId, fields, expected, actual });
             console.error(`FAIL ${caseId}: ${fields.length} differing fields`);
           }
           for (const flag of measured.flags) sample.qualityFlags[flag.kind] = (sample.qualityFlags[flag.kind] || 0) + 1;
@@ -398,7 +403,7 @@ async function finish() {
     <p>${report.totals.freshImages} fresh images · ${report.totals.regressionImages} retained regression images · ${report.totals.uniqueImages} unique input hashes. Fresh-source coverage needs its own diverse manifest; retained examples are not a substitute.</p>
     <p>Generated-core readability: <b>${escapeHTML(report.readabilityStatus)}</b> · required gate ${requireReadable ? "enabled" : "disabled"} · ${report.totals.generatedReadabilityFailureCases} failing cases · ${report.totals.readabilityExcludedTokens} locked/manual token exclusions (${report.totals.unreadableExcludedTokens} below target). Excluded tokens do not inherit a generated-readability pass. Observed extraction versions: Go ${escapeHTML(report.extractionVersions.go.join(", "))}; standalone ${escapeHTML(report.extractionVersions.reference.join(", "))}.</p>
     <p>Colour policy: <b>${escapeHTML(colorPolicy)}</b>. Final accent distinction: <b>${escapeHTML(report.distinctionStatus)}</b> · required gate ${requireDistinct ? "enabled" : "disabled"} · ${report.totals.distinctionFailureCases} failing cases · ${report.totals.distinctionExcludedPairs} excluded pairs (${report.totals.nearExcludedPairs} close pairs). Source-hues exclusions are a declared tradeoff, not a distinction pass.</p>
-    <p>Cards show the default auto palette. * marks a derived accent. Contrast is checked without rounding: body ink 4.5:1 and other core inks 3:1 on both ground and panel. Found inks are unmodified source colors. Close accents (&lt;0.07 OKLab ΔE) are a required check only when the readable-ui distinction gate is enabled. Derived accents and large source adjustments (&gt;0.10 ΔE) are diagnostics for review, not automatic aesthetic failures. Adjustments to real signal accents are recorded separately from derived colors and structural repairs.</p>
+    <p>Cards show the default auto palette. * marks a derived accent. Contrast is checked without rounding: body ink 4.5:1, muted 4.5:1 in Readable UI or 3:1 in Source hues, and accents 3:1 on both ground and panel. Found inks are unmodified source colors. Close accents (&lt;0.07 OKLab ΔE) are a required check only when the readable-ui distinction gate is enabled. Derived accents and large source adjustments (&gt;0.10 ΔE) are diagnostics for review, not automatic aesthetic failures. Adjustments to real signal accents are recorded separately from derived colors and structural repairs.</p>
     <p>Both engines use a fresh browser profile for each sample; the standalone HTML runs with network access disabled. This is automated fresh-profile testing with a contact sheet for separate visual inspection, not a recruited-human usability study.</p>
     <p>All variants are tested at baseline auto/dark/light; auto also varies budgets 45k/140k/400k, signal floors .04/.085/.16 and found limits 0/6/10. This bounded matrix does not claim every combination. Cached builds call actual production handlers after UI file uploads and Forge.</p>
     <p><a href="summary.json">Summary and provenance</a> · <a href="cases.json">Every case and metric</a> · <a href="differences.json">Exact differences</a></p></div>

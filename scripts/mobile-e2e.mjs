@@ -455,7 +455,11 @@ async function workflows() {
 
 try {
   const executablePath = option("--browser", process.env.SCENE_PALETTE_BROWSER);
-  const channel = option("--channel", process.env.SCENE_PALETTE_BROWSER_CHANNEL || (process.platform === "win32" ? "msedge" : undefined));
+  let channel = option("--channel", process.env.SCENE_PALETTE_BROWSER_CHANNEL);
+  if (!channel && !executablePath && process.platform === "win32") {
+    const edge = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+    if (await fs.stat(edge).then(() => true, () => false)) channel = "msedge";
+  }
   browser = await chromium.launch({ headless: true, executablePath, channel: executablePath ? undefined : channel, args: ["--disable-gpu"] });
   report.browser = browser.version();
   await captureWidths();

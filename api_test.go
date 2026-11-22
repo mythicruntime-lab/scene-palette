@@ -74,7 +74,10 @@ func TestAPIInfoAndLocalBoundary(t *testing.T) {
 
 func TestAPILiveExtractionRoundTrip(t *testing.T) {
 	handler := frontendHandler()
-	data := apiFixture(t, "bauhaus-primary")
+	data, err := os.ReadFile(filepath.Join("testdata", "v6", "reference-palettes", "bauhaus-primary", "palette.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var expected palette.Snapshot
 	apiDecode(t, data, &expected)
 	request := apiLiveRequest(expected)

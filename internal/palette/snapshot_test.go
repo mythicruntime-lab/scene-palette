@@ -14,7 +14,7 @@ import (
 )
 
 func TestBuildSnapshotMatchesBrowserReferenceDocuments(t *testing.T) {
-	paths, err := filepath.Glob(filepath.Join("..", "..", "testdata", "reference-palettes", "*", "palette.json"))
+	paths, err := filepath.Glob(filepath.Join("..", "..", "testdata", "v6", "reference-palettes", "*", "palette.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestBuildSnapshotMatchesBrowserReferenceDocuments(t *testing.T) {
 			input := openSnapshotFixture(t, expected.Sources[0].File)
 			histogram := extract.BuildHistogram(input, expected.Params.Budget, expected.Params.ChromaMin)
 			pooled := extract.Pool([]extract.Histogram{histogram})
-			structure := extract.BuildStructure(pooled, extract.Polarity(expected.Params.PolarityMode))
+			structure := extract.BuildStructure(pooled, extract.Polarity(expected.Params.PolarityMode), expected.Params.ColorPolicy)
 			accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, 6)
 			assembly := extract.BuildPlateAssembly(structure, accents, expected.Params.FoundInks)
 			if len(assembly.Variants) != expected.Params.VariantCount {

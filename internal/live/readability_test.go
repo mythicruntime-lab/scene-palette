@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"scene-palette/internal/colorx"
+	"scene-palette/internal/extract"
 	"scene-palette/internal/palette"
 )
 
@@ -59,7 +60,7 @@ func TestJointContrastPinnedSurfaces(t *testing.T) {
 							continue
 						}
 						target := 3.0
-						if token.ID == "ink" {
+						if token.ID == "ink" || token.ID == "muted" {
 							target = 4.5
 						}
 						if colorx.Contrast(rgb(token), ground) < target || colorx.Contrast(rgb(token), panel) < target {
@@ -73,8 +74,61 @@ func TestJointContrastPinnedSurfaces(t *testing.T) {
 					if rgb(plate.Core[2]) != rgb(fresh.Variants[plate.Params.Variant].Core[2]) {
 						t.Fatal("impossible body ink changed despite failed joint repair")
 					}
+					if rgb(plate.Core[3]) != rgb(fresh.Variants[plate.Params.Variant].Core[3]) {
+						t.Fatal("impossible muted repair changed the provisional colour")
+					}
 				}
 			}
 		})
+	}
+}
+
+func TestMutedAdaptsFromSourceWhenSurfacesAreLocked(t *testing.T) {
+	request := defaultRequest()
+	request.Polarity = extract.PolarityDark
+	fresh, err := Build([]image.Image{loadImage(t, "bauhaus-primary.png")}, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Histogram = &fresh.Histogram
+	origin := json.RawMessage(`{"kind":"picked","repairs":[]}`)
+	request.Core = []palette.SnapshotToken{
+		{ID: "ground", Hex: "#000000", Locked: true, Origin: origin},
+		{ID: "panel", Hex: "#111111", R: 17, G: 17, B: 17, Locked: true, Origin: origin},
+	}
+	rebuilt, err := Build(nil, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, plate := range rebuilt.Variants {
+		before := fresh.Variants[plate.Params.Variant].Core[3]
+		var source struct {
+			Raw       string
+			ChromaCap float64
+		}
+		if err := json.Unmarshal(before.Origin, &source); err != nil {
+			t.Fatal(err)
+		}
+		raw, ok := extract.ParseHex(source.Raw)
+		capped := colorx.CapChroma(raw, source.ChromaCap)
+		if !ok || capped == rgb(before) || colorx.Contrast(capped, rgb(plate.Core[1])) < 4.5 {
+			t.Fatal("fixture must have moved source paint that already passes on the new surfaces")
+		}
+		if rgb(plate.Core[3]) != capped {
+			t.Fatalf("muted = %s; want capped source %s", plate.Core[3].Hex, colorx.Hex(capped))
+		}
+	}
+	// A human can deliberately use ink indistinguishable from ground.
+	request.Core = append(request.Core, palette.SnapshotToken{
+		ID: "muted", Name: "quiet", Hex: "#000000", Locked: true, Origin: origin,
+	})
+	pinned, err := Build(nil, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, plate := range pinned.Variants {
+		if muted := plate.Core[3]; muted.Hex != "#000000" || !muted.Locked || !bytes.Equal(muted.Origin, origin) {
+			t.Fatalf("low-contrast locked muted changed: %+v", muted)
+		}
 	}
 }

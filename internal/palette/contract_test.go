@@ -181,7 +181,7 @@ func TestReviewAssessmentSurfacesDeterministicAttention(t *testing.T) {
 	document.Sources = nil
 
 	assessment := document.AssessReview()
-	if assessment.Version != 1 || assessment.Status != "attention" || assessment.AttentionCount != 4 ||
+	if assessment.Version != 3 || assessment.Status != "attention" || assessment.AttentionCount != 4 ||
 		len(assessment.Checks) != 4 {
 		t.Fatalf("unexpected assessment: %#v", assessment)
 	}
@@ -216,6 +216,76 @@ func TestReviewAssessmentSurfacesDeterministicAttention(t *testing.T) {
 	}
 	if verification.Assessment.AttentionCount != assessment.AttentionCount {
 		t.Fatalf("verification assessment = %#v; want %#v", verification.Assessment, assessment)
+	}
+}
+
+func TestReviewContrastUsesPreviewUsageAndUnroundedValues(t *testing.T) {
+	for _, tc := range []struct {
+		role, surface, color, wantFailure string
+	}{
+		{"muted", "ground", "#777741", "muted on ground (normal text) <4.50:1, needs 4.5:1"},
+		{"muted", "ground", "#78781A", ""},
+		{"attention", "panel", "#777741", ""},
+		{"observed", "ground", "#5C5C19", "observed on ground (UI indicator) <3.00:1, needs 3:1"},
+		{"rupture", "ground", "#51519B", ""},
+		{"rupture", "panel", "#5C5C19", "rupture on panel (UI indicator) <3.00:1, needs 3:1"},
+		{"rupture", "panel", "#51519B", ""},
+	} {
+		t.Run(tc.role+"_"+tc.surface+"_"+tc.color, func(t *testing.T) {
+			document := Document{}
+			for _, role := range coreRoles {
+				color := "#FFFFFF"
+				switch role {
+				case tc.surface:
+					color = "#000000"
+				case tc.role:
+					color = tc.color
+				}
+				document.Core = append(document.Core, Token{ID: role, Hex: color})
+			}
+			readability := document.AssessReview().Checks[0]
+			if tc.wantFailure == "" {
+				if strings.Contains(readability.Detail, tc.role+" on "+tc.surface+" (") {
+					t.Errorf("passing combination flagged: %s", readability.Detail)
+				}
+			} else if !strings.Contains(readability.Detail, tc.wantFailure) {
+				t.Errorf("expected %q in %q", tc.wantFailure, readability.Detail)
+			}
+		})
+	}
+}
+
+func TestVerifyExportReviewUsesStoredV2AccentUsage(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "vault", "night-bay", "palette.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	document, err := Parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	document.Core[0].Hex, document.Core[1].Hex = "#000000", "#161616"
+	document.Core[4].Hex = "#777741" // clears 3:1, just misses 4.5:1 on ground
+	document.Review = &Review{Version: 1, Assessment: json.RawMessage(`{"version":2}`)}
+	saved, err := document.VerifyExportReview()
+	if err != nil || saved.Assessment.Version != 2 ||
+		!strings.Contains(saved.Assessment.Checks[0].Detail, "observed on ground (normal text) <4.50:1, needs 4.5:1") {
+		t.Fatalf("historical assessment = %+v, %v", saved.Assessment, err)
+	}
+	current, err := document.VerifyReview()
+	if err != nil || current.Assessment.Version != 3 ||
+		strings.Contains(current.Assessment.Checks[0].Detail, "observed on ") {
+		t.Fatalf("current assessment = %+v, %v", current.Assessment, err)
+	}
+	for _, tc := range []struct{ extraction, expected int }{{2, 1}, {5, 1}, {6, 3}, {0, 3}} {
+		document.Generator.Extraction = &tc.extraction
+		for _, review := range []*Review{nil, {Version: 1}, {Version: 1, Assessment: json.RawMessage("null")}} {
+			document.Review = review
+			result, err := document.VerifyExportReview()
+			if err != nil || result.Assessment.Version != tc.expected || result.AgentEligible {
+				t.Fatalf("extraction %d without saved assessment: %+v, %v", tc.extraction, result.Assessment, err)
+			}
+		}
 	}
 }
 

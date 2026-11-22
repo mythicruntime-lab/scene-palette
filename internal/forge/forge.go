@@ -70,7 +70,7 @@ func Build(paths []string, options Options) (palette.Snapshot, error) {
 	}
 
 	pooled := extract.Pool(histograms)
-	structure := extract.BuildStructure(pooled, options.Polarity)
+	structure := extract.BuildStructure(pooled, options.Polarity, options.ColorPolicy)
 	accents := extract.BuildAccentStage(extract.SignalCandidates(pooled), structure, maxVariants, options.ColorPolicy)
 	assembly := extract.BuildPlateAssembly(structure, accents, options.FoundInks)
 	if options.Variant >= len(assembly.Variants) {

@@ -19,8 +19,9 @@ try {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const imageRoot = path.join(root, "testdata", "reference-images");
-const paletteRoot = path.join(root, "testdata", "reference-palettes");
-const stageOutput = path.join(root, "testdata", "histogram-signal.golden.json");
+// New extraction versions get their own outputs. The v5 files remain compatibility inputs.
+const paletteRoot = path.join(root, "testdata", "v6", "reference-palettes");
+const stageOutput = path.join(root, "testdata", "v6", "histogram-signal.golden.json");
 const manifest = JSON.parse(fs.readFileSync(path.join(imageRoot, "manifest.json"), "utf8"));
 const source = fs.readFileSync(path.join(root, "index.html"), "utf8").replaceAll("\r\n", "\n");
 const write = process.argv.includes("--write");

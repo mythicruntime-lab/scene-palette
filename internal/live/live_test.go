@@ -20,7 +20,7 @@ import (
 )
 
 func TestBuildMatchesCompleteBrowserReferencePalettes(t *testing.T) {
-	paths, err := filepath.Glob(filepath.Join("..", "..", "testdata", "reference-palettes", "*", "palette.json"))
+	paths, err := filepath.Glob(filepath.Join("..", "..", "testdata", "v6", "reference-palettes", "*", "palette.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

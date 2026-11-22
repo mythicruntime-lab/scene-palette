@@ -60,7 +60,7 @@ type expectedRepair struct {
 
 func TestStructureMatchesJavaScriptForEveryPolarity(t *testing.T) {
 	fixture := loadStructureFixture(t)
-	if fixture.Schema != 1 || fixture.Source.Extraction != 5 {
+	if fixture.Schema != 1 || fixture.Source.Extraction != 6 {
 		t.Fatalf("unexpected fixture contract: schema %d extraction %d", fixture.Schema, fixture.Source.Extraction)
 	}
 	modes := []Polarity{PolarityAuto, PolarityDark, PolarityLight}
@@ -77,7 +77,7 @@ func TestStructureMatchesJavaScriptForEveryPolarity(t *testing.T) {
 				if !ok {
 					t.Fatalf("fixture is missing %s structure", mode)
 				}
-				got := BuildStructure(pooled, mode)
+				got := BuildStructure(pooled, mode, ReadableUI)
 				compareStructure(t, got, expected)
 			})
 		}
@@ -86,7 +86,7 @@ func TestStructureMatchesJavaScriptForEveryPolarity(t *testing.T) {
 
 func loadStructureFixture(t *testing.T) structureFixture {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "histogram-signal.golden.json"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "testdata", "v6", "histogram-signal.golden.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

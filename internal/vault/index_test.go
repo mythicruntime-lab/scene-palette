@@ -16,6 +16,7 @@ func TestRebuildMatchesGoldenIndex(t *testing.T) {
 func TestRebuildReferencePalettesMatchesGoldenIndex(t *testing.T) {
 	root := filepath.Join("..", "..", "testdata", "reference-palettes")
 	testRebuildMatchesGoldenIndex(t, root, 10)
+	testRebuildMatchesGoldenIndex(t, filepath.Join("..", "..", "testdata", "v6", "reference-palettes"), 10)
 }
 
 func testRebuildMatchesGoldenIndex(t *testing.T, root string, wantCount int) {

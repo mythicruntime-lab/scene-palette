@@ -45,8 +45,12 @@ especially for local files; retain an exported copy of work you care about.
 | **Readable UI** (default) | Readable semantic roles with distinct accents. It can derive colours when the source lacks enough distinct paint, then rechecks distinction after repairs and locks. |
 | **Source hues** | A palette closer to the image's hue range. It keeps all eight roles and reuses source hues or neutral tones on sparse images instead of adding arbitrary accent hues. Some roles may look similar. |
 
-Both modes target **4.5:1 contrast** for generated primary text and **3:1** for secondary text and accents
-on both surfaces. Locked colours remain exact, even when they fail. **Extracted colors** retain the original image colours.
+Readable UI targets **4.5:1** for primary and secondary text on both the background and surface.
+The four accents target **3:1** for status dots, outlines and other indicators. Small status
+labels keep their accent colour wherever it meets **4.5:1** on the actual surface.
+Source hues keeps its **3:1** secondary-text generation target to preserve more of the source tone.
+The Readability matrix and export warnings flag secondary text below **4.5:1** in either mode.
+Locked colours remain exact. **Extracted colors** retain the original image colours.
 Read the warnings for similar accents, large adjustments, or source hues shifted for readability.
 Forcing the opposite polarity can change colours substantially; the final interface still needs review.
 

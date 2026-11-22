@@ -1,7 +1,8 @@
 # Build output, generated reports, downloaded corpora and local scratch work
 /scene-palette
 /scene-palette.exe
-/bin/
+/bin/*
+!/bin/go.mod
 /dist/
 /coverage.out
 /coverage.html

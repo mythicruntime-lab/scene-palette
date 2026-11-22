@@ -93,7 +93,7 @@ func TestAccentStageMatchesJavaScriptForEveryPolarity(t *testing.T) {
 				if !ok {
 					t.Fatalf("fixture is missing %s accents", mode)
 				}
-				structure := BuildStructure(pooled, mode)
+				structure := BuildStructure(pooled, mode, ReadableUI)
 				got := BuildAccentStage(rawCandidates, structure, 6)
 				compareAccentStage(t, got, expectedMode.Accents)
 			})

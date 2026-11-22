@@ -48,7 +48,7 @@ func Format(data []byte, format string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	verified, err := document.VerifyReview()
+	verified, err := document.VerifyExportReview()
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +71,17 @@ func Format(data []byte, format string) (string, error) {
 		for _, token := range tk {
 			fmt.Fprintf(&out, "\t\"%s\": %s,\n", token.Key, strings.ToUpper(token.Key))
 		}
-		out.WriteString("}\n\nfunc apply_to_theme(theme: Theme) -> void:\n\ttheme.set_color(\"font_color\", \"Label\", INK)\n\ttheme.set_color(\"font_color\", \"Button\", INK)\n\ttheme.set_color(\"font_color\", \"RichTextLabel\", INK)\n\tvar surface := StyleBoxFlat.new()\n\tsurface.bg_color = PANEL\n\tsurface.set_corner_radius_all(6)\n\ttheme.set_stylebox(\"panel\", \"PanelContainer\", surface)\n\tvar btn := StyleBoxFlat.new()\n\tbtn.bg_color = ATTENTION\n\tbtn.set_corner_radius_all(4)\n\ttheme.set_stylebox(\"normal\", \"Button\", btn)\n")
+		buttonText := "INK"
+		if *document.Generator.Extraction >= 6 && colorx.Contrast(tk[2].RGB, tk[5].RGB) < 4.5 {
+			fill := tk[5].RGB
+			buttonText = "Color.BLACK"
+			if colorx.Contrast(fill, colorx.RGB{R: 255, G: 255, B: 255}) > colorx.Contrast(fill, colorx.RGB{}) {
+				buttonText = "Color.WHITE"
+			}
+		}
+		out.WriteString("}\n\nfunc apply_to_theme(theme: Theme) -> void:\n\ttheme.set_color(\"font_color\", \"Label\", INK)\n")
+		fmt.Fprintf(&out, "\ttheme.set_color(\"font_color\", \"Button\", %s)\n", buttonText)
+		out.WriteString("\ttheme.set_color(\"font_color\", \"RichTextLabel\", INK)\n\tvar surface := StyleBoxFlat.new()\n\tsurface.bg_color = PANEL\n\tsurface.set_corner_radius_all(6)\n\ttheme.set_stylebox(\"panel\", \"PanelContainer\", surface)\n\tvar btn := StyleBoxFlat.new()\n\tbtn.bg_color = ATTENTION\n\tbtn.set_corner_radius_all(4)\n\ttheme.set_stylebox(\"normal\", \"Button\", btn)\n")
 	case "gpl":
 		fmt.Fprintf(&out, "GIMP Palette\nName: %s\nColumns: 8\n# Review: %s\n#\n", name, review)
 		for _, token := range tk {

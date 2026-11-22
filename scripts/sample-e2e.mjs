@@ -81,7 +81,13 @@ async function gateNextDecode(page){await page.evaluate(()=>{const original=wind
 async function releaseDecode(page){await page.evaluate(async()=>{const gate=window.__sampleDecodeGate;window.createImageBitmap=gate.original;gate.release();await gate.completed;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));delete window.__sampleDecodeGate;});}
 let browser;
 try{
- browser=await chromium.launch({...(process.platform==="win32"?{channel:"msedge"}:{}),headless:true});
+ const executablePath = option("--browser", process.env.SCENE_PALETTE_BROWSER);
+ let channel = option("--channel", process.env.SCENE_PALETTE_BROWSER_CHANNEL);
+ if (!channel && !executablePath && process.platform === "win32") {
+  const edge = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+  if (await fs.stat(edge).then(() => true, () => false)) channel = "msedge";
+ }
+ browser = await chromium.launch({ headless: true, executablePath, channel: executablePath ? undefined : channel });
  const enginePalettes={};
  for(const [label,target]of [["Go",url.href],["standalone",pathToFileURL(html).href]]){
   const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});

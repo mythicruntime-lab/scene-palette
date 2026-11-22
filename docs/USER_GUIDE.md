@@ -75,10 +75,17 @@ from the cached histogram, so it is instant and never re-reads the image.
 Candidates are repaired to 3:1 on both surfaces before selection. Role assignment evaluates all
 24 permutations against the role hues; the selected colour policy controls how missing paint is supplied.
 
-**Readability repair checks both surfaces together.** Generated `ink` targets 4.5:1 and `muted` plus
-the four accents target 3:1. A failing repair searches OKLCh lightness, neutral grays, then feasible
-8-bit RGB colours. Generated surfaces adjust when they cannot support shared primary text. Locked colours
-stay exact, and incompatible locked surfaces produce a warning. Repairs are recorded in origins.
+**Readability repair checks both surfaces together.** Both policies target 4.5:1 for `ink`
+and 3:1 for accent indicators. Readable UI also targets 4.5:1 for `muted`, which paints form labels,
+placeholders, table headings and trace metadata. Source hues retains the 3:1 muted generation
+target and flags the actual secondary text wherever it falls below 4.5:1. A failing joint repair
+searches OKLCh lightness, neutral grays, then feasible 8-bit RGB colours. Generated surfaces adjust
+when they cannot support shared primary text. Locked colours stay exact, and incompatible locked
+surfaces produce a warning. Repairs are recorded in origins.
+
+In pale, low-chroma images, readable secondary text can end up close to the primary text.
+The preview uses heavier type for agent names and trace results, regular type for metadata,
+and italics for the form placeholder. These cues also work when both text roles have the same colour.
 
 ### Color style
 
@@ -129,10 +136,24 @@ the palette name remains editable and is preserved during normal editing.
 
 ## Readability
 
-The **Readability** matrix checks every colour against *both* the background and surface, plus the
-label colour each filled accent would paint with. `AA` is 4.5:1 (body copy); `pass` is 3:1, the floor
-for large text and UI components. A `low` can identify a pinned colour or a generated repair that
-failed on one surface. Pinned colours are never auto-corrected.
+The **Readability** matrix checks the six foreground roles on the background and surface, plus the text
+on each filled accent. Secondary labels, trace text and other ordinary text need **4.5:1**.
+Meaningful non-text cues such as a state indicator need **3:1** against the adjacent colour.
+Large text also qualifies for **3:1** at 18 pt regular or 14 pt bold (24 or about 18.7 CSS px).
+Scene Palette checks the full ratio before formatting it for display. For example, `<4.50:1`
+denotes a failure close enough to round to 4.50. [WCAG text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+and [non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
+
+Check the contrast summary near the export controls for the affected role, surface, measured
+ratio and target. You can adjust a colour or export it as chosen. Previews keep accent dots,
+borders and fills in their original colours. Small accent text uses the accent when readable
+on that surface, then tries primary text and finally black or white. The matrix identifies accents
+that need an alternative when used for ordinary text.
+
+**Godot** checks button text on its attention fill. For extraction v6 the button keeps the primary
+text colour when readable and otherwise uses black or white. Browser bundle and vault PNGs use opaque ink for
+small captions on ground. Re-exporting an older version preserves its original ink button
+binding and translucent browser captions. Its warnings measure those historical paints.
 
 ## Preview surfaces
 
@@ -210,6 +231,9 @@ tell you when that produced a mid-toned "dark" side rather than a real one.
 The report checks each side independently, flags an accent whose hue shifts more than 40 degrees
 between sides (it will read as a different colour), and trims extracted colours to the count both sides
 share — a CSS variable that exists on one side only would vanish on switch.
+Theme JSON uses its existing `notes` field for contrast findings. A pair with a current
+assessment uses the preview checks for both sides. Pairs made entirely from older records
+retain their original generation-target notes. The on-screen summary always checks current uses.
 
 CSS comes out as the full cascade:
 
@@ -298,11 +322,14 @@ deterministic fingerprint over the palette's semantic content plus normalized so
 identities. Any later content or source-identity edit invalidates it and moves the superseded decision
 into a bounded history of the 20 most recent seals, with the invalidation time and reason.
 
-**Checks & human approval** puts four deterministic checks beside that decision: readability on both surfaces,
-native token origins, source hashes, and any derived or fallback core roles. An attention result is not
-a confidence score or an automatic veto; it tells the person what needs judgment, and the seal remains
-the person's decision. The browser records the assessment in `review.assessment` while `check -json`
-recomputes it from the current file.
+**Checks & human approval** reports on preview readability on both surfaces, native token origins, source hashes,
+and any derived or fallback core roles. A person can seal a palette with an advisory warning.
+Fresh proposals, edits and new approvals record the usage-aware checks in `review.assessment`
+version 3. Re-exporting an untouched palette preserves a recorded v1 or v2 assessment.
+For a v5 palette with no saved assessment, both exporters use the original v1 rules for
+the review notes and leave the assessment absent from the palette. The browser's live
+review and `check -json` evaluate current preview uses at every extraction version.
+Viewing a warning keeps the recorded approval seal and its fingerprint intact.
 
 A palette with no `review` object—including output from `forge` and older saved collections—is unsealed by
 definition. Agents should use `check -json` and continue only when its independently computed result says
@@ -364,10 +391,10 @@ Click the image without selecting a role to add an **extracted colour**. Use its
 A hand-picked colour stays exact: it is never auto-corrected for contrast, even below target. The role
 badge turns red and the notes say so, but the pixel you chose is the pixel you keep.
 
-Scene Palette 2.1.0 records extraction version 5 for fresh output. It adds the colour policies,
-bounded source-distance refinement, and final accent distinction checks to the joint ground/panel
-readability repair. Schema 1 is unchanged. Valid older palettes retain their recorded extraction
-version, metadata, and matching review seals until deliberately edited or regenerated.
+Fresh output records extraction version 6 and palette schema 1. Loading an older palette keeps
+its recorded extraction version, metadata and matching seal. An import containing only swatches
+has unknown generation provenance (extraction 0). Generating from an image uses the current
+algorithm. A human edit follows the existing seal invalidation rules.
 
 For keyboard picking, focus the image, move the sample with the arrow keys (`Shift` moves ten pixels),
 and press `Enter` to apply it. Clear, image removal, extracted-colour removal, and saved-palette removal offer a
